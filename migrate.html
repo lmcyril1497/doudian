@@ -1,0 +1,24 @@
+﻿<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>数据迁移</title></head>
+<body>
+<h2>正在迁移数据...</h2>
+<div id="status"></div>
+<script>
+(async function() {
+  var s = document.getElementById("status");
+  var data = localStorage.getItem("doudian_clients");
+  if (!data) { s.innerText = "❌ 找不到旧数据 (doudian_clients)"; return; }
+  s.innerText = "找到 " + JSON.parse(data).length + " 条旧数据，正在保存...";
+  try {
+    var r = await fetch("/api/save", { method: "POST", body: data });
+    if (r.ok) { 
+      s.innerText = "✅ 迁移成功！" + JSON.parse(data).length + " 条数据已保存到 data.json。关闭此页面即可。";
+    } else {
+      s.innerText = "❌ 保存失败: " + r.status;
+    }
+  } catch(e) {
+    s.innerText = "❌ 无法连接服务器。请先双击启动抖店注册.bat，再用浏览器打开此页面。";
+  }
+})();
+</script>
+</body></html>
