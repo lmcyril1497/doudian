@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
-<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="抖店注册"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,shrink-to-fit=no">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="抖店注册"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,shrink-to-fit=no">
 <title>抖店</title>
 
 
@@ -142,6 +142,30 @@ body {
 }
 .ls-text { font-size: 13px; color: var(--text-tertiary); }
 
+/* ── Login Wall ── */
+.login-wall { position:fixed; inset:0; z-index:9999; background:linear-gradient(160deg,#f0f0f5,#e8e8f0); display:flex; align-items:center; justify-content:center; padding:20px; }
+.lw-card { width:360px; max-width:100%; background:#fff; border-radius:18px; box-shadow:0 4px 24px rgba(0,0,0,.08); padding:28px 32px 24px; display:flex; flex-direction:column; }
+.lw-header { text-align:center; margin-bottom:24px; }
+.lw-title { font-size:20px; font-weight:500; color:#1d1d1f; }
+.lw-desc { font-size:13px; color:#71717a; margin-top:6px; }
+.lw-fields { display:flex; flex-direction:column; gap:14px; }
+.lw-field input { width:100%; height:48px; padding:0 14px; border:2px solid #e4e4e7; border-radius:10px; font-size:15px; font-family:inherit; color:#1d1d1f; outline:none; transition:border-color .15s; }
+.lw-field input:focus { border-color:#667eea; }
+.lw-field input::placeholder { color:#a1a1aa; }
+.lw-btn { height:40px; border:none; border-radius:10px; background:#667eea; color:#fff; font-size:14px; font-weight:500; font-family:inherit; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
+.lw-btn:hover { background:#5a6fd6; }
+.lw-forgot { text-align:right; margin:8px 0 16px; }
+.lw-forgot a { font-size:13px; color:#71717a; cursor:pointer; }
+.lw-divider { display:flex; align-items:center; gap:12px; margin:16px 0; color:#a1a1aa; font-size:12px; }
+.lw-divider:before,.lw-divider:after { content:''; flex:1; height:1px; background:#e4e4e7; }
+.lw-register { text-align:center; font-size:13px; color:#71717a; }
+.lw-register a { color:#667eea; cursor:pointer; }
+.lw-hint { font-size:13px; color:#ff3b30; min-height:18px; margin-top:12px; text-align:center; }
+.um-item { display:flex; align-items:center; width:100%; padding:8px 12px; border:none; border-radius:8px; background:none; font-size:13px; font-family:inherit; color:#1d1d1f; cursor:pointer; text-align:left; }
+.um-item:hover { background:rgba(0,0,0,.04); }
+.um-item--danger { color:#ff3b30; }
+.um-item--danger:hover { background:rgba(255,59,48,.08); }
+
 /* ── App Shell ── */
 .app {
   display: flex;
@@ -184,31 +208,28 @@ body {
 .search-wrap { position: relative; }
 .search-input {
   width: 200px; height: 32px;
-  padding: 0 14px 0 32px;
-  background: var(--fill-primary);
+  padding: 0 12px 0 32px;
+  background: rgba(0,0,0,.04);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   font-size: 13px; font-family: inherit;
   color: var(--text-primary);
   outline: none;
-  transition: background 0.25s var(--ease-apple), box-shadow 0.25s var(--ease-apple), width 0.25s var(--ease-apple);
+  transition: background .15s;
 }
 .search-input::placeholder { color: var(--text-tertiary); }
 .search-input:focus {
-  background: var(--surface-card);
-  box-shadow: 0 0 0 3px rgba(0,113,227,0.12);
-  width: 240px;
+  background: rgba(0,0,0,.06);
 }
 .search-icon {
   position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
   color: var(--text-tertiary); font-size: 14px; pointer-events: none;
   transition: color 0.2s var(--ease-apple);
 }
-.search-wrap:focus-within .search-icon { color: var(--blue); }
-.btn--search-toggle { display: none; }
+.btn--search-toggle { display: none !important; }
 
-@media (max-width: 900px) {
-  .btn--search-toggle { display: inline-flex; }
+@media (max-width: 768px) {
+  .btn--search-toggle { display: inline-flex !important; }
   .search-wrap { display: none; }
   .search-wrap.search--open {
     display: flex; position: absolute; top: 100%; left: 0; right: 0;
@@ -526,6 +547,8 @@ body {
   font-size: 11px; color: var(--text-tertiary); font-weight: 500;
   margin-top: 8px;
 }
+.card-owner { font-size:11px; font-weight:500; color:var(--text-secondary); }
+body.is-admin .card-owner { display:block !important; }
 
 /* ── Copy Bar (出证名单) ── */
 .card-copy-bar {
@@ -566,20 +589,17 @@ body {
   background: rgba(0,0,0,0.28);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  z-index: 100;
+  z-index: 10000;
   display: flex; align-items: center; justify-content: center;
   animation: fade-in 0.25s var(--ease-apple);
 }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 
 .modal {
-  background: var(--material-thick);
-  backdrop-filter: blur(60px) saturate(240%);
-  -webkit-backdrop-filter: blur(60px) saturate(240%);
-  border: 1px solid rgba(255,255,255,0.5);
-  border-radius: var(--radius-xl);
+  background: #fff;
+  border-radius: 14px;
   width: 520px; max-width: 94vw; max-height: 88vh;
-  box-shadow: 0 24px 80px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 24px rgba(0,0,0,.12), 0 0 0 1px rgba(0,0,0,.04);
   display: flex; flex-direction: column;
   animation: modal-in 0.42s var(--spring-smooth);
   overflow: hidden;
@@ -623,32 +643,35 @@ body {
 }
 
 /* ── Form ── */
-.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
 .form-label {
-  font-size: 12px; font-weight: 600;
+  font-size: 11px; font-weight: 600;
   color: var(--text-secondary);
-  letter-spacing: 0.02em;
+  text-transform: uppercase; letter-spacing: .04em;
 }
 .form-input, .form-select, .form-textarea {
-  height: 42px;
+  height: 44px;
   padding: 0 14px;
-  background: rgba(255,255,255,0.65);
-  border: 1px solid rgba(0,0,0,0.10);
-  border-radius: var(--radius-md);
+  background: #f5f5f7;
+  border: 1px solid transparent;
+  border-radius: 10px;
   font-size: 14px; font-family: inherit;
   color: var(--text-primary);
   outline: none;
-  transition: border-color 0.2s var(--ease-apple), box-shadow 0.2s var(--ease-apple), background-color 0.2s var(--ease-apple);
+  transition: border-color .15s, box-shadow .15s, background .15s;
 }
 .form-textarea { height: auto; padding: 10px 14px; min-height: 72px; resize: vertical; }
 .form-select { cursor: pointer; appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z' fill='%238E8E93'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px;
+  background-repeat: no-repeat; background-position: right 14px center; padding-right: 40px;
+}
+.form-select option {
+  background: #fff; color: var(--text-primary); padding: 10px;
 }
 .form-input:focus, .form-select:focus, .form-textarea:focus {
-  background: rgba(255,255,255,0.9);
+  background: #fff;
   border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(0,113,227,0.1);
+  box-shadow: 0 0 0 3px rgba(0,113,227,.08);
 }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
@@ -679,14 +702,6 @@ body {
 }
 .dp-btn:hover { border-color: rgba(0,0,0,0.18); }
 .dp-popup {
-  position: absolute; bottom: 100%; left: 0; right: 0;
-  margin-bottom: 6px;
-  max-height: 172px; overflow-y: auto;
-  background: var(--surface-card);
-  border: 1px solid rgba(0,0,0,0.10);
-  border-radius: var(--radius-md);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
-  z-index: 50; padding: 4px;
   display: flex; flex-direction: column; gap: 1px;
 }
 .dp-opt {
@@ -1077,8 +1092,24 @@ input,select,textarea,button { -webkit-appearance: none; }
   </div>
 </div>
 
+<!-- Login Wall -->
+<div class="login-wall" id="loginWall">
+  <div class="lw-card">
+    <div class="lw-header"><div class="lw-title">信拓</div><div class="lw-desc">抖店 · 客户注册工作台</div></div>
+    <div class="lw-fields">
+      <div class="lw-field"><input id="lw_phone" type="text" placeholder="请输入手机号" maxlength="11" inputmode="numeric"></div>
+      <div class="lw-field"><input id="lw_pass" type="password" placeholder="请输入密码"></div>
+    </div>
+    <div class="lw-forgot"><a href="javascript:void(0)" onclick="showResetPwd()">忘记密码</a></div>
+    <button class="lw-btn" id="lw_btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>登录</button>
+    <div class="lw-divider"><span>或</span></div>
+    <div class="lw-register">还没有账号？ <a href="javascript:void(0)">首次登录自动注册</a></div>
+    <div class="lw-hint" id="lw_hint"></div>
+  </div>
+</div>
+
 <!-- App shell -->
-<div class="app">
+<div class="app" id="appShell" style="display:none;">
   <!-- Header -->
   <header class="header">
     <div class="header-left">
@@ -1089,7 +1120,7 @@ input,select,textarea,button { -webkit-appearance: none; }
     </div>
     <div class="header-right">
       <div class="search-wrap" id="searchWrap">
-        <input type="text" class="search-input" id="searchInput" placeholder="搜索…">
+        <input type="text" class="search-input" id="searchInput" placeholder="搜索...">
         <span class="search-icon" id="searchIcon">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </span>
@@ -1124,9 +1155,16 @@ input,select,textarea,button { -webkit-appearance: none; }
 // ============================================================
 const SB_URL = 'https://ytqzuqqqytdihxybhhcy.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0cXp1cXFxeXRkaWh4eWJoaGN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1OTE4NzAsImV4cCI6MjA5OTE2Nzg3MH0.EQUhNToGoQkdXLsKpHsw8gITaTVA0mtFhtN1MEbxzBc';
-let currentUser = localStorage.getItem('dou_user') || '';
+let currentUser = localStorage.getItem('dou_user') || ''; let isAdmin = !!localStorage.getItem('dou_admin');
+document.body.classList.add('is-admin'); // Show card-owner by default, will be correct for admin
 
 function sbHead() { return { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' }; }
+async function hashPassword(phone, password) {
+  var msg = phone + ':' + password + ':xt_doudian_2024';
+  var enc = new TextEncoder().encode(msg);
+  var hash = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(hash)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+}
 async function sbFetch(table, method, body) {
   var url = SB_URL + '/rest/v1/' + table;
   if (method === 'GET') { url += '?user_id=eq.' + encodeURIComponent(currentUser) + '&order=createdAt'; }
@@ -1147,6 +1185,61 @@ async function sbFetch(table, method, body) {
   }
 }
 
+function showResetPwd(){
+  var c=document.getElementById('modalContainer');
+  c.innerHTML='<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal" style="width:340px;"><div class="modal-header"><div class="modal-title">忘记密码</div><button class="modal-close" onclick="closeModal()">✕</button></div><div class="modal-body" style="gap:12px;"><p style="font-size:13px;color:var(--text-secondary);">输入手机号，提交重置申请</p><div class="form-group"><label class="form-label">手机号</label><input class="form-input" id="rp_phone" type="text" placeholder="请输入11位手机号" maxlength="11"></div></div><div class="modal-footer"><button class="btn btn--ghost" onclick="closeModal()">取消</button><button class="btn btn--primary" id="rp_btn">提交申请</button></div></div></div>';
+  document.getElementById('rp_btn').addEventListener('click',async function(){
+    var p=document.getElementById('rp_phone').value.trim();
+    if(!/^1[3-9]\d{9}$/.test(p)){toast('请输入正确的手机号','error');return;}
+    var r=await fetch(SB_URL+'/rest/v1/users?phone=eq.'+p,{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}});
+    var u=r.ok?(await r.json()):[];
+    if(u.length===0){toast('该手机号未注册','error');return;}
+    var patchRes=await fetch(SB_URL+'/rest/v1/users?phone=eq.'+p,{method:'PATCH',headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({reset_requested:true})});
+    if(!patchRes.ok){toast('提交失败，请联系管理员重置密码','error');return;}
+    closeModal();toast('已提交重置申请，等待管理员处理','success');
+  });
+}
+function showApp() { document.getElementById("loginWall").style.display="none"; document.getElementById("appShell").style.display=""; }
+function showLogin() { document.getElementById("appShell").style.display="none"; document.getElementById("loginWall").style.display=""; document.getElementById("lw_hint").textContent=""; document.getElementById("lw_phone").value=""; document.getElementById("lw_pass").value=""; }
+async function handleLogin() {
+  try {
+  var p=document.getElementById("lw_phone").value.trim();
+  var pw=document.getElementById("lw_pass").value.trim();
+  var hint=document.getElementById("lw_hint");
+  if(!/^1[3-9]\d{9}$/.test(p)){hint.textContent="请输入正确的11位手机号";return;}
+  if(pw.length<6){hint.textContent="密码至少6位";return;}
+  var pwHash=await hashPassword(p,pw);hint.textContent="登录中...";
+  var resp=await fetch(SB_URL+"/rest/v1/users?phone=eq."+p,{headers:sbHead()});
+  var users=resp.ok?(await resp.json()):[];
+  if(users.length>0){
+    var oldHash=btoa(p+":"+pw);if(users[0].password_hash!==pwHash&&users[0].password_hash!==oldHash){hint.textContent="密码错误";return;}
+    if(users[0].status!=="approved"){hint.textContent="账号审核中，等待管理员通过";return;}
+  }else{
+    await fetch(SB_URL+"/rest/v1/users",{method:"POST",headers:{...sbHead(),Prefer:"resolution=merge-duplicates"},body:JSON.stringify({phone:p,password_hash:pwHash,status:"pending"})});
+    hint.textContent="已提交申请，等待管理员审批";return;
+  }
+  currentUser=p;localStorage.setItem("dou_user",p);isAdmin=users[0].role==="admin";localStorage.setItem("dou_admin",isAdmin?"1":"");if(isAdmin){document.body.classList.add("is-admin");var dv=localStorage.getItem('dou_view');window._viewingUser=(dv==='all'?null:p);localStorage.setItem('dou_view',p);}showApp();updateAuthBtn();showLoading();
+  await syncToCloud();
+  var data;
+  if (isAdmin) {
+    var dv2 = localStorage.getItem("dou_view");
+    if (dv2 === "all") {
+      var rA = await fetch(SB_URL+"/rest/v1/clients?select=*",{headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
+      data = rA.ok ? await rA.json() : [];
+    } else if (dv2 && dv2 !== currentUser) {
+      var rB = await fetch(SB_URL+"/rest/v1/clients?user_id=eq."+dv2+"&select=*",{headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
+      data = rB.ok ? await rB.json() : [];
+    } else {
+      data = await sbFetch("clients","GET");
+    }
+  } else {
+    data = await sbFetch("clients","GET");
+  }
+  if(data.length>0){clients=data.map(mapClient);saveClients(clients);}
+  hideLoading();refreshAll(); if(isAdmin){initAdminSelect();};
+  } catch(e) { document.getElementById("lw_hint").textContent = "登录失败: " + (e.message||"网络错误"); }
+}
+function doLogout(){currentUser='';isAdmin=false;localStorage.removeItem('dou_admin');localStorage.removeItem('dou_user');localStorage.removeItem('dou_view');clients=[];localStorage.removeItem('doudian_clients');updateAuthBtn();document.body.classList.remove('is-admin');showLogin();}
 function updateAuthBtn() {
   var b = document.getElementById('authBtn');
   if (!b) return;
@@ -1196,61 +1289,148 @@ document.addEventListener('keydown', function(e) {
 });
 
 function showAuthModal() {
-  if (currentUser) {
-    confirmDialog('退出登录 ' + currentUser + '？', function() {
-      currentUser = '';
-      localStorage.removeItem('dou_user');
-      clients = [];
-      localStorage.removeItem('doudian_clients');
-      updateAuthBtn();
-      refreshAll();
-    });
-    return;
-  }
-  var c = document.getElementById('modalContainer');
-  c.innerHTML = '<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal"><div class="modal-header"><div class="modal-title">登录</div><button class="modal-close" onclick="closeModal()">✕</button></div><div class="modal-body" style="gap:12px;overflow-y:visible;"><p style="font-size:13px;color:var(--text-secondary)">每个人用自己手机号登录，数据独立</p><div class="form-group"><label class="form-label">手机号</label><input class="form-input" id="sb_phone" type="text" placeholder="输入11位手机号" maxlength="11" inputmode="numeric"></div><div class="form-group"><label class="form-label">密码（6位以上）</label><input class="form-input" id="sb_pass" type="password" placeholder="设置密码"></div></div><div class="modal-footer"><button class="btn btn--ghost" onclick="closeModal()">取消</button><button class="btn btn--primary" id="sb_btn">登录</button></div></div></div>';
-  document.getElementById('sb_btn').addEventListener('click', async function() {
-    var p = document.getElementById('sb_phone').value.trim();
-    var pw = document.getElementById('sb_pass').value.trim();
-    if (!/^1[3-9]\d{9}$/.test(p)) { toast('请输入正确的11位手机号', 'error'); return; }
-    if (pw.length < 6) { toast('密码至少6位', 'error'); return; }
-    var pwHash = btoa(p + ':' + pw);
-    // Verify password against Supabase
-    var checkUrl = SB_URL + '/rest/v1/users?phone=eq.' + encodeURIComponent(p);
-    var checkResp = await fetch(checkUrl, { headers: sbHead() });
-    var users = checkResp.ok ? (await checkResp.json()) : [];
-    if (users.length > 0) {
-      // Existing user — verify password
-      if (users[0].password_hash !== pwHash) { toast('密码错误', 'error'); return; }
-    } else {
-      // New user — register
-      await fetch(SB_URL + '/rest/v1/users', {
-        method: 'POST', headers: { ...sbHead(), 'Prefer': 'resolution=merge-duplicates' },
-        body: JSON.stringify({ phone: p, password_hash: pwHash })
-      });
-    }
-    currentUser = p;
-    localStorage.setItem('dou_user', p);
-    closeModal(); updateAuthBtn();
-    showLoading();
-    await syncToCloud();
-    var data = await sbFetch('clients', 'GET');
-    if (data.length > 0) {
-      clients = data.map(function(r) { return { id: r.id, name: r.name, licenseType: r.licenseType, cardType: r.cardType, advanceAmount: r.advanceAmount, notes: r.notes, stage: r.stage, createdAt: r.createdAt, stageTimestamps: r.stageTimestamps || {} }; });
-      saveClients(clients);
-    }
-    hideLoading();
-    refreshAll();
-  });
-}
+  if (!currentUser) return;
 
+  var old = document.querySelector('.user-menu');
+  if (old) { old.remove(); return; }
+  var btn = document.getElementById('authBtn');
+  var rect = btn.getBoundingClientRect();
+  var menu = document.createElement('div');
+  menu.className = 'user-menu';
+  var right = Math.max(8, window.innerWidth - rect.right);
+  menu.style.cssText = 'position:fixed;top:'+(rect.bottom+6)+'px;right:'+right+'px;z-index:1000;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:6px;min-width:180px;';
+  var html = '<div style="padding:8px 12px 6px;"><div style="font-size:13px;font-weight:600;color:#1d1d1f;">'+currentUser+'</div>'+(isAdmin?'<div style="font-size:11px;color:#667eea;">管理员</div>':'')+'</div><div style="height:1px;background:#f0f0f0;margin:4px 0;"></div>';
+  if (isAdmin) { html += '<button class="um-item" onclick="closeUserMenu();showAdminPanel()">用户审批</button><button class="um-item" onclick="closeUserMenu();showNicknameModal()">设置昵称</button>'; }
+  html += '<button class="um-item" onclick="closeUserMenu();showChangePassModal()">修改密码</button><button class="um-item um-item--danger" onclick="closeUserMenu();confirmDialog(\u0027退出登录\u0027,\u0027退出登录 '+currentUser+'？\u0027,doLogout)">退出登录</button>';
+  menu.innerHTML = html;
+  document.body.appendChild(menu);
+  setTimeout(function(){ document.addEventListener('click',function close(e){ if(!menu.contains(e.target)&&e.target!==btn){ menu.remove();document.removeEventListener('click',close); } }); },10);
+}
+function closeUserMenu(){ var m=document.querySelector('.user-menu'); if(m)m.remove(); }
+
+function toggleAdminFilter(e){
+  e.stopPropagation();
+  var existing=document.querySelector('.admin-filter-menu');
+  if(existing){existing.remove();return;}
+  var btn=document.getElementById('adminFilterBtn');
+  var rect=btn.getBoundingClientRect();
+  var menu=document.createElement('div');
+  menu.className='admin-filter-menu';
+  menu.style.cssText='position:fixed;top:'+(rect.bottom+6)+'px;right:'+Math.max(8,window.innerWidth-rect.right)+'px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:6px;min-width:160px;';
+  var html='<button class="um-item" onclick="switchToUserView(\'all\');closeAdminFilter()">全部</button>';
+  (window._adminUsers||[]).forEach(function(u){
+    if(u.phone!=='all') html+='<button class="um-item" onclick="switchToUserView(\''+u.phone+'\');closeAdminFilter()">'+u.label+'</button>';
+  });
+  menu.innerHTML=html;
+  document.body.appendChild(menu);
+  setTimeout(function(){document.addEventListener('click',function close(e){if(!menu.contains(e.target)&&e.target!==btn){menu.remove();document.removeEventListener('click',close);}})},10);
+}
+function closeAdminFilter(){var m=document.querySelector('.admin-filter-menu');if(m)m.remove();document.getElementById('adminFilterBtn').textContent=(window._viewingUser?(window._nicks&&window._nicks[window._viewingUser]||window._viewingUser):'全部')+' ▾';}
+
+async function switchToUserView(phone){
+  try {
+  localStorage.setItem('dou_view', phone);
+  if(phone==='all'){
+    var r=await fetch(SB_URL+'/rest/v1/clients?select=*',{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}});
+    clients=r.ok?(await r.json()).map(mapClient):[];
+    window._viewingUser=null;
+  }else{
+    var r2=await fetch(SB_URL+'/rest/v1/clients?user_id=eq.'+phone+'&select=*',{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}});
+    clients=r2.ok?(await r2.json()).map(mapClient):[];
+    window._viewingUser=phone;
+  }
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(clients));
+  refreshAll();
+  } catch(e) { toast("切换视图失败: "+e.message,"error"); }
+}
 async function syncToCloud() {
   if (!currentUser) { console.log('sync skipped: not logged in'); return; }
-  var rows = clients.map(function(c) { return { id: c.id, user_id: currentUser, name: c.name, licenseType: c.licenseType||'', cardType: c.cardType||'', advanceAmount: c.advanceAmount||'', notes: c.notes||'', stage: c.stage, createdAt: c.createdAt, stageTimestamps: c.stageTimestamps||{} }; });
-  console.log('syncing ' + rows.length + ' clients to cloud for user ' + currentUser);
-  var ok = await sbFetch('clients', 'POST', rows);
-  console.log('sync result: ' + ok);
-  if (!ok) { console.log('Sync failed'); }
+  var rows = clients.map(function(c) { return { id: c.id, user_id: c.user_id||currentUser, name: c.name, licenseType: c.licenseType||'', cardType: c.cardType||'', advanceAmount: c.advanceAmount||'', notes: c.notes||'', stage: c.stage, createdAt: c.createdAt, stageTimestamps: c.stageTimestamps||{} }; });
+  try { var ok = await sbFetch("clients","POST",rows); }
+  catch(e) { console.log("Sync exception:",e.message); toast("同步失败，请检查网络连接","error"); return; }
+  if (!ok) { console.log("Sync failed"); toast("同步失败，请稍后重试","error"); }
+}
+
+async function initAdminSelect(){
+  try {
+  var r=await fetch(SB_URL+"/rest/v1/users?select=phone,nickname",{headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
+  var u=r.ok?(await r.json()):[];window._adminUsers=[];window._nicks={};
+  u.forEach(function(x){window._adminUsers.push({phone:x.phone,label:x.nickname||x.phone});window._nicks[x.phone]=x.nickname||x.phone;});
+  renderStats(); renderKanban();
+  } catch(e) { console.log("initAdminSelect error:",e.message); }
+}
+
+async function showAdminPanel(){
+  closeUserMenu(); var old=document.querySelector('.admin-popup'); if(old) old.remove();
+  var r=await fetch(SB_URL+"/rest/v1/users?select=*",{headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
+  var u=r.ok?(await r.json()).filter(function(x){return x.status==='pending'||x.reset_requested;}):[];
+  var btn=document.getElementById("authBtn");var rect=btn.getBoundingClientRect();
+  var menu=document.createElement("div");menu.className="admin-popup";
+  menu.style.cssText="position:fixed;top:"+(rect.bottom+6)+"px;right:"+Math.max(8,window.innerWidth-rect.right)+"px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:8px;width:280px;max-height:60vh;overflow-y:auto;";
+  var html='<div style="padding:4px 8px 8px;font-size:14px;font-weight:600;color:#1d1d1f;">用户审批</div>';
+  if(u.length===0){html+='<div style="padding:16px;text-align:center;color:var(--text-tertiary);font-size:13px;">暂无待处理请求</div>';}
+  else{u.forEach(function(x){
+    if(x.status==='pending'){html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:8px;"><span style="font-size:13px;">'+x.phone+'</span><span style="font-size:11px;color:#ff9500;">注册审批</span><button class="btn btn--primary" style="height:28px;font-size:11px;padding:0 10px;" onclick="approveUser(\''+x.phone+'\')">通过</button></div>';}
+    if(x.reset_requested){html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:8px;"><span style="font-size:13px;">'+x.phone+'</span><span style="font-size:11px;color:#ff3b30;">密码重置</span><button class="btn btn--primary" style="height:28px;font-size:11px;padding:0 10px;" onclick="resetUserPwd(\''+x.phone+'\')">重置</button></div>';}
+  });}
+  html+='<div style="padding:8px 8px 4px;"><button class="btn btn--ghost" style="width:100%;height:30px;font-size:12px;justify-content:center;" onclick="closeAdminPopup()">关闭</button></div>';
+  menu.innerHTML=html;document.body.appendChild(menu);
+  setTimeout(function(){document.addEventListener("click",function ce(e){if(!menu.contains(e.target)&&e.target!==btn){closeAdminPopup();document.removeEventListener("click",ce);}});},10);
+}
+function closeAdminPopup(){var m=document.querySelector(".admin-popup");if(m)m.remove();}
+async function approveUser(p){
+  try { await fetch(SB_URL+"/rest/v1/users?phone=eq."+p,{method:"PATCH",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({status:"approved"})}); } catch(e) { toast("操作失败: "+e.message,"error"); return; }
+  toast(p+" 已通过","success");closeAdminPopup();showAdminPanel();
+}
+async function resetUserPwd(p){
+  try { await fetch(SB_URL+"/rest/v1/users?phone=eq."+p,{method:"PATCH",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({password_hash:await hashPassword(p,"123456"),reset_requested:false})}); } catch(e) { toast("操作失败: "+e.message,"error"); return; }
+  toast(p+" 密码已重置为123456","success");closeAdminPopup();showAdminPanel();
+}
+
+async function showChangePassModal(){
+  closeUserMenu();
+  var old=document.querySelector('.pass-popup'); if(old) old.remove();
+  var btn=document.getElementById("authBtn");var rect=btn.getBoundingClientRect();
+  var menu=document.createElement("div");menu.className="pass-popup";
+  menu.style.cssText="position:fixed;top:"+(rect.bottom+6)+"px;right:"+Math.max(8,window.innerWidth-rect.right)+"px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:16px;width:280px;";
+  menu.innerHTML='<div style="font-size:15px;font-weight:600;color:#1d1d1f;margin-bottom:14px;">修改密码</div><input class="form-input" id="cp_old" type="password" placeholder="旧密码" style="margin-bottom:10px;"><input class="form-input" id="cp_new" type="password" placeholder="新密码（6位以上）" style="margin-bottom:14px;"><div style="display:flex;gap:8px;"><button class="btn btn--ghost" style="flex:1;height:36px;font-size:13px;justify-content:center;" onclick="closePassPopup()">取消</button><button class="btn btn--primary" style="flex:1;height:36px;font-size:13px;justify-content:center;" id="cp_btn">确认</button></div>';
+  document.body.appendChild(menu);
+  document.getElementById("cp_btn").addEventListener("click",async function(){
+    try {
+    var o=document.getElementById("cp_old").value.trim();var n=document.getElementById("cp_new").value.trim();
+    if(n.length<6){toast("新密码至少6位","error");return;}
+    var r=await fetch(SB_URL+"/rest/v1/users?phone=eq."+currentUser,{headers:sbHead()});var u=r.ok?(await r.json()):[];
+    var newOldHash=btoa(currentUser+":"+o);if(u.length===0||(u[0].password_hash!==await hashPassword(currentUser,o)&&u[0].password_hash!==newOldHash)){toast("旧密码错误","error");return;}
+    await fetch(SB_URL+"/rest/v1/users?phone=eq."+currentUser,{method:"PATCH",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({password_hash:await hashPassword(currentUser,n)})});
+    closePassPopup();toast("密码已修改","success");
+    } catch(e) { toast("修改密码失败: "+e.message,"error"); }
+  });
+  setTimeout(function(){ var ce=function(e){ if(!menu.contains(e.target)&&e.target!==btn){ closePassPopup(); document.removeEventListener('mousedown',ce,true); } }; document.addEventListener('mousedown',ce,true); },10);
+}
+function closePassPopup(){ document.querySelectorAll('.pass-popup').forEach(function(m){m.remove();}); }
+
+async function showNicknameModal(){
+  closeUserMenu(); var old=document.querySelector('.nick-menu'); if(old) old.remove();
+  try {
+  var r=await fetch(SB_URL+"/rest/v1/users?select=phone,nickname",{headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
+  var u=r.ok ? await r.json() : [];
+  } catch(e) { toast("加载用户列表失败","error"); return; }
+  var btn=document.getElementById("authBtn");var rect=btn.getBoundingClientRect();
+  var menu=document.createElement("div");menu.className="nick-menu";
+  menu.style.cssText="position:fixed;top:"+(rect.bottom+6)+"px;right:"+Math.max(8,window.innerWidth-rect.right)+"px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:8px;width:300px;max-height:60vh;overflow-y:auto;";
+  var html='<div style="padding:4px 8px 8px;font-size:14px;font-weight:600;color:#1d1d1f;">设置昵称</div>';
+  u.forEach(function(x){html+='<div style="display:flex;align-items:center;padding:8px 8px;"><span style="flex:1;font-size:13px;color:var(--text-primary);">'+x.phone+'</span><input style="width:100px;padding:6px 0;border:none;border-bottom:1px solid rgba(0,0,0,.15);border-radius:0;font-size:13px;font-family:inherit;outline:none;text-align:center;" value="'+(x.nickname||"")+'" placeholder="昵称" data-phone="'+x.phone+'"></div>';});
+  html+='<div style="display:flex;gap:6px;padding:8px 8px 4px;"><button class="btn btn--ghost" style="flex:1;height:32px;font-size:12px;justify-content:center;" onclick="closeNickMenu()">关闭</button><button class="btn btn--primary" style="flex:1;height:32px;font-size:12px;justify-content:center;" onclick="saveNicknames(false)">保存</button></div>';
+  menu.innerHTML=html;document.body.appendChild(menu);
+  setTimeout(function(){document.addEventListener("click",function ce(e){if(!menu.contains(e.target)&&e.target!==btn){closeNickMenu();document.removeEventListener("click",ce);}});},10);
+}
+function closeNickMenu(){var m=document.querySelector(".nick-menu");if(m)m.remove();}
+async function saveNicknames(closeAfter){
+  if(closeAfter===undefined)closeAfter=true;
+  var inputs=document.querySelectorAll(".nick-menu input");
+  for(var i=0;i<inputs.length;i++){var p=inputs[i].getAttribute("data-phone");var n=inputs[i].value.trim();window._nicks=window._nicks||{};window._nicks[p]=n;await fetch(SB_URL+"/rest/v1/users?phone=eq."+p,{method:"PATCH",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({nickname:n||null})});}
+  initAdminSelect();toast("昵称已保存","success");
+  if(closeAfter)closeNickMenu();
 }
 
 updateAuthBtn();
@@ -1296,11 +1476,27 @@ function loadClients() {
 }
 
 function saveClients(clients) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(clients)); }
+  catch(e) { console.log("saveClients localStorage error:",e.message); toast("本地存储空间不足，请清理数据","error"); }
   syncToCloud();
 }
 
 let clients = loadClients();
+
+function mapClient(r) {
+  return {
+    id: r.id || genId(),
+    name: r.name || "",
+    licenseType: r.licenseType || "",
+    cardType: r.cardType || "",
+    advanceAmount: r.advanceAmount || "",
+    notes: r.notes || "",
+    stage: (typeof r.stage === "number" && r.stage >= 0 && r.stage <= 4) ? r.stage : (parseInt(r.stage) || 0),
+    createdAt: (typeof r.createdAt === "number") ? r.createdAt : (parseInt(r.createdAt) || Date.now()),
+    stageTimestamps: r.stageTimestamps || {},
+    user_id: r.user_id || ""
+  };
+}
 let activeFilter = null; // null = show all, number = stage id
 let searchQuery = '';
 let draggedClientId = null;
@@ -1329,9 +1525,8 @@ function formatTime(ts) {
 function parseReviewDate(str) {
   if (!str) return 0;
   var parts = str.split('.');
-  var m = parseInt(parts[0]) || 0;
-  var d = parseInt(parts[1]) || 0;
-  if (!m || !d) return 0;
+  var m = parseInt(parts[0]); var d = parseInt(parts[1]);
+  if (isNaN(m) || isNaN(d) || m < 1 || m > 12 || d < 1 || d > 31) return 0;
   var now = new Date();
   return new Date(now.getFullYear(), m - 1, d).getTime();
 }
@@ -1345,16 +1540,22 @@ function formatReviewDate(ts) {
 // Desktop date picker popup
 function dpToggle(btn) {
   var existing = document.querySelector('.dp-popup');
-  if (existing && existing.parentElement === btn.parentElement) {
-    existing.remove();
-    return;
-  }
-  if (existing) existing.remove();
+  // Close custom select popups first
+  var cs = document.querySelector('.cs-dropdown'); if(cs){ if(cs._handler) document.removeEventListener('mousedown',cs._handler,true); cs.remove(); }
+  // Toggle: if already open, close it
+  if (existing) { if (existing._btn === btn) { if(existing._handler) document.removeEventListener('mousedown',existing._handler,true); existing.remove(); return; } if(existing._handler) document.removeEventListener('mousedown',existing._handler,true); existing.remove(); }
 
-  var wrap = btn.parentElement;
   var type = btn.getAttribute('data-dp');
   var pop = document.createElement('div');
   pop.className = 'dp-popup';
+  pop._btn = btn;
+  var btnRect = btn.getBoundingClientRect();
+  var spaceBelow = window.innerHeight - btnRect.bottom;
+  pop.style.cssText = 'position:fixed;z-index:99999;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:4px;max-height:200px;overflow-y:auto;min-width:80px;';
+  if (spaceBelow > 240) { pop.style.top = btnRect.bottom + 4 + 'px'; }
+  else { pop.style.bottom = (window.innerHeight - btnRect.top) + 4 + 'px'; }
+  pop.style.left = btnRect.left + 'px';
+  pop.style.width = btnRect.width + 'px';
 
   var count = type === 'month' ? 12 : 31;
   var suffix = type === 'month' ? '月' : '日';
@@ -1371,22 +1572,22 @@ function dpToggle(btn) {
       var mobSel = document.getElementById('mf_review' + (type==='month'?'Month':'Day'));
       if (mobSel) mobSel.value = v;
       btn.textContent = v + suffix;
-      pop.remove();
+      if(pop._handler) document.removeEventListener('mousedown',pop._handler,true); pop.remove();
     }; }(i);
     pop.appendChild(opt);
   }
-  wrap.appendChild(pop);
+  document.body.appendChild(pop);
 
   // Scroll to selected
   var sel = pop.querySelector('.dp-opt--sel');
   if (sel) { pop.scrollTop = sel.offsetTop - pop.clientHeight / 2 + sel.clientHeight / 2; }
 
-  // Close on outside click
+  // Close on outside mousedown (capture phase)
   setTimeout(function() {
-    var close = function(e) {
-      if (!pop.parentElement.contains(e.target)) { pop.remove(); document.removeEventListener('click', close); }
+    pop._handler = function(e) {
+      if (!pop.contains(e.target) && !btn.contains(e.target)) { pop.remove(); document.removeEventListener('mousedown', pop._handler, true); }
     };
-    document.addEventListener('click', close);
+    document.addEventListener('mousedown', pop._handler, true);
   }, 10);
 }
 
@@ -1422,6 +1623,7 @@ function toast(msg, type, undoCallback) {
 function openAddModal() {
   window._savedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
   renderModal({
+    focusName: true,
     title: '新增客户资料',
     client: null,
     onSave: (data) => {
@@ -1434,7 +1636,7 @@ function openAddModal() {
         notes: data.notes,
         stage: parseInt(data.stage) || 0,
         createdAt: parseReviewDate(data.reviewDate) || Date.now(),
-        stageTimestamps: { [data.stage || 0]: Date.now() },
+        stageTimestamps: { [data.stage || 0]: Date.now() },user_id: data.owner || currentUser,
       };
       clients.unshift(client);
       saveClients(clients);
@@ -1457,10 +1659,12 @@ function openEditModal(clientId) {
       client.cardType = data.cardType || '';
       client.advanceAmount = data.advanceAmount || '';
       client.notes = data.notes;
+      if (data.owner) client.user_id = data.owner;
       if (data.reviewDate) {
         var newTs = parseReviewDate(data.reviewDate);
         if (newTs) { client.createdAt = newTs; }
       }
+      var oldStage = client.stage;
       const newStage = parseInt(data.stage);
       if (newStage !== client.stage) {
         client.stage = newStage;
@@ -1468,13 +1672,13 @@ function openEditModal(clientId) {
         client.stageTimestamps[newStage] = Date.now();
       }
       saveClients(clients);
-      refreshAll([newStage]);
+      refreshAll(newStage !== oldStage ? [oldStage, newStage] : [newStage]);
       toast('客户「' + data.name + '」已更新', 'success');
     }
   });
 }
 
-function renderModal({ title, client, onSave }) {
+function renderModal({ title, client, onSave, focusName }) {
   const container = document.getElementById('modalContainer');
   const data = client || { name:'', licenseType:'', cardType:'', advanceAmount:'', notes:'', stage:0 };
   // Show reviewDate (createdAt) in form — default today
@@ -1504,7 +1708,7 @@ function renderModal({ title, client, onSave }) {
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">客户姓名 *</label>
-              <input class="form-input" id="mf_name" placeholder="请输入姓名" value="${escAttr(data.name)}" autocomplete="off">
+              <input class="form-input" id="mf_name" placeholder="请输入姓名" value="${escAttr(data.name)}" autocomplete="off" disabled>
             </div>
             <div class="form-group">
               <label class="form-label">当前阶段</label>
@@ -1549,12 +1753,22 @@ function renderModal({ title, client, onSave }) {
             </div>
             <div class="form-group">
               <label class="form-label">预付金额</label>
-              <input class="form-input" id="mf_advanceAmount" type="number" inputmode="numeric" placeholder="如：30（留空=无预支）" value="${escAttr(data.advanceAmount)}" autocomplete="off" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+              <input class="form-input" id="mf_advanceAmount" type="number" inputmode="numeric" placeholder="留空=无预支" value="${escAttr(data.advanceAmount)}" autocomplete="off" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
             </div>
           </div>
-          <div class="form-group">
+          <div class="form-row" id="mf_owner_row" style="display:none;">
+            <div class="form-group">
+              <label class="form-label">归属用户</label>
+              <select class="form-select" id="mf_owner">${(window._adminUsers||[]).map(function(u){return '<option value="'+u.phone+'"'+((data.user_id||currentUser)===u.phone?' selected':'')+'>'+u.label+'</option>';}).join('')}</select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">备注</label>
+              <input class="form-input" id="mf_notes" placeholder="可选备注" value="${escAttr(data.notes)}" autocomplete="off">
+            </div>
+          </div>
+          <div class="form-group" id="mf_notes_full">
             <label class="form-label">备注</label>
-            <input class="form-input" id="mf_notes" placeholder="可选备注" value="${escAttr(data.notes)}" autocomplete="off">
+            <input class="form-input" id="mf_notes2" placeholder="可选备注" value="${escAttr(data.notes)}" autocomplete="off">
           </div>
         </div>
         <div class="modal-footer">
@@ -1572,6 +1786,43 @@ function renderModal({ title, client, onSave }) {
     if (el) { el.focus(); }
   }, 100);
 
+  // Show owner for admin + prevent autofocus
+  if (isAdmin) { var g = document.getElementById('mf_owner_row'); if (g) g.style.display = ''; var f = document.getElementById('mf_notes_full'); if (f) f.style.display = 'none'; }
+  setTimeout(function(){ var el=document.getElementById('mf_name'); if(el){ el.disabled=false; if(focusName)el.focus(); } },100);
+
+  // Custom selects — replace native with Apple-style dropdowns
+  document.querySelectorAll('.modal-body select.form-select:not(.dp-mobile)').forEach(function(sel){
+    if (sel._customized) return; sel._customized = true;
+    var wrap = document.createElement('div'); wrap.style.cssText = 'position:relative;';
+    var btn = document.createElement('button'); btn.type = 'button';
+    btn.className = 'form-select';
+    btn.style.cssText = 'width:100%;height:44px;text-align:left;display:flex;align-items:center;justify-content:space-between;transition:none;';
+    btn.innerHTML = '<span>'+(sel.options[sel.selectedIndex]?sel.options[sel.selectedIndex].textContent:'')+'</span>';
+    btn.onclick = function(e){ e.preventDefault(); e.stopPropagation();
+      var dp = document.querySelector('.dp-popup'); if(dp){ if(dp._handler) document.removeEventListener('mousedown',dp._handler,true); dp.remove(); }
+      var open = document.querySelector('.cs-dropdown');
+      if(open && open._btn === btn){ if(open._handler) document.removeEventListener('mousedown',open._handler); open.remove(); return; }
+      if(open){ if(open._handler) document.removeEventListener('mousedown',open._handler); open.remove(); }
+      var pop = document.createElement('div'); pop.className = 'cs-dropdown';
+      pop.style.cssText = 'position:fixed;z-index:99999;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:4px;max-height:200px;overflow-y:auto;min-width:80px;';
+      var btnRect = btn.getBoundingClientRect();
+      pop.style.top = btnRect.bottom + 4 + 'px';
+      pop.style.left = btnRect.left + 'px';
+      pop.style.width = btnRect.width + 'px';
+      Array.from(sel.options).filter(function(o){ return o.value !== ''; }).forEach(function(o){
+        var item = document.createElement('button'); item.type='button';
+        item.className = 'um-item'; item.textContent = o.textContent;
+        item.onclick = function(){ sel.value = o.value; btn.querySelector('span').textContent = o.textContent; if(pop._handler) document.removeEventListener('mousedown',pop._handler); pop.remove(); };
+        pop.appendChild(item);
+      });
+      pop._btn = btn; var _scrollClose=function(){if(pop._handler)document.removeEventListener('mousedown',pop._handler,true);pop.remove();window.removeEventListener('scroll',_scrollClose,true)};window.addEventListener('scroll',_scrollClose,true); document.body.appendChild(pop);
+      // Close on outside click
+      setTimeout(function(){ pop._handler = function(ev){ if(!pop.contains(ev.target) && !btn.contains(ev.target)){ pop.remove(); document.removeEventListener('mousedown',pop._handler,true); } }; document.addEventListener('mousedown',pop._handler,true); },10);
+    };
+    wrap.appendChild(btn);
+    sel.parentNode.insertBefore(wrap, sel);
+    sel.style.display = 'none';
+  });
   // Save handler
   document.getElementById('mf_saveBtn').addEventListener('click', () => {
     const formData = {
@@ -1580,8 +1831,9 @@ function renderModal({ title, client, onSave }) {
       cardType: document.getElementById('mf_cardType').value,
       reviewDate: (function(){ var m=document.getElementById('mf_reviewMonth').value||document.getElementById('mf_reviewMonthVal').value; var d=document.getElementById('mf_reviewDay').value||document.getElementById('mf_reviewDayVal').value; return m&&d?m+'.'+d:''; })(),
       advanceAmount: document.getElementById('mf_advanceAmount').value.trim(),
-      notes: document.getElementById('mf_notes').value.trim(),
+      notes: (document.getElementById('mf_notes2').offsetParent!==null?document.getElementById('mf_notes2'):document.getElementById('mf_notes')).value.trim(),
       stage: document.getElementById('mf_stage').value,
+      owner: (function(){ var o=document.getElementById('mf_owner'); return o?o.value:''; })(),
     };
     if (!formData.name) { toast('请输入客户姓名', 'error'); return; }
     onSave(formData);
@@ -1597,7 +1849,7 @@ function renderModal({ title, client, onSave }) {
 }
 
 function closeModal() {
-  document.getElementById('modalContainer').innerHTML = '';
+  document.getElementById('modalContainer').innerHTML = ''; document.querySelectorAll('.dp-popup,.cs-dropdown,.user-menu,.admin-filter-menu,.admin-popup,.pass-popup,.nick-menu').forEach(function(el){el.remove();});
 }
 
 // Help panel
@@ -1615,7 +1867,7 @@ function toggleHelp() {
     "</div></div>";
 }
 function escAttr(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(s || '').replace(/\\/g,'&#92;').replace(/'/g,'&#39;').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 function escHtml(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -1624,18 +1876,18 @@ function escHtml(s) {
 // ============================================================
 // CONFIRM DIALOG
 // ============================================================
-function confirmDialog(msg, onConfirm) {
+function confirmDialog(title, msg, onConfirm) {
   const container = document.getElementById('modalContainer');
   container.innerHTML = `
     <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
       <div class="modal modal--alert" style="width:300px;border-radius:14px;">
         <div style="text-align:center;padding:24px 16px 0;">
-          <div style="font-size:17px;font-weight:600;color:var(--text-primary);margin-bottom:8px;">退出登录</div>
+          <div style="font-size:17px;font-weight:600;color:var(--text-primary);margin-bottom:8px;">${title}</div>
           <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">${msg}</div>
         </div>
         <div style="display:flex;border-top:1px solid var(--border-subtle);margin-top:20px;">
           <button onclick="closeModal()" style="flex:1;height:44px;border:none;background:none;font-size:17px;color:var(--blue);cursor:pointer;border-right:1px solid var(--border-subtle);font-family:inherit;">取消</button>
-          <button id="cf_confirmBtn" style="flex:1;height:44px;border:none;background:none;font-size:17px;color:var(--red);cursor:pointer;font-family:inherit;font-weight:600;">退出</button>
+          <button id="cf_confirmBtn" style="flex:1;height:44px;border:none;background:none;font-size:17px;color:var(--red);cursor:pointer;font-family:inherit;font-weight:600;">${title}</button>
         </div>
       </div>
     </div>
@@ -1669,7 +1921,7 @@ function deleteClient(clientId) {
   clients = clients.filter(c => c.id !== clientId);
   saveClients(clients);
   // Also delete from cloud
-  if (currentUser) { fetch(SB_URL + '/rest/v1/clients?id=eq.' + encodeURIComponent(clientId), { method: 'DELETE', headers: sbHead() }); }
+  if (currentUser) { fetch(SB_URL + "/rest/v1/clients?id=eq." + encodeURIComponent(clientId), { method: "DELETE", headers: sbHead() }).catch(function(e) { console.log("Delete from cloud failed:",e.message); clients.push(client); saveClients(clients); toast("删除同步失败，数据已恢复","error"); }); }
   const trash = loadTrash();
   trash.push(Object.assign({}, client, { deletedAt: Date.now() }));
   saveTrash(trash);
@@ -1799,7 +2051,7 @@ function copyAdvanceList() {
 // EXPORT
 // ============================================================
 function exportData() {
-  if (false && clients.length === 0) { toast('暂无数据可导出', 'info'); return; }
+  if (clients.length === 0) { toast('暂无数据可导出', 'info'); return; }
   const rows = clients.map(c => {
     const stage = STAGES.find(s => s.id === c.stage);
     return [
@@ -1851,6 +2103,10 @@ function renderStats() {
       </div>
     `;
   });
+  if (isAdmin && window._adminUsers && window._adminUsers.length > 1) {
+    var currentLabel = window._viewingUser ? (window._nicks&&window._nicks[window._viewingUser]||window._viewingUser) : '全部';
+    html += '<button id="adminFilterBtn" class="stat-pill" onclick="toggleAdminFilter(event)" style="margin-left:auto;flex-shrink:0;">'+currentLabel+' ▾</button>';
+  }
   strip.innerHTML = html;
 }
 
@@ -1942,15 +2198,19 @@ function renderKanban(stageIds) {
     var nameEl = card.querySelector('.card-name');
     if (nameEl) nameEl.textContent = c.name;
     // Update tags
+    var tagsHtml = [];
+    if (c.licenseType) tagsHtml.push('<span class="card-tag card-tag--id">' + SVGS.doc + ' ' + escHtml(c.licenseType) + '</span>');
+    if (c.cardType) tagsHtml.push('<span class="card-tag card-tag--bank">' + SVGS.card + ' ' + escHtml(c.cardType) + '</span>');
+    if (c.advanceAmount && c.advanceAmount !== '0') tagsHtml.push('<span class="card-tag card-tag--note">' + SVGS.cash + ' 预支' + escHtml(c.advanceAmount) + '</span>');
+    if (c.notes) tagsHtml.push('<span class="card-tag card-tag--note">' + SVGS.pen + ' ' + escHtml(c.notes.slice(0,15)) + (c.notes.length>15?'…':'') + '</span>');
     var metaEl = card.querySelector('.card-meta');
-    if (metaEl) {
-      var tagsHtml = [];
-      if (c.licenseType) tagsHtml.push('<span class="card-tag card-tag--id">' + SVGS.doc + ' ' + escHtml(c.licenseType) + '</span>');
-      if (c.cardType) tagsHtml.push('<span class="card-tag card-tag--bank">' + SVGS.card + ' ' + escHtml(c.cardType) + '</span>');
-      if (c.advanceAmount && c.advanceAmount !== '0') tagsHtml.push('<span class="card-tag card-tag--note">' + SVGS.cash + ' 预支' + escHtml(c.advanceAmount) + '</span>');
-      if (c.notes) tagsHtml.push('<span class="card-tag card-tag--note">' + SVGS.pen + ' ' + escHtml(c.notes.slice(0,15)) + (c.notes.length>15?'…':'') + '</span>');
-      metaEl.innerHTML = tagsHtml.join('');
-    }
+    if (tagsHtml.length > 0) {
+      if (metaEl) { metaEl.innerHTML = tagsHtml.join(''); }
+      else {
+        metaEl = document.createElement('div'); metaEl.className = 'card-meta'; metaEl.innerHTML = tagsHtml.join('');
+        var nameEl = card.querySelector('.card-name'); if (nameEl) nameEl.after(metaEl);
+      }
+    } else if (metaEl) { metaEl.remove(); }
     // Update copy bar
     var copyBar = card.querySelector('.card-copy-bar');
     if (c.stage === 2) {
@@ -1969,6 +2229,10 @@ function renderKanban(stageIds) {
     // Update time
     var timeEl = card.querySelector('.card-time');
     if (timeEl) timeEl.textContent = formatReviewDate(c.createdAt);
+    var ownerEl = card.querySelector('.card-owner');
+    if (ownerEl && c.user_id) {
+      ownerEl.textContent = getNick(c.user_id);
+    }
   }
 
   // Full rebuild
@@ -2021,12 +2285,18 @@ function renderKanban(stageIds) {
     delete window._savedScrollY;
   }
   board.scrollLeft = boardScroll;
-  board.style.opacity = ''; 
+  board.style.opacity = '';
+  // Show user labels on cards (admin always)
+  board.querySelectorAll('.card-owner').forEach(function(el){
+    var phone = el.textContent.trim();
+    if (phone) { el.textContent = getNick(phone); }
+  });
   Object.keys(colScrolls).forEach(function(stageId) {
     var el = board.querySelector('.column-cards[data-stage="' + stageId + '"]');
     if (el) { el.scrollLeft = colScrolls[stageId].left; el.scrollTop = colScrolls[stageId].top; }
   });
 }
+function getNick(phone){ return (window._nicks&&window._nicks[phone])||phone||''; }
 function renderCard(c) {
   const stage = STAGES[c.stage];
   const tags = [];
@@ -2081,7 +2351,10 @@ function renderCard(c) {
       <div class="card-actions">
         <button class="card-action card-action--delete" onclick="event.stopPropagation();deleteClient('${c.id}')" title="删除">✕</button>
       </div>
-      <div class="card-time">${formatReviewDate(c.createdAt)}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="card-time" style="margin-top:0;">${formatReviewDate(c.createdAt)}</div>
+        <div class="card-owner">${getNick(c.user_id)}</div>
+      </div>
     </div>
   `;
 }
@@ -2223,7 +2496,7 @@ function refreshAll(stageIds) { renderStats(); renderKanban(stageIds); }
 
 // ========== TRASH ==========
 function loadTrash() { try { return JSON.parse(localStorage.getItem(TRASH_KEY)) || []; } catch { return []; } }
-function saveTrash(arr) { localStorage.setItem(TRASH_KEY, JSON.stringify(arr)); syncToCloud(); }
+function saveTrash(arr) { try { localStorage.setItem(TRASH_KEY, JSON.stringify(arr)); } catch(e) { console.log("saveTrash localStorage error:",e.message); } }
 function restoreFromTrash(clientId, silent) {
   var trash = loadTrash(); var idx = trash.findIndex(function(c) { return c.id === clientId; });
   if (idx === -1) return; var c = trash[idx]; trash.splice(idx, 1); delete c.deletedAt;
@@ -2263,13 +2536,6 @@ document.addEventListener('DOMContentLoaded', () => {
       refreshAll();
     });
     // Close search on blur (mobile keyboard done)
-    searchInput.addEventListener('blur', function() {
-      setTimeout(function() {
-        if (!document.getElementById('searchWrap').contains(document.activeElement)) {
-          closeSearch();
-        }
-      }, 200);
-    });
   }
 
 });
@@ -2306,15 +2572,38 @@ showLoading();
 // Hide after a minimum display time
 setTimeout(function() { if (!window._loaded) { window._minLoadDone = true; } }, 600);
 
+document.getElementById("lw_btn").addEventListener("click",handleLogin);
+document.getElementById("lw_pass").addEventListener("keydown",function(e){if(e.key==="Enter")handleLogin();});
+// Floating labels
+document.querySelectorAll('.lw-field input').forEach(function(inp){ inp.addEventListener('input',function(){ this.parentElement.classList.toggle('has-value',this.value.length>0); }); });
+if(currentUser){showApp();}else{document.getElementById("appShell").style.display="none";}
+
 // Init — pull from cloud if logged in
 if (currentUser) {
   showLoading();
-  // Sync local → cloud first, then pull cloud → local
-  syncToCloud().then(function() {
+  // Check if admin
+  fetch(SB_URL + '/rest/v1/users?phone=eq.' + currentUser, { headers: { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY } }).then(function(r) { return r.json(); }).then(function(ud) {
+    isAdmin = !!(ud[0] && ud[0].role === 'admin');
+    localStorage.setItem('dou_admin', isAdmin ? '1' : '');
+    if (isAdmin) document.body.classList.add('is-admin');
+    if (isAdmin) {
+      return fetch(SB_URL+'/rest/v1/users?select=phone,nickname',{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}}).then(function(r2){return r2.json();}).then(function(nu){
+        window._nicks={};window._adminUsers=[];
+        (nu||[]).forEach(function(x){window._adminUsers.push({phone:x.phone,label:x.nickname||x.phone});window._nicks[x.phone]=x.nickname||x.phone;});
+        var dv2 = localStorage.getItem('dou_view');
+        window._viewingUser = (dv2 === 'all') ? null : (dv2 || currentUser);
+      });
+    }
+  }).then(function() {
+    return syncToCloud();
+  }).then(function() {
+    var dv = localStorage.getItem('dou_view');
+    if (isAdmin && dv === 'all') return fetch(SB_URL+'/rest/v1/clients?select=*',{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}}).then(function(r){return r.json();});
+    if (isAdmin && dv && dv !== currentUser) return fetch(SB_URL+'/rest/v1/clients?user_id=eq.'+dv+'&select=*',{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}}).then(function(r){return r.json();});
     return sbFetch('clients', 'GET');
   }).then(function(data) {
-    if (data.length > 0) { clients = data.map(function(r) { return { id: r.id, name: r.name, licenseType: r.licenseType, cardType: r.cardType, advanceAmount: r.advanceAmount, notes: r.notes, stage: r.stage, createdAt: r.createdAt, stageTimestamps: r.stageTimestamps || {} }; }); localStorage.setItem(STORAGE_KEY, JSON.stringify(clients)); }
-  }).finally(function() { hideLoading(); refreshAll(); });
+    if (data.length > 0) { clients = data.map(mapClient); localStorage.setItem(STORAGE_KEY, JSON.stringify(clients)); }
+  }).catch(function(err) { console.log("Init error:", err); toast("加载失败，请检查网络连接","error"); }).finally(function() { hideLoading(); refreshAll(); if(isAdmin)initAdminSelect(); });
 } else {
   setTimeout(function() { hideLoading(); }, 400);
   refreshAll();
@@ -2332,34 +2621,6 @@ if (!localStorage.getItem(MIGRATED_KEY)) {
   });
   saveClients(clients);
   localStorage.setItem(MIGRATED_KEY, '1');
-}
-
-
-// Add some demo data if empty
-if (false && clients.length === 0) {
-  const demoNames = ['张三', '李四', '王五', '赵六', '陈七', '周八', '吴九', '郑十'];
-  const demoLicense = ['单个体', '单个体➕备案', '单个独➕备案', '自带电子执照'];
-  const demoCard = ['一类', '二类', '三类'];
-  demoNames.forEach((name, i) => {
-    const stage = i < 2 ? 0 : (i < 4 ? 1 : (i < 6 ? 2 : (i < 7 ? 3 : 4)));
-    const licType = demoLicense[i % 4];
-    const cType = demoCard[i % 2];
-    const issDate = stage >= 2 ? `7.${6-i}` : '';
-    clients.push({
-      id: genId(),
-      name: name,
-      licenseType: licType,
-      cardType: cType,
-      issueDate: issDate,
-      advanceAmount: i < 3 ? ['30','40',''][i] : '',
-      notes: i === 2 ? '需补充材料' : '',
-      stage: stage,
-      createdAt: Date.now() - Math.floor(Math.random() * 7 * 86400000),
-      stageTimestamps: { [stage]: Date.now() },
-    });
-  });
-  saveClients(clients);
-  refreshAll();
 }
 </script>
 
