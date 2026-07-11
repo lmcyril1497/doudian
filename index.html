@@ -1387,28 +1387,52 @@ async function resetUserPwd(p){
   toast(p+" 密码已重置为123456","success");closeAdminPopup();showAdminPanel();
 }
 
-async function toggleRole(phone, makeAdmin){
+async function toggleRole(btn, phone, makeAdmin){
+  btn.disabled=true;
   await fetch(SB_URL+"/rest/v1/users?phone=eq."+phone,{method:"PATCH",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({role:makeAdmin?"admin":"user"})});
-  toast(phone+(makeAdmin?" 已设为管理员":" 已取消管理员"),"success");closeModal();showRolePanel();
+  toast(phone+(makeAdmin?" 已设为管理员":" 已取消管理员"),"success");
+  var row=btn.parentElement.parentElement;
+  var label=row.querySelector("span span");
+  if(makeAdmin){
+    if(!label){ var s=row.querySelector("span"); s.innerHTML+="<span style=font-size:11px;color:#667eea;margin-left:6px;>管理员</span>"; }
+  } else {
+    if(label) label.remove();
+  }
+  var newOnclick=makeAdmin?"event.stopPropagation();toggleRole(this,'"+phone+"',false)":"event.stopPropagation();toggleRole(this,'"+phone+"',true)";
+  btn.outerHTML="<button class=\"btn btn--primary\" style=\"height:28px;font-size:11px;padding:0 10px;margin-right:4px;\" onclick=\""+newOnclick+"\">"+(makeAdmin?"取消管理员":"设为管理员")+"</button>";
+  btn.disabled=false;
 }
 
+function confirmDelete(btn, phone){
+  var div=btn.parentElement, oldHTML=div.innerHTML;
+  div.innerHTML="<span style=\"font-size:12px;color:#FF3B30;margin-right:8px;\">确认删除？</span><button class=\"btn btn--primary\" style=\"height:28px;font-size:11px;padding:0 10px;margin-right:4px;\" onclick=\"event.stopPropagation();deleteUser('"+phone+"')\">是</button><button class=\"btn btn--ghost\" style=\"height:28px;font-size:11px;padding:0 10px;\" onclick=\"event.stopPropagation();div.innerHTML=oldHTML\">否</button>";
+
+}
 async function deleteUser(phone){
   await fetch(SB_URL+"/rest/v1/users?phone=eq."+phone,{method:"DELETE",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
-  toast(phone+" 已删除","success");closeModal();showRolePanel();
+  toast(phone+" 已删除","success"); window._adminUsers=(window._adminUsers||[]).filter(function(u){return u.phone!==phone;}); delete window._nicks[phone]; clients=clients.filter(function(c){return c.user_id!==phone;}); saveClients(clients); renderStats(); renderKanban();
+  var row=document.querySelector(".role-menu");
+  if(row) showRolePanel();
 }
 
+function closeRolePanel(){var m=document.querySelector(".role-menu");if(m)m.remove();}
 async function showRolePanel(){
-  closeUserMenu();
+  closeUserMenu(); var old=document.querySelector(".role-menu"); if(old) old.remove();
   var r=await fetch(SB_URL+"/rest/v1/users?select=*&status=eq.approved",{headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
   var users=r.ok?await r.json():[];
-  var c=document.getElementById("modalContainer");
-  var rows="";
-  users.forEach(function(u){
+  var btn=document.getElementById("authBtn");var rect=btn.getBoundingClientRect();
+  var menu=document.createElement("div");menu.className="role-menu";
+  menu.style.cssText="position:fixed;top:"+(rect.bottom+6)+"px;right:"+Math.max(8,window.innerWidth-rect.right)+"px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:8px;width:300px;max-height:60vh;overflow-y:auto;";
+  var html="<div style=\"padding:4px 8px 8px;font-size:14px;font-weight:600;color:#1d1d1f;\">权限管理</div>";
+  if(users.length===0){html+="<div style=\"padding:16px;text-align:center;color:var(--text-tertiary);font-size:13px;\">暂无已审批用户</div>";}
+  else{users.forEach(function(u){
     if(u.phone===SUPER_ADMIN) return;
     var isAdminUser=u.role==="admin";
-    rows+="<div style=\"display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;background:rgba(0,0,0,0.02);margin-bottom:6px;\"><span style=\"font-weight:600;\">"+getNick(u.phone)+"</span>"+(isAdminUser?"<span style=\"font-size:11px;color:#667eea;margin-left:8px;\">管理员</span>":"")+"<button class=\"btn btn--small "+(isAdminUser?"btn--ghost\" style=\"color:#FF3B30;\"":"btn--primary\"")+" onclick=\"toggleRole('"+u.phone+"',"+(isAdminUser?"false":"true")+")\">"+(isAdminUser?"取消":"设为")+"管理员</button><button class=\"btn btn--small btn--ghost\" style=\"color:#FF3B30;margin-left:6px;\" onclick=\"confirmDialog('\u5220\u9664\u7528\u6237','\u786e\u5b9a\u5220\u9664 '"+u.phone+"' \u53ca\u5176\u6240\u6709\u6570\u636e\uff1f',function(){deleteUser('"+u.phone+"')})\">\u5220\u9664</button></div>";
-  });
-  c.innerHTML="<div class=\"modal-overlay\" onclick=\"if(event.target===this)closeModal()\"><div class=\"modal\"><div class=\"modal-header\"><div class=\"modal-title\">权限管理</div><button class=\"modal-close\" onclick=\"closeModal()\">✕</button></div><div class=\"modal-body\" style=\"max-height:60vh;overflow-y:auto;\">"+rows+"</div></div></div>";
+    html+="<div style=\"display:flex;align-items:center;justify-content:space-between;padding:8px;\"><span style=\"font-size:13px;\">"+getNick(u.phone)+(isAdminUser?"<span style=\"font-size:11px;color:#667eea;margin-left:6px;\">管理员</span>":"")+"</span><div>"+(isAdminUser?"<button class=\"btn btn--primary\" style=\"height:28px;font-size:11px;padding:0 10px;margin-right:4px;\" onclick=\"event.stopPropagation();toggleRole(this,\u0027"+u.phone+"\u0027,false)\">取消管理员</button>":"<button class=\"btn btn--primary\" style=\"height:28px;font-size:11px;padding:0 10px;margin-right:4px;\" onclick=\"event.stopPropagation();toggleRole(this,\u0027"+u.phone+"\u0027,true)\">设为管理员</button>")+"<button class=\"btn btn--ghost\" style=\"height:28px;font-size:11px;padding:0 10px;color:#FF3B30;\" onclick=\"event.stopPropagation();confirmDelete(this,\u0027"+u.phone+"\u0027)\">删除</button></div></div>";
+  });}
+  html+="<div style=\"padding:8px 8px 4px;\"><button class=\"btn btn--ghost\" style=\"width:100%;height:30px;font-size:12px;justify-content:center;\" onclick=\"closeRolePanel()\">关闭</button></div>";
+  menu.innerHTML=html;document.body.appendChild(menu);
+  setTimeout(function(){document.addEventListener("click",function ce(e){if(!menu.contains(e.target)&&e.target!==btn){closeRolePanel();document.removeEventListener("click",ce);}});},10);
 }
 
 async function showChangePassModal(){
@@ -1873,7 +1897,7 @@ function renderModal({ title, client, onSave, focusName }) {
 }
 
 function closeModal() {
-  document.getElementById('modalContainer').innerHTML = ''; document.querySelectorAll('.dp-popup,.cs-dropdown,.user-menu,.admin-filter-menu,.admin-popup,.pass-popup,.nick-menu').forEach(function(el){el.remove();});
+  document.getElementById('modalContainer').innerHTML = ''; document.querySelectorAll('.dp-popup,.cs-dropdown,.user-menu,.admin-filter-menu,.admin-popup,.pass-popup,.nick-menu,.role-menu').forEach(function(el){el.remove();});
 }
 
 // Help panel
@@ -2320,7 +2344,7 @@ function renderKanban(stageIds) {
     if (el) { el.scrollLeft = colScrolls[stageId].left; el.scrollTop = colScrolls[stageId].top; }
   });
 }
-function getNick(phone){ if(!phone) return ''; if(window._adminUsers&&window._adminUsers.length>0&&!window._adminUsers.some(function(u){return u.phone===phone})) return '无'; return (window._nicks&&window._nicks[phone])||phone; }
+function getNick(phone){ return (window._nicks&&window._nicks[phone])||phone||''; }
 function renderCard(c) {
   const stage = STAGES[c.stage];
   const tags = [];
@@ -2607,7 +2631,7 @@ if (currentUser) {
   showLoading();
   // Check if admin
   fetch(SB_URL + '/rest/v1/users?phone=eq.' + currentUser, { headers: { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY } }).then(function(r) { return r.json(); }).then(function(ud) {
-    isAdmin = !!(ud[0] && ud[0].role === 'admin');
+    isAdmin = !!(ud[0] && ud[0].role === 'admin'); isSuperAdmin = (currentUser === SUPER_ADMIN);
     localStorage.setItem('dou_admin', isAdmin ? '1' : '');
     if (isAdmin) document.body.classList.add('is-admin');
     if (isAdmin) {
