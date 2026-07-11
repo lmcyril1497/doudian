@@ -1394,7 +1394,6 @@ async function toggleRole(phone, makeAdmin){
 
 async function deleteUser(phone){
   await fetch(SB_URL+"/rest/v1/users?phone=eq."+phone,{method:"DELETE",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
-  await fetch(SB_URL+"/rest/v1/clients?user_id=eq."+phone,{method:"DELETE",headers:sbHead()});
   toast(phone+" 已删除","success");closeModal();showRolePanel();
 }
 
@@ -2321,7 +2320,7 @@ function renderKanban(stageIds) {
     if (el) { el.scrollLeft = colScrolls[stageId].left; el.scrollTop = colScrolls[stageId].top; }
   });
 }
-function getNick(phone){ return (window._nicks&&window._nicks[phone])||phone||''; }
+function getNick(phone){ if(!phone) return ''; if(window._adminUsers&&window._adminUsers.length>0&&!window._adminUsers.some(function(u){return u.phone===phone})) return '无'; return (window._nicks&&window._nicks[phone])||phone; }
 function renderCard(c) {
   const stage = STAGES[c.stage];
   const tags = [];
