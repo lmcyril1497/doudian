@@ -1159,11 +1159,10 @@ let currentUser = localStorage.getItem('dou_user') || ''; let isAdmin = !!localS
 document.body.classList.add('is-admin'); // Show card-owner by default, will be correct for admin
 
 function sbHead() { return { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' }; }
-async function hashPassword(phone, password) {
-  var msg = phone + ':' + password + ':xt_doudian_2024';
-  var enc = new TextEncoder().encode(msg);
-  var hash = await crypto.subtle.digest('SHA-256', enc);
-  return Array.from(new Uint8Array(hash)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+function hashPassword(phone, password) {
+  var rounds = 3, hash = phone + ':' + password + ':xt_doudian_2024';
+  for (var i = 0; i < rounds; i++) { hash = btoa(hash); }
+  return Promise.resolve(hash);
 }
 async function sbFetch(table, method, body) {
   var url = SB_URL + '/rest/v1/' + table;
