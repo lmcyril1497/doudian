@@ -1156,6 +1156,7 @@ input,select,textarea,button { -webkit-appearance: none; }
 const SB_URL = 'https://ytqzuqqqytdihxybhhcy.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0cXp1cXFxeXRkaWh4eWJoaGN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1OTE4NzAsImV4cCI6MjA5OTE2Nzg3MH0.EQUhNToGoQkdXLsKpHsw8gITaTVA0mtFhtN1MEbxzBc';
 let currentUser = localStorage.getItem('dou_user') || ''; let isAdmin = !!localStorage.getItem('dou_admin');
+const SUPER_ADMIN = '18288888888'; let isSuperAdmin = false;
 document.body.classList.add('is-admin'); // Show card-owner by default, will be correct for admin
 
 function sbHead() { return { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' }; }
@@ -1217,7 +1218,7 @@ async function handleLogin() {
     await fetch(SB_URL+"/rest/v1/users",{method:"POST",headers:{...sbHead(),Prefer:"resolution=merge-duplicates"},body:JSON.stringify({phone:p,password_hash:pwHash,status:"pending"})});
     hint.textContent="已提交申请，等待管理员审批";return;
   }
-  currentUser=p;localStorage.setItem("dou_user",p);isAdmin=users[0].role==="admin";localStorage.setItem("dou_admin",isAdmin?"1":"");if(isAdmin){document.body.classList.add("is-admin");var dv=localStorage.getItem('dou_view');window._viewingUser=(dv==='all'?null:p);localStorage.setItem('dou_view',p);}showApp();updateAuthBtn();showLoading();
+  currentUser=p;localStorage.setItem("dou_user",p);isAdmin=users[0].role==="admin";isSuperAdmin=(p===SUPER_ADMIN);localStorage.setItem("dou_admin",isAdmin?"1":"");if(isAdmin){document.body.classList.add("is-admin");var dv=localStorage.getItem('dou_view');window._viewingUser=(dv==='all'?null:p);localStorage.setItem('dou_view',p);}showApp();updateAuthBtn();showLoading();
   await syncToCloud();
   var data;
   if (isAdmin) {
@@ -1299,7 +1300,7 @@ function showAuthModal() {
   var right = Math.max(8, window.innerWidth - rect.right);
   menu.style.cssText = 'position:fixed;top:'+(rect.bottom+6)+'px;right:'+right+'px;z-index:1000;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:6px;min-width:180px;';
   var html = '<div style="padding:8px 12px 6px;"><div style="font-size:13px;font-weight:600;color:#1d1d1f;">'+currentUser+'</div>'+(isAdmin?'<div style="font-size:11px;color:#667eea;">管理员</div>':'')+'</div><div style="height:1px;background:#f0f0f0;margin:4px 0;"></div>';
-  if (isAdmin) { html += '<button class="um-item" onclick="closeUserMenu();showAdminPanel()">用户审批</button><button class="um-item" onclick="closeUserMenu();showNicknameModal()">设置昵称</button>'; }
+  if (isAdmin) { html += '<button class="um-item" onclick="closeUserMenu();showAdminPanel()">用户审批</button><button class="um-item" onclick="closeUserMenu();showNicknameModal()">设置昵称</button>'; if(isSuperAdmin){ html += '<button class="um-item" onclick="closeUserMenu();showRolePanel()">权限管理</button>'; } }
   html += '<button class="um-item" onclick="closeUserMenu();showChangePassModal()">修改密码</button><button class="um-item um-item--danger" onclick="closeUserMenu();confirmDialog(\u0027退出登录\u0027,\u0027退出登录 '+currentUser+'？\u0027,doLogout)">退出登录</button>';
   menu.innerHTML = html;
   document.body.appendChild(menu);
@@ -1384,6 +1385,24 @@ async function approveUser(p){
 async function resetUserPwd(p){
   try { await fetch(SB_URL+"/rest/v1/users?phone=eq."+p,{method:"PATCH",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({password_hash:await hashPassword(p,"123456"),reset_requested:false})}); } catch(e) { toast("操作失败: "+e.message,"error"); return; }
   toast(p+" 密码已重置为123456","success");closeAdminPopup();showAdminPanel();
+}
+
+async function toggleRole(phone, makeAdmin){
+  await fetch(SB_URL+"/rest/v1/users?phone=eq."+phone,{method:"PATCH",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({role:makeAdmin?"admin":"user"})});
+  toast(phone+(makeAdmin?" 已设为管理员":" 已取消管理员"),"success");closeModal();showRolePanel();
+}
+
+async function showRolePanel(){
+  closeUserMenu();
+  var r=await fetch(SB_URL+"/rest/v1/users?select=*&status=eq.approved",{headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
+  var users=r.ok?await r.json():[];
+  var c=document.getElementById("modalContainer");
+  var rows="";
+  users.forEach(function(u){
+    var isAdminUser=u.role==="admin";
+    rows+="<div style=\"display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;background:rgba(0,0,0,0.02);margin-bottom:6px;\"><span style=\"font-weight:600;\">"+u.phone+"</span>"+(isAdminUser?"<span style=\"font-size:11px;color:#667eea;margin-left:8px;\">管理员</span>":"")+"<button class=\"btn btn--small "+(isAdminUser?"btn--ghost\" style=\"color:#FF3B30;\"":"btn--primary\"")+" onclick=\"toggleRole('"+u.phone+"',"+(isAdminUser?"false":"true")+")\">"+(isAdminUser?"取消":"设为")+"管理员</button></div>";
+  });
+  c.innerHTML="<div class=\"modal-overlay\" onclick=\"if(event.target===this)closeModal()\"><div class=\"modal\"><div class=\"modal-header\"><div class=\"modal-title\">权限管理</div><button class=\"modal-close\" onclick=\"closeModal()\">✕</button></div><div class=\"modal-body\" style=\"max-height:60vh;overflow-y:auto;\">"+rows+"</div></div></div>";
 }
 
 async function showChangePassModal(){
