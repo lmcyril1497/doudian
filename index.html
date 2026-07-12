@@ -1237,7 +1237,7 @@ async function handleLogin() {
     data = await sbFetch("clients","GET");
   }
   if(data.length>0){clients=data.map(mapClient);saveClients(clients);}
-  hideLoading();refreshAll(); if(isAdmin){initAdminSelect();};
+  hideLoading();refreshAll(); if(isAdmin){initAdminSelect();}; var ca=document.getElementById("copyAllBtn"),cb=document.getElementById("copyAllAdvBtn"); if(ca)ca.style.display=(isAdmin&&window._viewingUser===null)?"":"none"; if(cb)cb.style.display=(isAdmin&&window._viewingUser===null)?"":"none";
   } catch(e) { document.getElementById("lw_hint").textContent = "登录失败: " + (e.message||"网络错误"); }
 }
 function doLogout(){currentUser='';isAdmin=false;localStorage.removeItem('dou_admin');localStorage.removeItem('dou_user');localStorage.removeItem('dou_view');clients=[];updateAuthBtn();document.body.classList.remove('is-admin');showLogin();}
@@ -1349,6 +1349,9 @@ async function switchToUserView(phone){
   }
   
   refreshAll();
+  var ca=document.getElementById("copyAllBtn"),cb=document.getElementById("copyAllAdvBtn");
+  if(ca)ca.style.display=(isAdmin&&window._viewingUser===null)?"":"none";
+  if(cb)cb.style.display=(isAdmin&&window._viewingUser===null)?"":"none";
   } catch(e) { toast("切换视图失败: "+e.message,"error"); }
 }
 async function syncToCloud() {
@@ -2114,6 +2117,46 @@ function copyAdvanceList() {
 }
 
 // ============================================================
+function copyAllClients() {
+  if (!isAdmin || window._viewingUser !== null) { toast("仅管理员在全部视图可用","info"); return; }
+  var issued = clients.filter(function(c){ return c.stage === 2; });
+  if (issued.length === 0) { toast("暂无已出证客户","info"); return; }
+  var groups = {};
+  issued.forEach(function(c){ var uid = c.user_id || "未知"; if(!groups[uid]) groups[uid]=[]; groups[uid].push(c); });
+  var lines = [];
+  var gids = Object.keys(groups).sort();
+  gids.forEach(function(uid){
+    lines.push(getNick(uid));
+    groups[uid].sort(function(a,b){ return (a.createdAt||0)-(b.createdAt||0); });
+    groups[uid].forEach(function(c){
+      var d=new Date(c.createdAt); var date=(d.getMonth()+1)+"."+d.getDate();
+      var lic=c.licenseType||"单个体"; var ct=c.cardType||"一类";
+      lines.push(lic.includes("自带")?date+" "+c.name+" "+lic+" "+ct:date+" "+c.name+" "+lic+" "+ct+" 已出");
+    });
+    lines.push("");
+  });
+  copyToClipboard(lines.join("\n"), "已复制 "+gids.length+" 位用户的已出证数据");
+}
+
+function copyAllAdvance() {
+  if (!isAdmin || window._viewingUser !== null) { toast("仅管理员在全部视图可用","info"); return; }
+  var scanned = clients.filter(function(c){ return c.stage === 3; });
+  if (scanned.length === 0) { toast("暂无已扫码客户","info"); return; }
+  var groups = {};
+  scanned.forEach(function(c){ var uid = c.user_id || "未知"; if(!groups[uid]) groups[uid]=[]; groups[uid].push(c); });
+  var lines = [];
+  var gids = Object.keys(groups).sort();
+  gids.forEach(function(uid){
+    lines.push(getNick(uid));
+    groups[uid].forEach(function(c){
+      var amt = c.advanceAmount ? "预支"+c.advanceAmount : "🈚️预支";
+      lines.push(c.name+" "+amt+" 未收");
+    });
+    lines.push("");
+  });
+  copyToClipboard(lines.join("\n"), "已复制 "+gids.length+" 位用户的已扫码数据");
+}
+
 // EXPORT
 // ============================================================
 function exportData() {
@@ -2313,12 +2356,14 @@ function renderKanban(stageIds) {
   board.style.opacity = '0';
   board.innerHTML = columnsToRender.map(stage => {
     const stageClients = filteredClients.filter(c => c.stage === stage.id); if (stage.id === 2) { stageClients.sort(function(a,b){ var da=a.createdAt||0; var db=b.createdAt||0; if(da!==db)return da-db; var sa=a.stageTimestamps?(a.stageTimestamps[2]||0):0; var sb=b.stageTimestamps?(b.stageTimestamps[2]||0):0; return sa-sb; }); } if (stage.id === 4) { stageClients.sort(function(a,b){ var sa = a.stageTimestamps ? (a.stageTimestamps[4] || a.createdAt || 0) : (a.createdAt || 0); var sb = b.stageTimestamps ? (b.stageTimestamps[4] || b.createdAt || 0) : (b.createdAt || 0); return sb - sa; }); }
-    const copyBtn = stage.id === 2 && stageClients.length > 0 ? `
+    const copyBtn = stage.id === 2 ? `
       <button class="btn btn--primary" style="height:28px;padding:0 12px;font-size:11px;gap:4px;flex-shrink:0;"
               onclick="event.stopPropagation();copyIssueText()" title="复制出证文本"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> 复制</button>` : '';
-    const advanceBtn = stage.id === 3 && stageClients.length > 0 ? `
+    const advanceBtn = stage.id === 3 ? `
       <button class="btn btn--primary" style="height:28px;padding:0 12px;font-size:11px;gap:4px;flex-shrink:0;background:var(--purple);"
               onclick="event.stopPropagation();copyAdvanceList()" title="复制预付名单">${SVGS.cash.replace('viewBox="0 0 24 24"','width="14" height="14" viewBox="0 0 24 24"')} 结算</button>` : '';
+    const allCopyBtn = (isAdmin && window._viewingUser === null && stage.id === 2) ? '<button class="btn btn--primary" style="height:28px;padding:0 6px;font-size:11px;gap:2px;flex-shrink:0;background:var(--green);" onclick="event.stopPropagation();copyAllClients()" title="汇总全部已出证"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>' : '';
+    const allAdvanceBtn = (isAdmin && window._viewingUser === null && stage.id === 3) ? '<button class="btn btn--primary" style="height:28px;padding:0 6px;font-size:11px;gap:2px;flex-shrink:0;background:var(--orange);" onclick="event.stopPropagation();copyAllAdvance()" title="汇总全部已扫码"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>' : '';
     return `
       <div class="column"
            data-stage="${stage.id}"
@@ -2332,7 +2377,7 @@ function renderKanban(stageIds) {
           </div>
           <div style="display:flex;align-items:center;gap:6px;">
             <div class="column-count">${stageClients.length}</div>
-            ${copyBtn}${advanceBtn}
+            ${copyBtn}${advanceBtn}${allCopyBtn}${allAdvanceBtn}
           </div>
         </div>
         <div class="column-cards" data-stage="${stage.id}">
@@ -2669,7 +2714,7 @@ if (currentUser) {
     return sbFetch('clients', 'GET');
   }).then(function(data) {
     if (data.length > 0) { clients = data.map(mapClient); }
-  }).catch(function(err) { console.log("Init error:", err); toast("加载失败，请检查网络连接","error"); }).finally(function() { hideLoading(); refreshAll(); if(isAdmin)initAdminSelect(); });
+  }).catch(function(err) { console.log("Init error:", err); toast("加载失败，请检查网络连接","error"); }).finally(function() { hideLoading(); refreshAll(); if(isAdmin)initAdminSelect(); var ca=document.getElementById("copyAllBtn"),cb=document.getElementById("copyAllAdvBtn"); if(ca)ca.style.display=(isAdmin&&window._viewingUser===null)?"":"none"; if(cb)cb.style.display=(isAdmin&&window._viewingUser===null)?"":"none"; });
 } else {
   setTimeout(function() { hideLoading(); }, 400);
   refreshAll();
