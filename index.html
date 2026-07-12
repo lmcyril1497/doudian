@@ -1219,6 +1219,7 @@ async function handleLogin() {
     hint.textContent="已提交申请，等待管理员审批";return;
   }
   currentUser=p;localStorage.setItem("dou_user",p);isAdmin=users[0].role==="admin";isSuperAdmin=(p===SUPER_ADMIN);localStorage.setItem("dou_admin",isAdmin?"1":"");if(isAdmin){document.body.classList.add("is-admin");var dv=localStorage.getItem('dou_view');window._viewingUser=(dv==='all'?null:p);localStorage.setItem('dou_view',p);}showApp();updateAuthBtn();showLoading();
+  clients=[];
   await syncToCloud();
   var data;
   if (isAdmin) {
@@ -1239,7 +1240,7 @@ async function handleLogin() {
   hideLoading();refreshAll(); if(isAdmin){initAdminSelect();};
   } catch(e) { document.getElementById("lw_hint").textContent = "登录失败: " + (e.message||"网络错误"); }
 }
-function doLogout(){currentUser='';isAdmin=false;localStorage.removeItem('dou_admin');localStorage.removeItem('dou_user');localStorage.removeItem('dou_view');clients=[];localStorage.removeItem('doudian_clients');updateAuthBtn();document.body.classList.remove('is-admin');showLogin();}
+function doLogout(){currentUser='';isAdmin=false;localStorage.removeItem('dou_admin');localStorage.removeItem('dou_user');localStorage.removeItem('dou_view');clients=[];updateAuthBtn();document.body.classList.remove('is-admin');showLogin();}
 function updateAuthBtn() {
   var b = document.getElementById('authBtn');
   if (!b) return;
@@ -1301,7 +1302,7 @@ function showAuthModal() {
   menu.style.cssText = 'position:fixed;top:'+(rect.bottom+6)+'px;right:'+right+'px;z-index:1000;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:6px;min-width:180px;';
   var html = '<div style="padding:8px 12px 6px;"><div style="font-size:13px;font-weight:600;color:#1d1d1f;">'+currentUser+'</div>'+(isAdmin?'<div style="font-size:11px;color:#667eea;">管理员</div>':'')+'</div><div style="height:1px;background:#f0f0f0;margin:4px 0;"></div>';
   if (isAdmin) { html += '<button class="um-item" onclick="closeUserMenu();showAdminPanel()">用户审批</button><button class="um-item" onclick="closeUserMenu();showNicknameModal()">设置昵称</button>'; if(isSuperAdmin){ html += '<button class="um-item" onclick="closeUserMenu();showRolePanel()">权限管理</button>'; } }
-  html += '<button class="um-item" onclick="closeUserMenu();showChangePassModal()">修改密码</button><button class="um-item um-item--danger" onclick="closeUserMenu();confirmDialog(\u0027退出登录\u0027,\u0027退出登录 '+currentUser+'？\u0027,doLogout)">退出登录</button>';
+  html += '<button class="um-item" onclick="closeUserMenu();showMyNickModal()">修改昵称</button><button class="um-item" onclick="closeUserMenu();showChangePassModal()">修改密码</button><button class="um-item um-item--danger" onclick="closeUserMenu();confirmDialog(\u0027退出登录\u0027,\u0027退出登录 '+currentUser+'？\u0027,doLogout)">退出登录</button>';
   menu.innerHTML = html;
   document.body.appendChild(menu);
   setTimeout(function(){ document.addEventListener('click',function close(e){ if(!menu.contains(e.target)&&e.target!==btn){ menu.remove();document.removeEventListener('click',close); } }); },10);
@@ -1332,14 +1333,14 @@ async function switchToUserView(phone){
   localStorage.setItem('dou_view', phone);
   if(phone==='all'){
     var r=await fetch(SB_URL+'/rest/v1/clients?select=*',{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}});
-    clients=r.ok?(await r.json()).map(mapClient):[];
+    clients=r.ok?(await r.json()).map(mapClient).filter(function(c){return !window._adminUsers||window._adminUsers.some(function(u){return u.phone===c.user_id});}):[];
     window._viewingUser=null;
   }else{
     var r2=await fetch(SB_URL+'/rest/v1/clients?user_id=eq.'+phone+'&select=*',{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}});
     clients=r2.ok?(await r2.json()).map(mapClient):[];
     window._viewingUser=phone;
   }
-  localStorage.setItem(STORAGE_KEY,JSON.stringify(clients));
+  
   refreshAll();
   } catch(e) { toast("切换视图失败: "+e.message,"error"); }
 }
@@ -1370,14 +1371,19 @@ async function showAdminPanel(){
   var html='<div style="padding:4px 8px 8px;font-size:14px;font-weight:600;color:#1d1d1f;">用户审批</div>';
   if(u.length===0){html+='<div style="padding:16px;text-align:center;color:var(--text-tertiary);font-size:13px;">暂无待处理请求</div>';}
   else{u.forEach(function(x){
-    if(x.status==='pending'){html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:8px;"><span style="font-size:13px;">'+x.phone+'</span><span style="font-size:11px;color:#ff9500;">注册审批</span><button class="btn btn--primary" style="height:28px;font-size:11px;padding:0 10px;" onclick="approveUser(\''+x.phone+'\')">通过</button></div>';}
-    if(x.reset_requested){html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:8px;"><span style="font-size:13px;">'+x.phone+'</span><span style="font-size:11px;color:#ff3b30;">密码重置</span><button class="btn btn--primary" style="height:28px;font-size:11px;padding:0 10px;" onclick="resetUserPwd(\''+x.phone+'\')">重置</button></div>';}
+    if(x.status==='pending'){html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:8px;"><span style="font-size:13px;">'+x.phone+'</span><span style="font-size:11px;color:#ff9500;">注册审批</span><button class="btn btn--primary" style="height:28px;font-size:11px;padding:0 10px;" onclick="approveUser(\''+x.phone+'\')">通过</button><button class="btn btn--ghost" style="height:28px;font-size:11px;padding:0 10px;color:#FF3B30;margin-left:4px;" onclick="rejectUser(\''+x.phone+'\')">拒绝</button></div>';}
+    if(x.reset_requested){html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:8px;"><span style="font-size:13px;">'+x.phone+'</span><span style="font-size:11px;color:#ff3b30;">密码重置</span><button class="btn btn--primary" style="height:28px;font-size:11px;padding:0 10px;" onclick="resetUserPwd(\''+x.phone+'\')">重置</button><button class="btn btn--ghost" style="height:28px;font-size:11px;padding:0 10px;color:#FF3B30;margin-left:4px;" onclick="rejectUser(\''+x.phone+'\')">拒绝</button></div>';}
   });}
   html+='<div style="padding:8px 8px 4px;"><button class="btn btn--ghost" style="width:100%;height:30px;font-size:12px;justify-content:center;" onclick="closeAdminPopup()">关闭</button></div>';
   menu.innerHTML=html;document.body.appendChild(menu);
   setTimeout(function(){document.addEventListener("click",function ce(e){if(!menu.contains(e.target)&&e.target!==btn){closeAdminPopup();document.removeEventListener("click",ce);}});},10);
 }
 function closeAdminPopup(){var m=document.querySelector(".admin-popup");if(m)m.remove();}
+async function rejectUser(p){
+  await fetch(SB_URL+"/rest/v1/users?phone=eq."+p,{method:"DELETE",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
+  clients=clients.filter(function(c){return c.user_id!==p;}); saveClients(clients);
+  toast(p+" 已拒绝","success");closeAdminPopup();showAdminPanel();
+}
 async function approveUser(p){
   try { await fetch(SB_URL+"/rest/v1/users?phone=eq."+p,{method:"PATCH",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({status:"approved"})}); } catch(e) { toast("操作失败: "+e.message,"error"); return; }
   toast(p+" 已通过","success");closeAdminPopup();showAdminPanel();
@@ -1481,6 +1487,20 @@ async function saveNicknames(closeAfter){
   if(closeAfter)closeNickMenu();
 }
 
+function showMyNickModal(){
+  closeUserMenu();
+  var c=document.getElementById("modalContainer");
+  var curNick=window._nicks&&window._nicks[currentUser]||"";
+  c.innerHTML="<div class=modal-overlay onclick=if(event.target===this)closeModal()><div class=modal style=width:340px;><div class=modal-header><div class=modal-title>修改昵称</div><button class=modal-close onclick=closeModal()>✕</button></div><div class=modal-body><input class=form-input id=mn_input value="+curNick+" placeholder=输入你的昵称></div><div class=modal-footer><button class=btn btn--ghost onclick=closeModal()>取消</button><button class=btn btn--primary id=mn_save>保存</button></div></div></div>";
+  document.getElementById("mn_save").onclick=async function(){
+    var n=document.getElementById("mn_input").value.trim();
+    window._nicks=window._nicks||{}; window._nicks[currentUser]=n;
+    await fetch(SB_URL+"/rest/v1/users?phone=eq."+currentUser,{method:"PATCH",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({nickname:n||null})});
+    closeModal(); toast("昵称已更新","success");
+    if(isAdmin) initAdminSelect();
+  };
+}
+
 updateAuthBtn();
 
 // ============================================================
@@ -1516,18 +1536,9 @@ const SVGS = {
   const STORAGE_KEY = 'doudian_clients';
   const TRASH_KEY = 'doudian_trash';
 
-function loadClients() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
-}
+function loadClients() { return []; }
 
-function saveClients(clients) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(clients)); }
-  catch(e) { console.log("saveClients localStorage error:",e.message); toast("本地存储空间不足，请清理数据","error"); }
-  syncToCloud();
-}
+function saveClients(clients) { syncToCloud(); }
 
 let clients = loadClients();
 
@@ -2646,11 +2657,11 @@ if (currentUser) {
     return syncToCloud();
   }).then(function() {
     var dv = localStorage.getItem('dou_view');
-    if (isAdmin && dv === 'all') return fetch(SB_URL+'/rest/v1/clients?select=*',{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}}).then(function(r){return r.json();});
+    if (isAdmin && dv === 'all') return fetch(SB_URL+'/rest/v1/clients?select=*',{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}}).then(function(r){return r.json();}).then(function(data){return data.filter(function(c){return !window._adminUsers||window._adminUsers.some(function(u){return u.phone===c.user_id});});});
     if (isAdmin && dv && dv !== currentUser) return fetch(SB_URL+'/rest/v1/clients?user_id=eq.'+dv+'&select=*',{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}}).then(function(r){return r.json();});
     return sbFetch('clients', 'GET');
   }).then(function(data) {
-    if (data.length > 0) { clients = data.map(mapClient); localStorage.setItem(STORAGE_KEY, JSON.stringify(clients)); }
+    if (data.length > 0) { clients = data.map(mapClient); }
   }).catch(function(err) { console.log("Init error:", err); toast("加载失败，请检查网络连接","error"); }).finally(function() { hideLoading(); refreshAll(); if(isAdmin)initAdminSelect(); });
 } else {
   setTimeout(function() { hideLoading(); }, 400);
