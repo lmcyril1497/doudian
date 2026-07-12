@@ -1307,7 +1307,7 @@ function showAuthModal() {
   menu.className = 'user-menu';
   var right = Math.max(8, window.innerWidth - rect.right);
   menu.style.cssText = 'position:fixed;top:'+(rect.bottom+6)+'px;right:'+right+'px;z-index:1000;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:6px;min-width:180px;';
-  var html = '<div style="padding:8px 12px 6px;"><div style="font-size:13px;font-weight:600;color:#1d1d1f;">'+currentUser+'</div>'+(isAdmin?'<div style="font-size:11px;color:#667eea;">管理员</div>':'')+'</div><div style="height:1px;background:#f0f0f0;margin:4px 0;"></div>';
+  var html = '<div style="padding:8px 12px 6px;"><div style="font-size:13px;font-weight:600;color:#1d1d1f;">'+currentUser+'</div>'+(isSuperAdmin?'<div style="font-size:11px;color:#FF6B00;">主账号</div>':(isAdmin?'<div style="font-size:11px;color:#667eea;">管理员</div>':''))+'</div><div style="height:1px;background:#f0f0f0;margin:4px 0;"></div>';
   if (isAdmin) { html += '<button class="um-item" onclick="closeUserMenu();showAdminPanel()">用户审批</button><button class="um-item" onclick="closeUserMenu();showNicknameModal()">设置昵称</button>'; if(isSuperAdmin){ html += '<button class="um-item" onclick="closeUserMenu();showRolePanel()">权限管理</button>'; } }
   html += '<button class="um-item" onclick="closeUserMenu();showMyNickModal()">修改昵称</button><button class="um-item" onclick="closeUserMenu();showChangePassModal()">修改密码</button><button class="um-item um-item--danger" onclick="closeUserMenu();confirmDialog(\u0027退出登录\u0027,\u0027退出登录 '+currentUser+'？\u0027,doLogout)">退出登录</button>';
   menu.innerHTML = html;
