@@ -1241,6 +1241,13 @@ async function handleLogin() {
   } catch(e) { document.getElementById("lw_hint").textContent = "登录失败: " + (e.message||"网络错误"); }
 }
 function doLogout(){currentUser='';isAdmin=false;localStorage.removeItem('dou_admin');localStorage.removeItem('dou_user');localStorage.removeItem('dou_view');clients=[];updateAuthBtn();document.body.classList.remove('is-admin');showLogin();}
+// Heartbeat: every 5s check if current user still exists, force logout if deleted/revoked
+setInterval(async function(){
+  if(!currentUser) return;
+  var r=await fetch(SB_URL+'/rest/v1/users?phone=eq.'+currentUser,{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}});
+  var u=r.ok?await r.json():[];
+  if(u.length===0||u[0].status!=='approved'){ toast('账号已被管理员删除或禁用，即将退出','error'); setTimeout(doLogout,1500); }
+},5000);
 function updateAuthBtn() {
   var b = document.getElementById('authBtn');
   if (!b) return;
