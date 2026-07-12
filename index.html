@@ -144,7 +144,7 @@ body {
 
 /* ── Login Wall ── */
 .login-wall { position:fixed; inset:0; z-index:9999; background:linear-gradient(160deg,#f0f0f5,#e8e8f0); display:flex; align-items:center; justify-content:center; padding:20px; }
-.lw-card { width:360px; max-width:100%; background:#fff; border-radius:18px; box-shadow:0 4px 24px rgba(0,0,0,.08); padding:28px 32px 24px; display:flex; flex-direction:column; }
+.lw-card { width:360px; max-flex-shrink:0; background:#fff; border-radius:18px; box-shadow:0 4px 24px rgba(0,0,0,.08); padding:28px 32px 24px; display:flex; flex-direction:column; }
 .lw-header { text-align:center; margin-bottom:24px; }
 .lw-title { font-size:20px; font-weight:500; color:#1d1d1f; }
 .lw-desc { font-size:13px; color:#71717a; margin-top:6px; }
@@ -281,7 +281,7 @@ body {
 
 /* ── Stats Strip ── */
 .stats-strip {
-  display: flex; gap: 8px;
+  display: flex; flex-wrap: nowrap; gap: 8px;
   padding: 12px var(--page-padding) 14px;
   overflow-x: auto;
   flex-shrink: 0;
@@ -379,7 +379,7 @@ body {
   letter-spacing: -0.01em;
 }
 .column-count {
-  font-size: 12px; font-weight: 560;
+  font-size: 13px; font-weight: 560;
   padding: 2px 8px; border-radius: var(--radius-pill);
   background: var(--fill-primary);
   color: var(--text-secondary);
@@ -880,12 +880,12 @@ body.is-admin .card-owner { display:block !important; }
 
   /* Stats — wrap to 2 rows */
   .stats-strip {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     padding: 6px 8px 8px; gap: 5px;
   }
   .stat-pill {
-    padding: 5px 12px; font-size: 12px;
-    min-height: 32px; border-radius: 16px;
+    padding: 4px 8px; font-size: 11px;
+    min-height: 28px; border-radius: 16px;
   }
   .stat-dot { width: 6px; height: 6px; }
   .stat-count { font-size: 14px; min-width: 16px; }
@@ -935,7 +935,7 @@ body.is-admin .card-owner { display:block !important; }
     align-items: flex-end;
   }
   .modal:not(.modal--alert) {
-    width: 100vw; max-width: 100vw; max-height: none;
+    width: 100vw; max-width: 100vw; max-height: 65vh;
     border-radius: 20px 20px 0 0;
     animation: sheet-up 0.42s var(--spring-smooth);
     background: var(--material-ultrathick);
@@ -1187,7 +1187,7 @@ async function sbFetch(table, method, body) {
 
 function showResetPwd(){
   var c=document.getElementById('modalContainer');
-  c.innerHTML='<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal" style="width:340px;"><div class="modal-header"><div class="modal-title">忘记密码</div><button class="modal-close" onclick="closeModal()">✕</button></div><div class="modal-body" style="gap:12px;"><p style="font-size:13px;color:var(--text-secondary);">输入手机号，提交重置申请</p><div class="form-group"><label class="form-label">手机号</label><input class="form-input" id="rp_phone" type="text" placeholder="请输入11位手机号" maxlength="11"></div></div><div class="modal-footer"><button class="btn btn--ghost" onclick="closeModal()">取消</button><button class="btn btn--primary" id="rp_btn">提交申请</button></div></div></div>';
+  document.body.style.overflow='hidden'; c.innerHTML='<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal" style="width:340px;"><div class="modal-header"><div class="modal-title">忘记密码</div><button class="modal-close" onclick="closeModal()">✕</button></div><div class="modal-body" style="gap:12px;"><p style="font-size:13px;color:var(--text-secondary);">输入手机号，提交重置申请</p><div class="form-group"><label class="form-label">手机号</label><input class="form-input" id="rp_phone" type="text" placeholder="请输入11位手机号" maxlength="11"></div></div><div class="modal-footer"><button class="btn btn--ghost" onclick="closeModal()">取消</button><button class="btn btn--primary" id="rp_btn">提交申请</button></div></div></div>';
   document.getElementById('rp_btn').addEventListener('click',async function(){
     var p=document.getElementById('rp_phone').value.trim();
     if(!/^1[3-9]\d{9}$/.test(p)){toast('请输入正确的手机号','error');return;}
@@ -1197,7 +1197,7 @@ function showResetPwd(){
     var patchRes=await fetch(SB_URL+'/rest/v1/users?phone=eq.'+p,{method:'PATCH',headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({reset_requested:true})});
     if(!patchRes.ok){toast('提交失败，请联系管理员重置密码','error');return;}
     closeModal();toast('已提交重置申请，等待管理员处理','success');
-  });
+  }); html += '</div>';
 }
 function showApp() { document.getElementById("loginWall").style.display="none"; document.getElementById("appShell").style.display=""; }
 function showLogin() { document.getElementById("appShell").style.display="none"; document.getElementById("loginWall").style.display=""; document.getElementById("lw_hint").textContent=""; document.getElementById("lw_phone").value=""; document.getElementById("lw_pass").value=""; }
@@ -1213,10 +1213,10 @@ async function handleLogin() {
   var users=resp.ok?(await resp.json()):[];
   if(users.length>0){
     var oldHash=btoa(p+":"+pw);if(users[0].password_hash!==pwHash&&users[0].password_hash!==oldHash){hint.textContent="密码错误";return;}
-    if(users[0].status!=="approved"){hint.textContent="账号审核中，等待管理员通过";return;}
+    if(users[0].status!=="approved"){startApprovalPoll(p);return;}
   }else{
     await fetch(SB_URL+"/rest/v1/users",{method:"POST",headers:{...sbHead(),Prefer:"resolution=merge-duplicates"},body:JSON.stringify({phone:p,password_hash:pwHash,status:"pending"})});
-    hint.textContent="已提交申请，等待管理员审批";return;
+    startApprovalPoll(p);return;
   }
   currentUser=p;localStorage.setItem("dou_user",p);isAdmin=users[0].role==="admin";isSuperAdmin=(p===SUPER_ADMIN);localStorage.setItem("dou_admin",isAdmin?"1":"");if(isAdmin){document.body.classList.add("is-admin");var dv=localStorage.getItem('dou_view');window._viewingUser=(dv==='all'?null:p);localStorage.setItem('dou_view',p);}showApp();updateAuthBtn();showLoading();
   clients=[];
@@ -1240,7 +1240,48 @@ async function handleLogin() {
   hideLoading();refreshAll(); if(isAdmin){initAdminSelect();}; var ca=document.getElementById("copyAllBtn"),cb=document.getElementById("copyAllAdvBtn"); if(ca)ca.style.display=(isAdmin&&window._viewingUser===null)?"":"none"; if(cb)cb.style.display=(isAdmin&&window._viewingUser===null)?"":"none";
   } catch(e) { document.getElementById("lw_hint").textContent = "登录失败: " + (e.message||"网络错误"); }
 }
+function startApprovalPoll(phone){
+  document.getElementById("lw_hint").textContent = "账号审核中，等待管理员通过...";
+  var timer = setInterval(async function(){
+    var r = await fetch(SB_URL+"/rest/v1/users?phone=eq."+phone,{headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
+    var u = r.ok ? await r.json() : [];
+    if(u.length===0){ clearInterval(timer); document.getElementById("lw_hint").textContent = "账号已被删除"; return; }
+    if(u[0].status==="approved"){
+      clearInterval(timer);
+      document.getElementById("lw_hint").textContent = "审批通过，正在登录...";
+      currentUser=phone; localStorage.setItem("dou_user",phone);
+      isAdmin=u[0].role==="admin"; isSuperAdmin=(phone===SUPER_ADMIN);
+      localStorage.setItem("dou_admin",isAdmin?"1":"");
+      if(isAdmin){ document.body.classList.add("is-admin"); localStorage.setItem("dou_view",phone); window._viewingUser=phone; }
+      showApp(); updateAuthBtn(); showLoading();
+      await syncToCloud();
+      var data = await sbFetch("clients","GET");
+      if(data.length>0){ clients=data.map(mapClient); saveClients(clients); }
+      hideLoading(); refreshAll(); if(isAdmin){initAdminSelect();}
+    }
+  }, 5000);
+}
 function doLogout(){currentUser='';isAdmin=false;localStorage.removeItem('dou_admin');localStorage.removeItem('dou_user');localStorage.removeItem('dou_view');clients=[];updateAuthBtn();document.body.classList.remove('is-admin');showLogin();}
+// Touch drag-to-dismiss for mobile modal sheets (Apple spring style)
+var _dragModal = null, _dragStartY = 0;
+document.addEventListener('touchstart', function(e) {
+  var modal = e.target.closest('.modal'); if (!modal || modal.classList.contains('modal--alert') || window.innerWidth > 768) return;
+  if (e.touches[0].clientY - modal.getBoundingClientRect().top < 36) { _dragModal = modal; _dragStartY = e.touches[0].clientY; modal.style.transition = 'none'; }
+}, { passive: false });
+document.addEventListener('touchmove', function(e) {
+  if (!_dragModal) return; var dy = Math.max(0, e.touches[0].clientY - _dragStartY) * 0.85;
+  _dragModal.style.transform = 'translateY(' + dy + 'px)';
+  var overlay = _dragModal.parentElement; if (overlay) overlay.style.opacity = 1 - dy / window.innerHeight;
+  e.preventDefault();
+}, { passive: false });
+document.addEventListener('touchend', function() {
+  if (!_dragModal) return;
+  var dy = parseInt(_dragModal.style.transform.match(/\d+/) || 0);
+  var overlay = _dragModal.parentElement;
+  _dragModal.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1)';
+  if (overlay) { overlay.style.transition = 'opacity 0.35s cubic-bezier(0.25, 0.1, 0.25, 1)'; }
+  if (dy > 180) { _dragModal.style.transform = 'translateY(100vh)'; if (overlay) overlay.style.opacity = '0'; setTimeout(function() { closeModal(); }, 350); _dragModal = null; } else { _dragModal.style.transform = ''; if (overlay) overlay.style.opacity = ''; _dragModal = null; }
+});
 // Heartbeat: every 5s check if current user still exists, force logout if deleted/revoked
 setInterval(async function(){
   if(!currentUser) return;
@@ -1324,7 +1365,7 @@ function toggleAdminFilter(e){
   var rect=btn.getBoundingClientRect();
   var menu=document.createElement('div');
   menu.className='admin-filter-menu';
-  menu.style.cssText='position:fixed;top:'+(rect.bottom+6)+'px;right:'+Math.max(8,window.innerWidth-rect.right)+'px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:6px;min-width:160px;';
+  menu.style.cssText='position:fixed;top:'+(rect.bottom+6)+'px;right:'+Math.max(8,window.innerWidth-rect.right)+'px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:6px;min-width:160px;max-width:calc(100vw - 16px);';
   var html='<button class="um-item" onclick="switchToUserView(\'all\');closeAdminFilter()">全部</button>';
   (window._adminUsers||[]).forEach(function(u){
     if(u.phone!=='all') html+='<button class="um-item" onclick="switchToUserView(\''+u.phone+'\');closeAdminFilter()">'+u.label+'</button>';
@@ -1333,7 +1374,7 @@ function toggleAdminFilter(e){
   document.body.appendChild(menu);
   setTimeout(function(){document.addEventListener('click',function close(e){if(!menu.contains(e.target)&&e.target!==btn){menu.remove();document.removeEventListener('click',close);}})},10);
 }
-function closeAdminFilter(){var m=document.querySelector('.admin-filter-menu');if(m)m.remove();document.getElementById('adminFilterBtn').textContent=(window._viewingUser?(window._nicks&&window._nicks[window._viewingUser]||window._viewingUser):'全部')+' ▾';}
+function closeAdminFilter(){var m=document.querySelector('.admin-filter-menu');if(m)m.remove();document.getElementById('adminFilterBtn').querySelector('span').textContent=(window._viewingUser?(window._nicks&&window._nicks[window._viewingUser]||window._viewingUser):'全部');}
 
 async function switchToUserView(phone){
   try {
@@ -1501,7 +1542,7 @@ function showMyNickModal(){
   closeUserMenu();
   var c=document.getElementById("modalContainer");
   var curNick=window._nicks&&window._nicks[currentUser]||"";
-  c.innerHTML="<div class=modal-overlay onclick=if(event.target===this)closeModal()><div class=modal style=width:340px;><div class=modal-header><div class=modal-title>修改昵称</div><button class=modal-close onclick=closeModal()>✕</button></div><div class=modal-body><input class=form-input id=mn_input value="+curNick+" placeholder=输入你的昵称></div><div class=modal-footer><button class=btn btn--ghost onclick=closeModal()>取消</button><button class=btn btn--primary id=mn_save>保存</button></div></div></div>";
+  document.body.style.overflow='hidden'; c.innerHTML="<div class=modal-overlay onclick=if(event.target===this)closeModal()><div class=modal style=width:340px;><div class=modal-header><div class=modal-title>修改昵称</div><button class=modal-close onclick=closeModal()>✕</button></div><div class=modal-body><input class=form-input id=mn_input value="+curNick+" placeholder=输入你的昵称></div><div class=modal-footer><button class=btn btn--ghost onclick=closeModal()>取消</button><button class=btn btn--primary id=mn_save>保存</button></div></div></div>";
   document.getElementById("mn_save").onclick=async function(){
     var n=document.getElementById("mn_input").value.trim();
     window._nicks=window._nicks||{}; window._nicks[currentUser]=n;
@@ -1620,7 +1661,7 @@ function dpToggle(btn) {
   pop._btn = btn;
   var btnRect = btn.getBoundingClientRect();
   var spaceBelow = window.innerHeight - btnRect.bottom;
-  pop.style.cssText = 'position:fixed;z-index:99999;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:4px;max-height:200px;overflow-y:auto;min-width:80px;';
+  pop.style.cssText = 'position:fixed;z-index:99999;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:4px;max-height:200px;overflow-y:auto;min-width:65px;';
   if (spaceBelow > 240) { pop.style.top = btnRect.bottom + 4 + 'px'; }
   else { pop.style.bottom = (window.innerHeight - btnRect.top) + 4 + 'px'; }
   pop.style.left = btnRect.left + 'px';
@@ -1766,6 +1807,7 @@ function renderModal({ title, client, onSave, focusName }) {
     `<option value="${t}" ${data.cardType === t ? 'selected' : ''}>${t || '请选择银行卡类型'}</option>`
   ).join('');
 
+document.body.style.overflow='hidden';
   container.innerHTML = `
     <div class="modal-overlay" onclick="if(event.target===this||event.target.classList.contains('modal-overlay'))closeModal()">
       <div class="modal" onmousedown="event.stopPropagation()" onclick="event.stopPropagation()">
@@ -1873,7 +1915,7 @@ function renderModal({ title, client, onSave, focusName }) {
       if(open && open._btn === btn){ if(open._handler) document.removeEventListener('mousedown',open._handler); open.remove(); return; }
       if(open){ if(open._handler) document.removeEventListener('mousedown',open._handler); open.remove(); }
       var pop = document.createElement('div'); pop.className = 'cs-dropdown';
-      pop.style.cssText = 'position:fixed;z-index:99999;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:4px;max-height:200px;overflow-y:auto;min-width:80px;';
+      pop.style.cssText = 'position:fixed;z-index:99999;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:4px;max-height:200px;overflow-y:auto;min-width:65px;';
       var btnRect = btn.getBoundingClientRect();
       pop.style.top = btnRect.bottom + 4 + 'px';
       pop.style.left = btnRect.left + 'px';
@@ -1917,8 +1959,12 @@ function renderModal({ title, client, onSave, focusName }) {
   });
 }
 
-function closeModal() {
+function openModal(html) { document.body.style.overflow = 'hidden'; document.getElementById('modalContainer').innerHTML = html; }
+function closeModal() { _dragModal = null;
+  var modalEl = document.querySelector('.modal');
+  if (modalEl) { modalEl.style.transform = ''; }
   document.getElementById('modalContainer').innerHTML = ''; document.querySelectorAll('.dp-popup,.cs-dropdown,.user-menu,.admin-filter-menu,.admin-popup,.pass-popup,.nick-menu,.role-menu').forEach(function(el){el.remove();});
+  document.body.style.overflow = '';
 }
 
 // Help panel
@@ -2194,7 +2240,7 @@ function setFilter(stageId) {
 // ============================================================
 function renderStats() {
   const strip = document.getElementById('statsStrip');
-  let html = `
+  let html = '<div style="display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;padding:12px 16px 14px;scrollbar-width:none;-ms-overflow-style:none;">'+`
     <div class="stat-pill ${activeFilter === null ? 'stat-pill--active' : ''}" onclick="setFilter(null)">
       <span style="width:15px;height:15px;display:flex;align-items:center;">${SVGS.grid.replace('viewBox="0 0 24 24"','width="15" height="15" viewBox="0 0 24 24"')}</span>
       <span>全部</span>
@@ -2214,7 +2260,7 @@ function renderStats() {
   });
   if (isAdmin && window._adminUsers && window._adminUsers.length > 1) {
     var currentLabel = window._viewingUser ? (window._nicks&&window._nicks[window._viewingUser]||window._viewingUser) : '全部';
-    html += '<button id="adminFilterBtn" class="stat-pill" onclick="toggleAdminFilter(event)" style="margin-left:auto;flex-shrink:0;">'+currentLabel+' ▾</button>';
+    html += '</div><div style="padding: 12px 16px 12px;"><button id="adminFilterBtn" class="stat-pill" onclick="toggleAdminFilter(event)" style="width:58px;padding:4px 8px;font-size:12px;overflow:hidden;display:flex;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;">'+currentLabel+'</span><span style="flex-shrink:0;margin-left:2px;"> ▾</span></button></div>';
   }
   strip.innerHTML = html;
 }
@@ -2625,7 +2671,7 @@ function openTrash() {
       "<span style='color:var(--text-secondary);font-size:11px;margin-left:8px;'>" + (sl ? sl.label : "") + "</span></div>" +
       "<button class='btn btn--small btn--primary' onclick='restoreFromTrash(\"" + c.id + "\");closeTrash();'>恢复</button></div>";
   });}
-  container.innerHTML = "<div class='modal-overlay' onclick='if(event.target===this)closeTrash()'><div class='modal'><div class='modal-header'><div class='modal-title'>回收站 (" + trash.length + ")</div>" +
+  document.body.style.overflow = 'hidden'; container.innerHTML = "<div class='modal-overlay' onclick='if(event.target===this)closeTrash()'><div class='modal'><div class='modal-header'><div class='modal-title'>回收站 (" + trash.length + ")</div>" +
     "<button class='modal-close' onclick='closeTrash()'>X</button></div><div class='modal-body' style='max-height:50vh;overflow-y:auto;'>" + rows + "</div>" +
     (trash.length > 0 ? "<div class='modal-footer' style='justify-content:space-between;'><button class='btn btn--ghost btn--small' style='color:#FF3B30;' onclick='clearTrash()'>全部清空</button><button class='btn btn--ghost btn--small' onclick='closeTrash()'>关闭</button></div>" : "<div class='modal-footer'><button class='btn btn--ghost btn--small' onclick='closeTrash()'>关闭</button></div>") + "</div></div>";
 }
