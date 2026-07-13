@@ -1345,6 +1345,8 @@ document.addEventListener('keydown', function(e) {
 
 function showAuthModal() {
   if (!currentUser) return;
+  // Close all popups before opening menu
+  closePassPopup(); closeNickMenu(); closeAdminPopup(); closeRolePanel();
 
   var old = document.querySelector('.user-menu');
   if (old) { old.remove(); return; }
@@ -1365,6 +1367,9 @@ function closeUserMenu(){ var m=document.querySelector('.user-menu'); if(m)m.rem
 
 function toggleAdminFilter(e){
   e.stopPropagation();
+  var existing=document.querySelector('.admin-filter-menu');
+  if(existing){ closeAdminFilter(); return; }
+  _filterOpening = true; setTimeout(function(){ _filterOpening = false; }, 500);
   var existing=document.querySelector('.admin-filter-menu');
   if(existing){existing.remove();return;}
   var btn=document.getElementById('adminFilterBtn');
@@ -1419,6 +1424,7 @@ async function initAdminSelect(){
 }
 
 async function showAdminPanel(){
+  if (_adminModalOpening) return; _adminModalOpening = true;
   closeUserMenu(); var old=document.querySelector('.admin-popup'); if(old) old.remove();
   var r=await fetch(SB_URL+"/rest/v1/users?select=*",{headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
   var u=r.ok?(await r.json()).filter(function(x){return x.status==='pending'||x.reset_requested;}):[];
@@ -1433,7 +1439,7 @@ async function showAdminPanel(){
   });}
   html+='<div style="padding:8px 8px 4px;"><button class="btn btn--ghost" style="width:100%;height:30px;font-size:12px;justify-content:center;" onclick="closeAdminPopup()">关闭</button></div>';
   menu.innerHTML=html;document.body.appendChild(menu);
-  setTimeout(function(){document.addEventListener("click",function ce(e){if(!menu.contains(e.target)&&e.target!==btn){closeAdminPopup();document.removeEventListener("click",ce);}});},10);
+  setTimeout(function(){document.addEventListener("mousedown",function ce(e){if(!menu.contains(e.target)){closeAdminPopup();document.removeEventListener("mousedown",ce,true);}},true);},10);
 }
 function closeAdminPopup(){var m=document.querySelector(".admin-popup");if(m)m.remove();}
 async function rejectUser(p){
@@ -1495,16 +1501,18 @@ async function showRolePanel(){
   });}
   html+="<div style=\"padding:8px 8px 4px;\"><button class=\"btn btn--ghost\" style=\"width:100%;height:30px;font-size:12px;justify-content:center;\" onclick=\"closeRolePanel()\">关闭</button></div>";
   menu.innerHTML=html;document.body.appendChild(menu);
-  setTimeout(function(){document.addEventListener("click",function ce(e){if(!menu.contains(e.target)&&e.target!==btn){closeRolePanel();document.removeEventListener("click",ce);}});},10);
+  setTimeout(function(){document.addEventListener("mousedown",function ce(e){if(!menu.contains(e.target)){closeRolePanel();document.removeEventListener("mousedown",ce,true);}},true);},10);
 }
 
+var _passModalOpening = false;
 async function showChangePassModal(){
+  if (_passModalOpening) return; _passModalOpening = true;
   closeUserMenu();
-  var old=document.querySelector('.pass-popup'); if(old) old.remove();
+  document.querySelectorAll('.pass-popup').forEach(function(p){p.remove();});
   var btn=document.getElementById("authBtn");var rect=btn.getBoundingClientRect();
   var menu=document.createElement("div");menu.className="pass-popup";
-  menu.style.cssText="position:fixed;top:"+(rect.bottom+6)+"px;right:"+Math.max(8,window.innerWidth-rect.right)+"px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:16px;width:280px;";
-  menu.innerHTML='<div style="font-size:15px;font-weight:600;color:#1d1d1f;margin-bottom:14px;">修改密码</div><input class="form-input" id="cp_old" type="password" placeholder="旧密码" style="margin-bottom:10px;"><input class="form-input" id="cp_new" type="password" placeholder="新密码（6位以上）" style="margin-bottom:14px;"><div style="display:flex;gap:8px;"><button class="btn btn--ghost" style="flex:1;height:36px;font-size:13px;justify-content:center;" onclick="closePassPopup()">取消</button><button class="btn btn--primary" style="flex:1;height:36px;font-size:13px;justify-content:center;" id="cp_btn">确认</button></div>';
+  menu.style.cssText="position:fixed;top:"+(rect.bottom+6)+"px;right:"+Math.max(8,window.innerWidth-rect.right)+"px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:8px;width:300px;";
+  menu.innerHTML='<div style="padding:4px 8px 8px;font-size:14px;font-weight:600;color:#1d1d1f;">修改密码</div><div style="padding:0 8px;"><input class="form-input" id="cp_old" type="password" placeholder="旧密码" style="margin-bottom:8px;"><input class="form-input" id="cp_new" type="password" placeholder="新密码（6位以上）" style="margin-bottom:10px;"></div><div style="display:flex;gap:6px;padding:8px 8px 4px;"><button class="btn btn--ghost" style="flex:1;height:32px;font-size:12px;justify-content:center;" onclick="closePassPopup()">取消</button><button class="btn btn--primary" style="flex:1;height:32px;font-size:12px;justify-content:center;" id="cp_btn">确认</button></div>';
   document.body.appendChild(menu);
   document.getElementById("cp_btn").addEventListener("click",async function(){
     try {
@@ -1516,11 +1524,12 @@ async function showChangePassModal(){
     closePassPopup();toast("密码已修改","success");
     } catch(e) { toast("修改密码失败: "+e.message,"error"); }
   });
-  setTimeout(function(){ var ce=function(e){ if(!menu.contains(e.target)&&e.target!==btn){ closePassPopup(); document.removeEventListener('mousedown',ce,true); } }; document.addEventListener('mousedown',ce,true); },10);
-}
-function closePassPopup(){ document.querySelectorAll('.pass-popup').forEach(function(m){m.remove();}); }
+  setTimeout(function(){ var ce=function(e){ if(!menu.contains(e.target)){ closePassPopup(); document.removeEventListener('mousedown',ce,true); } }; document.addEventListener('mousedown',ce,true); },10);
+  _passModalOpening = false; }
+function closePassPopup(){ _passModalOpening = false; document.querySelectorAll('.pass-popup').forEach(function(m){m.remove();}); }
 
 async function showNicknameModal(){
+  if (_nickModalOpening) return; _nickModalOpening = true;
   closeUserMenu(); var old=document.querySelector('.nick-menu'); if(old) old.remove();
   try {
   var r=await fetch(SB_URL+"/rest/v1/users?select=phone,nickname",{headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
@@ -1528,14 +1537,23 @@ async function showNicknameModal(){
   } catch(e) { toast("加载用户列表失败","error"); return; }
   var btn=document.getElementById("authBtn");var rect=btn.getBoundingClientRect();
   var menu=document.createElement("div");menu.className="nick-menu";
-  menu.style.cssText="position:fixed;top:"+(rect.bottom+6)+"px;right:"+Math.max(8,window.innerWidth-rect.right)+"px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:8px;width:300px;max-height:220px;overflow-y:auto;scrollbar-width:none;";
+  menu.style.cssText="position:fixed;top:"+(rect.bottom+6)+"px;right:"+Math.max(8,window.innerWidth-rect.right)+"px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:8px;width:300px;";
   var html='<div style="padding:4px 8px 8px;font-size:14px;font-weight:600;color:#1d1d1f;">设置昵称</div>';
+  html+='<div style="max-height:160px;overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;">';
   u.forEach(function(x){html+='<div style="display:flex;align-items:center;padding:8px 8px;"><span style="flex:1;font-size:13px;color:var(--text-primary);">'+x.phone+'</span><input style="width:100px;padding:6px 0;border:none;border-bottom:1px solid rgba(0,0,0,.15);border-radius:0;font-size:13px;font-family:inherit;outline:none;text-align:center;" value="'+(x.nickname||"")+'" placeholder="昵称" data-phone="'+x.phone+'"></div>';});
+  html+='</div>';
   html+='<div style="display:flex;gap:6px;padding:8px 8px 4px;"><button class="btn btn--ghost" style="flex:1;height:32px;font-size:12px;justify-content:center;" onclick="closeNickMenu()">关闭</button><button class="btn btn--primary" style="flex:1;height:32px;font-size:12px;justify-content:center;" onclick="saveNicknames(false)">保存</button></div>';
   menu.innerHTML=html;document.body.appendChild(menu);
-  setTimeout(function(){document.addEventListener("click",function ce(e){if(!menu.contains(e.target)&&e.target!==btn){closeNickMenu();document.removeEventListener("click",ce);}});},10);
+  setTimeout(function(){document.addEventListener("mousedown",function ce(e){if(!menu.contains(e.target)){closeNickMenu();document.removeEventListener("mousedown",ce,true);}},true);},10);
 }
-function closeNickMenu(){var m=document.querySelector(".nick-menu");if(m)m.remove();}
+function closeNickMenu(){var m=document.querySelector(".nick-menu");if(m)m.remove(); _nickModalOpening=false;}
+var _nickModalOpening = false;
+function closeAdminPopup(){var m=document.querySelector(".admin-popup");if(m)m.remove(); _adminModalOpening=false;}
+var _adminModalOpening = false;
+function closeRolePanel(){var m=document.querySelector(".role-menu");if(m)m.remove(); _roleModalOpening=false;}
+var _roleModalOpening = false;
+function closeAdminFilter(){var m=document.querySelector('.admin-filter-menu');if(m)m.remove(); _filterOpening=false; var b=document.getElementById('adminFilterBtn');if(b)b.textContent=(window._viewingUser?(window._nicks&&window._nicks[window._viewingUser]||window._viewingUser):'全部');}
+var _filterOpening = false;
 async function saveNicknames(closeAfter){
   if(closeAfter===undefined)closeAfter=true;
   var inputs=document.querySelectorAll(".nick-menu input");
@@ -1546,17 +1564,22 @@ async function saveNicknames(closeAfter){
 
 function showMyNickModal(){
   closeUserMenu();
-  var c=document.getElementById("modalContainer");
+  var btn=document.getElementById("authBtn");var rect=btn.getBoundingClientRect();
   var curNick=window._nicks&&window._nicks[currentUser]||"";
-  document.body.style.overflow='hidden'; c.innerHTML="<div class=modal-overlay onclick=if(event.target===this)closeModal()><div class=modal style=width:340px;><div class=modal-header><div class=modal-title>修改昵称</div><button class=modal-close onclick=closeModal()>✕</button></div><div class=modal-body><input class=form-input id=mn_input value="+curNick+" placeholder=输入你的昵称></div><div class=modal-footer><button class=btn btn--ghost onclick=closeModal()>取消</button><button class=btn btn--primary id=mn_save>保存</button></div></div></div>";
+  var m=document.createElement("div");m.className="my-nick-popup";
+  m.style.cssText="position:fixed;top:"+(rect.bottom+6)+"px;right:"+Math.max(8,window.innerWidth-rect.right)+"px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:8px;width:300px;";
+  m.innerHTML='<div style="padding:4px 8px 8px;font-size:14px;font-weight:600;color:#1d1d1f;">修改昵称</div><div style="padding:0 8px;"><input id="mn_input" style="width:100%;padding:6px 0;border:none;border-bottom:1px solid rgba(0,0,0,.15);border-radius:0;font-size:14px;font-family:inherit;outline:none;" value="'+curNick+'" placeholder="输入你的昵称"></div><div style="display:flex;gap:6px;padding:8px 8px 4px;"><button class="btn btn--ghost" style="flex:1;height:32px;font-size:12px;justify-content:center;" onclick="closeMyNickMenu()">取消</button><button class="btn btn--primary" style="flex:1;height:32px;font-size:12px;justify-content:center;" id="mn_save">保存</button></div>';
+  document.body.appendChild(m);
   document.getElementById("mn_save").onclick=async function(){
     var n=document.getElementById("mn_input").value.trim();
     window._nicks=window._nicks||{}; window._nicks[currentUser]=n;
     await fetch(SB_URL+"/rest/v1/users?phone=eq."+currentUser,{method:"PATCH",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({nickname:n||null})});
-    closeModal(); toast("昵称已更新","success");
+    closeMyNickMenu(); toast("昵称已更新","success");
     if(isAdmin) initAdminSelect();
   };
+  setTimeout(function(){document.addEventListener("mousedown",function ce(e){if(!m.contains(e.target)){closeMyNickMenu();document.removeEventListener("mousedown",ce,true);}},true);},10);
 }
+function closeMyNickMenu(){var m=document.querySelector(".my-nick-popup");if(m)m.remove();}
 
 updateAuthBtn();
 
