@@ -635,9 +635,12 @@ body.is-admin .card-owner { display:block !important; }
 .modal-body {
   padding: 20px 24px;
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   flex: 1;
   display: flex; flex-direction: column; gap: 16px;
 }
+.modal-body::-webkit-scrollbar { display: none; }
 .modal-footer {
   padding: 16px 24px;
   display: flex; gap: 10px; justify-content: flex-end;
@@ -1159,7 +1162,7 @@ input,select,textarea,button { -webkit-appearance: none; }
 const SB_URL = 'https://ytqzuqqqytdihxybhhcy.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0cXp1cXFxeXRkaWh4eWJoaGN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1OTE4NzAsImV4cCI6MjA5OTE2Nzg3MH0.EQUhNToGoQkdXLsKpHsw8gITaTVA0mtFhtN1MEbxzBc';
 let currentUser = localStorage.getItem('dou_user') || ''; let isAdmin = !!localStorage.getItem('dou_admin');
-const SUPER_ADMIN = '18211383968'; let isSuperAdmin = false;
+let isSuperAdmin = !!localStorage.getItem('dou_super');
 document.body.classList.add('is-admin'); // Show card-owner by default, will be correct for admin
 
 function sbHead() { return { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' }; }
@@ -1221,7 +1224,7 @@ async function handleLogin() {
     await fetch(SB_URL+"/rest/v1/users",{method:"POST",headers:{...sbHead(),Prefer:"resolution=merge-duplicates"},body:JSON.stringify({phone:p,password_hash:pwHash,status:"pending"})});
     startApprovalPoll(p);return;
   }
-  currentUser=p;localStorage.setItem("dou_user",p);isAdmin=users[0].role==="admin";isSuperAdmin=(p===SUPER_ADMIN);localStorage.setItem("dou_admin",isAdmin?"1":"");if(isAdmin){document.body.classList.add("is-admin");var dv=localStorage.getItem('dou_view');window._viewingUser=(dv==='all'?null:p);localStorage.setItem('dou_view',p);}showApp();updateAuthBtn();showLoading();
+  currentUser=p;localStorage.setItem("dou_user",p);isAdmin=users[0].role==="admin"||users[0].role==="owner";isSuperAdmin=users[0].role==="owner";localStorage.setItem("dou_admin",isAdmin?"1":"");localStorage.setItem("dou_super",isSuperAdmin?"1":"");if(isAdmin){document.body.classList.add("is-admin");var dv=localStorage.getItem('dou_view');window._viewingUser=(dv==='all'?null:p);localStorage.setItem('dou_view',p);}showApp();updateAuthBtn();showLoading();
   clients=[];
   await syncToCloud();
   var data;
@@ -1368,7 +1371,7 @@ function toggleAdminFilter(e){
   var rect=btn.getBoundingClientRect();
   var menu=document.createElement('div');
   menu.className='admin-filter-menu';
-  menu.style.cssText='position:fixed;top:'+(rect.bottom+6)+'px;right:'+Math.max(8,window.innerWidth-rect.right)+'px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:6px;min-width:160px;max-width:calc(100vw - 16px);';
+  menu.style.cssText='position:fixed;top:'+(rect.bottom+6)+'px;right:'+Math.max(8,window.innerWidth-rect.right)+'px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:6px;min-width:160px;max-width:calc(100vw - 16px);max-height:220px;overflow-y:auto;scrollbar-width:none;';
   var html='<button class="um-item" onclick="switchToUserView(\'all\');closeAdminFilter()">全部</button>';
   (window._adminUsers||[]).forEach(function(u){
     if(u.phone!=='all') html+='<button class="um-item" onclick="switchToUserView(\''+u.phone+'\');closeAdminFilter()">'+u.label+'</button>';
@@ -1421,7 +1424,7 @@ async function showAdminPanel(){
   var u=r.ok?(await r.json()).filter(function(x){return x.status==='pending'||x.reset_requested;}):[];
   var btn=document.getElementById("authBtn");var rect=btn.getBoundingClientRect();
   var menu=document.createElement("div");menu.className="admin-popup";
-  menu.style.cssText="position:fixed;top:"+(rect.bottom+6)+"px;right:"+Math.max(8,window.innerWidth-rect.right)+"px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:8px;width:280px;max-height:60vh;overflow-y:auto;";
+  menu.style.cssText="position:fixed;top:"+(rect.bottom+6)+"px;right:"+Math.max(8,window.innerWidth-rect.right)+"px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:8px;width:280px;max-height:220px;overflow-y:auto;scrollbar-width:none;";
   var html='<div style="padding:4px 8px 8px;font-size:14px;font-weight:600;color:#1d1d1f;">用户审批</div>';
   if(u.length===0){html+='<div style="padding:16px;text-align:center;color:var(--text-tertiary);font-size:13px;">暂无待处理请求</div>';}
   else{u.forEach(function(x){
@@ -1482,11 +1485,11 @@ async function showRolePanel(){
   var users=r.ok?await r.json():[];
   var btn=document.getElementById("authBtn");var rect=btn.getBoundingClientRect();
   var menu=document.createElement("div");menu.className="role-menu";
-  menu.style.cssText="position:fixed;top:"+(rect.bottom+6)+"px;right:"+Math.max(8,window.innerWidth-rect.right)+"px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:8px;width:300px;max-height:60vh;overflow-y:auto;";
+  menu.style.cssText="position:fixed;top:"+(rect.bottom+6)+"px;right:"+Math.max(8,window.innerWidth-rect.right)+"px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:8px;width:300px;max-height:220px;overflow-y:auto;scrollbar-width:none;";
   var html="<div style=\"padding:4px 8px 8px;font-size:14px;font-weight:600;color:#1d1d1f;\">权限管理</div>";
   if(users.length===0){html+="<div style=\"padding:16px;text-align:center;color:var(--text-tertiary);font-size:13px;\">暂无已审批用户</div>";}
   else{users.forEach(function(u){
-    if(u.phone===SUPER_ADMIN) return;
+    if(u.role==="owner") return;
     var isAdminUser=u.role==="admin";
     html+="<div style=\"display:flex;align-items:center;justify-content:space-between;padding:8px;\"><span style=\"font-size:13px;\">"+getNick(u.phone)+(isAdminUser?"<span style=\"font-size:11px;color:#667eea;margin-left:6px;\">管理员</span>":"")+"</span><div>"+(isAdminUser?"<button class=\"btn btn--primary\" style=\"height:28px;font-size:11px;padding:0 10px;margin-right:4px;\" onclick=\"event.stopPropagation();toggleRole(this,\u0027"+u.phone+"\u0027,false)\">取消管理员</button>":"<button class=\"btn btn--primary\" style=\"height:28px;font-size:11px;padding:0 10px;margin-right:4px;\" onclick=\"event.stopPropagation();toggleRole(this,\u0027"+u.phone+"\u0027,true)\">设为管理员</button>")+"<button class=\"btn btn--ghost\" style=\"height:28px;font-size:11px;padding:0 10px;color:#FF3B30;\" onclick=\"event.stopPropagation();confirmDelete(this,\u0027"+u.phone+"\u0027)\">删除</button></div></div>";
   });}
@@ -1525,7 +1528,7 @@ async function showNicknameModal(){
   } catch(e) { toast("加载用户列表失败","error"); return; }
   var btn=document.getElementById("authBtn");var rect=btn.getBoundingClientRect();
   var menu=document.createElement("div");menu.className="nick-menu";
-  menu.style.cssText="position:fixed;top:"+(rect.bottom+6)+"px;right:"+Math.max(8,window.innerWidth-rect.right)+"px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:8px;width:300px;max-height:60vh;overflow-y:auto;";
+  menu.style.cssText="position:fixed;top:"+(rect.bottom+6)+"px;right:"+Math.max(8,window.innerWidth-rect.right)+"px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:8px;width:300px;max-height:220px;overflow-y:auto;scrollbar-width:none;";
   var html='<div style="padding:4px 8px 8px;font-size:14px;font-weight:600;color:#1d1d1f;">设置昵称</div>';
   u.forEach(function(x){html+='<div style="display:flex;align-items:center;padding:8px 8px;"><span style="flex:1;font-size:13px;color:var(--text-primary);">'+x.phone+'</span><input style="width:100px;padding:6px 0;border:none;border-bottom:1px solid rgba(0,0,0,.15);border-radius:0;font-size:13px;font-family:inherit;outline:none;text-align:center;" value="'+(x.nickname||"")+'" placeholder="昵称" data-phone="'+x.phone+'"></div>';});
   html+='<div style="display:flex;gap:6px;padding:8px 8px 4px;"><button class="btn btn--ghost" style="flex:1;height:32px;font-size:12px;justify-content:center;" onclick="closeNickMenu()">关闭</button><button class="btn btn--primary" style="flex:1;height:32px;font-size:12px;justify-content:center;" onclick="saveNicknames(false)">保存</button></div>';
@@ -2743,7 +2746,7 @@ if (currentUser) {
   showLoading();
   // Check if admin
   fetch(SB_URL + '/rest/v1/users?phone=eq.' + currentUser, { headers: { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY } }).then(function(r) { return r.json(); }).then(function(ud) {
-    isAdmin = !!(ud[0] && ud[0].role === 'admin'); isSuperAdmin = (currentUser === SUPER_ADMIN);
+    isAdmin = !!(ud[0] && (ud[0].role === 'admin' || ud[0].role === 'owner')); isSuperAdmin = !!(ud[0] && ud[0].role === 'owner'); localStorage.setItem('dou_super', isSuperAdmin?'1':'');
     localStorage.setItem('dou_admin', isAdmin ? '1' : '');
     if (isAdmin) document.body.classList.add('is-admin');
     if (isAdmin) {

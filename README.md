@@ -1,235 +1,189 @@
-# 抖店注册追踪 — 代码文档
+# 信拓 · 抖店 — 客户注册进度追踪系统
 
 ## 项目概述
 
-单文件看板应用（`index.html`），用于追踪抖店（抖音商店）客户注册进度。采用 Apple 设计风格，支持桌面端和移动端。
+单文件 Web 应用（`index.html`），用于追踪抖店客户注册进度。支持多人协作、云端同步、管理员审批。Apple 风格 UI 设计。
 
-**文件**: `D:\demo\index.html`
+**域名**: https://lmcyril1497.github.io/doudian/  
+**本地测试**: `http://localhost:8080/index.html`
+
+---
+
+## 技术栈
+
+| 层级 | 技术 |
+|------|------|
+| 前端 | HTML + CSS + Vanilla JS（无框架） |
+| 后端 | Supabase REST API（直连，无 SDK） |
+| 数据库 | Supabase PostgreSQL |
+| 部署 | GitHub Pages |
+| 图标 | 内嵌 SVG（Lucide 风格） |
 
 ---
 
 ## 数据模型
 
-```javascript
-client = {
-  id: "c_xxx",              // 唯一ID (genId)
-  name: "张三",              // 客户姓名
-  licenseType: "单个体",     // 执照类型
-  cardType: "一类",          // 银行卡类型
-  advanceAmount: "30",      // 预付金额
-  notes: "备注",            // 备注
-  stage: 2,                 // 当前阶段 (0-4)
-  createdAt: 1700000000000, // 审核日期 (时间戳)
-  stageTimestamps: {        // 进入各阶段的时间戳
-    0: 1700000000000,
-    1: 1700000001000,
-    2: 1700000002000,
-  }
-}
+### clients 表（客户数据）
+```
+id, user_id, name, licenseType, cardType, advanceAmount, notes, stage, createdAt, stageTimestamps
 ```
 
-**存储**: `localStorage`  
-- `doudian_clients` — 客户数据
-- `doudian_trash` — 回收站数据
+### users 表（用户账号）
+```
+phone, password_hash, status, role, nickname, reset_requested
+```
+
+### 5 个阶段
+| 0 | 资料名单 | 1 | 已签字 | 2 | 已出证 | 3 | 已扫码 | 4 | 已完结 |
 
 ---
 
-## 5 个阶段
-
-| ID | Key | 标签 | 颜色 |
-|---|---|---|---|
-| 0 | `review` | 资料名单 | `#FF9500` 橙 |
-| 1 | `signed` | 已签字 | `#3B82F6` 蓝 |
-| 2 | `licensed` | 已出证 | `#34C759` 绿 |
-| 3 | `qr_done` | 已扫码 | `#AF52DE` 紫 |
-| 4 | `done` | 已完结 | `#8E8E93` 灰 |
-
----
-
-## 核心功能
-
-### 看板 (Kanban)
-- **桌面端**: 5 列横向平铺，列内卡片纵向排列
-- **移动端**: 列纵向堆叠，卡片横向滑动（scroll-snap）
-- **拖拽**: HTML5 Drag & Drop，拖动卡片到其他列推进阶段
-- **拖拽影像**: Apple 胶囊形毛玻璃浮层
+## 功能清单
 
 ### 客户管理
-- **新增**: 弹窗表单，自动填入当天审核日期
-- **编辑**: 点击卡片编辑，支持修改所有字段
-- **删除**: 软删除到回收站，支持撤销恢复
-- **搜索**: 按姓名实时过滤
-- **筛选**: 统计标签栏点击切换阶段视图
+- 新增/编辑/删除客户
+- 拖拽卡片切换阶段
+- 搜索客户姓名
+- 阶段筛选（统计标签栏）
+- 卡片显示：姓名、标签、复制栏、日期、归属人
 
-### 出证复制 (核心功能)
-- **批量复制**: 已出证列头「复制」按钮，按审核日期排序
-- **单条复制**: 卡片底部绿色复制栏，点击复制一行
-- **格式**: `7.3 张三 单个体 一类 已出`（自带电子执照时不显示"已出"）
-- **排序**: 按 `createdAt`（审核日期）升序，同日按进入已出证时间排序
+### 出证复制
+- 批量复制：已出证列头按钮，按审核日期排序
+- 单条复制：卡片内绿色复制栏
+- 格式：`7.3 苏辉鑫 单个体 二类 已出`
+- 自带电子执照省略"已出"后缀
 
 ### 预付结算
-- **复制**: 已扫码列头「结算」按钮
-- **格式**: `张三 预支30 未收` / `张三 🈚️预支 未收`
+- 已扫码列头"结算"按钮
+- 格式：`张三 预支30 未收` / `张三 🈚️预支 未收`
 
 ### 已完结
-- **复制**: 卡片底部显示「张三完结 7月完结3套」
-- **排序**: 按完成时间降序排列
+- 卡片显示：`张三完结 7月完结3套`
+- 按完成时间降序排列
 
-### 日期选择器
-- **桌面端**: 自定义弹窗，向上展开，纯数字选项
-- **移动端**: 原生 `<select>`（iOS 滚轮）
-- **默认值**: 新增时默认当天日期
+### 用户系统
+- 手机号 + 密码登录
+- 首次登录自动注册（待审批）
+- 管理员审批新用户
+- 每个用户独立数据（user_id 隔离）
+- 退出登录清空本地数据
 
----
+### 管理员功能
+- 用户审批（通过/拒绝）
+- 密码重置（用户申请 → 管理员重置为 123456）
+- 设置昵称（为每个手机号设置显示名）
+- 数据总览（查看所有用户的客户统计）
+- 归属用户（编辑时指定客户归属谁）
+- 全部/用户切换（筛选查看不同用户的数据）
 
-## 函数清单
+### 数据同步
+- 登录时自动上传本地数据到云端
+- 保存/编辑/删除/拖拽即时同步
+- 刷新页面拉取最新云端数据
+- 每个操作保留原始 user_id，不覆盖
 
-### 数据层
-| 函数 | 说明 |
-|---|---|
-| `loadClients()` | 从 localStorage 加载 |
-| `saveClients(arr)` | 保存到 localStorage |
-| `loadTrash()` | 加载回收站 |
-| `saveTrash(arr)` | 保存回收站 |
-| `genId()` | 生成唯一ID `c_xxx` |
-| `refreshAll()` | 刷新统计+看板 |
-
-### 日期工具
-| 函数 | 说明 |
-|---|---|
-| `formatReviewDate(ts)` | 时间戳 → "M.D" 格式 |
-| `parseReviewDate(str)` | "M.D" → 时间戳 |
-| `formatTime(ts)` | 时间戳 → "刚刚/n分钟前/M/D HH:MM" |
-
-### 弹窗
-| 函数 | 说明 |
-|---|---|
-| `openAddModal()` | 新增客户弹窗 |
-| `openEditModal(id)` | 编辑客户弹窗 |
-| `renderModal(opts)` | 渲染弹窗表单 |
-| `closeModal()` | 关闭弹窗（淡出动画） |
-| `confirmDialog(msg, cb)` | 确认对话框 |
-| `toggleHelp()` | 快捷键帮助面板 |
-
-### 客户操作
-| 函数 | 说明 |
-|---|---|
-| `moveClient(id, stage)` | 移动客户到指定阶段 |
-| `deleteClient(id)` | 软删除客户 |
-| `restoreFromTrash(id)` | 从回收站恢复 |
-| `clearTrash()` | 清空回收站 |
-
-### 复制
-| 函数 | 说明 |
-|---|---|
-| `copyToClipboard(text, msg)` | 通用复制（Clipboard API + fallback） |
-| `fallbackCopy(text, msg)` | 移动端兼容的 fallback 复制 |
-| `copyOneText(text)` | 单条复制 |
-| `copyIssueText()` | 批量复制已出证 |
-| `copyAdvanceList()` | 批量复制预付名单 |
-
-### 渲染
-| 函数 | 说明 |
-|---|---|
-| `renderKanban()` | 渲染看板（含滚动位置保存/恢复） |
-| `renderCard(c)` | 渲染单个卡片 |
-| `renderStats()` | 渲染统计标签栏 |
-
-### 拖拽
-| 函数 | 说明 |
-|---|---|
-| `handleDragStart(e)` | 拖拽开始（创建自定义拖拽影像） |
-| `handleDragEnd(e)` | 拖拽结束 |
-| `handleDragOver(e)` | 拖拽经过列 |
-| `handleDragLeave(e)` | 拖拽离开列 |
-| `handleDrop(e)` | 放置 |
-| `handleCardClick(id)` | 卡片点击（编辑） |
-
-### 回收站
-| 函数 | 说明 |
-|---|---|
-| `openTrash()` | 打开回收站弹窗 |
-| `closeTrash()` | 关闭回收站 |
-
-### 日期选择器
-| 函数 | 说明 |
-|---|---|
-| `dpToggle(btn)` | 桌面端日期选择弹窗 |
-
-### 其他
-| 函数 | 说明 |
-|---|---|
-| `setFilter(stageId)` | 阶段筛选 |
-| `exportData()` | 导出 CSV |
-| `toast(msg, type, undo)` | Toast 通知 |
-| `escAttr(s)` / `escHtml(s)` | XSS 防护 |
+### UI/UX
+- Apple 风格登录页
+- 骨架屏加载动画
+- 毛玻璃导航栏
+- 白卡片弹窗 + 弹出菜单
+- 浮动标签输入框（登录页）
+- 自定义下拉选择器
+- 日期滚轮选择器
+- 移动端自适应（底部 Sheet、横向卡片滚动）
+- 搜索图标按钮（手机端）
+- 退出确认对话框
 
 ---
 
 ## CSS 设计系统
 
-### 颜色体系（Apple 风格）
-- **蓝色**: `#0071E3` — 主色调（按钮、选中态）
-- **文字色**: 基于透明度 `rgba(0,0,0,0.85/0.55/0.28)` — Apple 做法
-- **填充色**: `rgba(0,0,0,0.06/0.04/0.02)` — 细微背景
-- **毛玻璃**: 5 级材质（UltraThin → UltraThick）
-
-### 间距
-| 变量 | 值 | 用途 |
-|---|---|---|
-| `--page-padding` | 40px | 页面左右边距 |
-| `--content-gap` | 20px | 列间距 |
-| `--btn-height` | 34px | 桌面按钮高度 |
-| `--touch-target` | 44px | 移动端最小触控 |
+### 颜色
+- 主色：`#667eea` → `#764ba2`（紫蓝渐变）
+- 文字：`rgba(0,0,0,0.85)` / `0.55` / `0.28`
+- 背景：`#f5f5f7`
+- 卡片：`#fff` + `box-shadow: 0 4px 24px rgba(0,0,0,.12)`
 
 ### 圆角
-| 变量 | 值 | 用途 |
-|---|---|---|
-| `--radius-sm` | 8px | 小元素 |
-| `--radius-md` | 12px | 输入框、弹窗选项 |
-| `--radius-lg` | 18px | 卡片 |
-| `--radius-xl` | 22px | 列、Modal |
-| `--radius-pill` | 980px | 胶囊按钮、统计标签 |
+- 按钮/标签：`980px`（胶囊）
+- 卡片：`18px`
+- 弹窗：`14px`
+- 输入框：`10px`
 
-### 动画曲线
-| 变量 | 用途 |
-|---|---|
-| `--ease-apple` | 常规过渡（0.25, 0.1, 0.25, 1） |
-| `--spring-smooth` | 弹窗出入（0.22, 0.61, 0.36, 1） |
+### 动画
+- `cubic-bezier(0.25, 0.1, 0.25, 1)` — Apple 缓动
+- `cubic-bezier(0.22, 0.61, 0.36, 1)` — Spring 弹性
 
-### 响应式断点
-| 断点 | 设备 | 布局 |
-|---|---|---|
-| >1260px | 桌面 | 5列平铺 |
-| 1024px | 平板 | 列收窄 |
-| 768px | 手机 | 纵向堆叠，底部Sheet |
-| 400px | 小手机 | 极限紧凑 |
+### 响应式
+| 断点 | 布局 |
+|------|------|
+| >1260px | 5 列平铺 |
+| 1024px | 列收窄 |
+| 768px | 纵向堆叠，底部 Sheet |
+| 400px | 紧凑 |
 
 ---
 
-## 重要 Bug 修复记录
+## Bug 修复记录
 
-1. **已出证排序**: `renderKanban` 中同日排序的 timestamp tiebreaker 被错误放在 `if(ad2 !== bd2)` 内 → 移到外面
-2. **复制不可用**: `navigator.clipboard` 需要安全上下文，移动端 fallback 用 `execCommand('copy')` + 可见 textarea
-3. **撤销按钮**: `undoCallback.toString()` 丢失闭包变量 `clientId` → 改用字符串拼接
-4. **编辑后滚动重置**: 保存弹窗前后记住/恢复 `window.scrollY`
-5. **键盘顶页面**: iOS 键盘弹起时 `position: fixed` body → 恢复滚动位置
-6. **▼ 箭头飞回**: `.form-select` 的 `transition: all` 导致 `background-position` 动画 → 改为只过渡 `border-color/box-shadow/background-color`
+1. **已出证同日排序错乱** — `stageTimestamps[2]` tiebreaker 放在 `if(ad2 !== bd2)` 内，移到外面
+2. **复制功能在 http 下失败** — 添加 fallback `execCommand('copy')` + 可见 textarea
+3. **撤销删除不生效** — `undoCallback.toString()` 丢失闭包变量，改用字符串拼接 `clientId`
+4. **编辑后页面滚动重置** — 保存前后记住/恢复 `window.scrollY`
+5. **iOS 键盘顶飞页面** — 局部 `position:fixed` body，关闭后恢复 `scrollTo`
+6. **▼ 箭头飞回** — `.form-select` `transition:all` 导致 `background-position` 动画，改为只过渡特定属性
+7. **组件跳动** — 卡片 `transition:all` 导致全部重绘，改为只过渡 `box-shadow` + `transform`
+8. **刷新全量重建卡片** — 添加 targeted refresh（只重建变化的列），`updateCardContent` 原地更新
+9. **Lucide CDN 被墙** — 全部改为内嵌 SVG
+10. **管理员切换用户数据合并** — `syncToCloud` 使用原始 `c.user_id` 而非覆盖
+11. **新增客户无标签不更新** — `updateCardContent` 新增创建 `card-meta` div 逻辑
+12. **切换阶段旧列残留** — `refreshAll([oldStage, newStage])` 同时刷新两列
+13. **登录页缓存旧视图** — 登录时重置 `dou_view`，退出时清空
+14. **搜索图标桌面端误显** — `.btn--search-toggle` 改用 `!important` + `max-width:768px`
+15. **自定义下拉不关闭** — 改用 `mousedown` 捕获阶段 + `position:fixed` + `document.body` 挂载
+16. **资料日期弹窗被遮挡** — CSS 冲突 `.dp-popup` 定位被覆盖，清除样式表定位
 
 ---
 
-## 复制格式速查
+## 关键函数
 
-```
-已出证:  {日期} {姓名} {执照类型} {银行卡类型} 已出
-        例: 7.3 苏辉鑫 单个体 二类 已出
+### 数据层
+`loadClients()`, `saveClients()`, `syncToCloud()`, `sbFetch()`, `sbHead()`, `loadLocalTrash()`, `saveTrash()`
 
-自带执照: {日期} {姓名} {自带电子执照} {银行卡类型}
-        例: 7.5 李四 自带电子执照 一类
+### 渲染
+`renderKanban(stageIds)`, `renderCard(c)`, `updateCardContent(card, c)`, `renderStats()`, `refreshAll(stageIds)`
 
-预付:   {姓名} 预支{金额} 未收
-        例: 张三 预支30 未收
+### 登录/用户
+`handleLogin()`, `showAuthModal()`, `showChangePassModal()`, `showResetPwd()`, `showNicknameModal()`, `saveNicknames()`
 
-完结:   {姓名}完结 {月}月完结{套数}套
-        例: 张三完结 7月完结3套
-```
+### 管理员
+`showAdminPanel()`, `approveUser()`, `resetUserPwd()`, `initAdminSelect()`, `switchToUserView(phone)`
+
+### 客户操作
+`openAddModal()`, `openEditModal()`, `deleteClient()`, `moveClient()`, `renderModal()`
+
+### 复制
+`copyToClipboard()`, `fallbackCopy()`, `copyIssueText()`, `copyAdvanceList()`, `copyOneText()`
+
+### 拖拽
+`handleDragStart()`, `handleDrop()`, `handleCardClick()`
+
+### 搜索
+`toggleSearch()`, `closeSearch()`
+
+### 工具
+`dpToggle()`, `getNick()`, `formatReviewDate()`, `parseReviewDate()`, `escHtml()`, `escAttr()`
+
+---
+
+## 部署说明
+
+1. 代码推送到 GitHub → GitHub Pages 自动部署
+2. Supabase 云端数据库，无需维护
+3. 本地双击 `启动抖店.bat` 或 `python -m http.server 8080`
+4. 手机和电脑同 WiFi，访问 `http://电脑IP:8080/index.html`
+
+## 数据备份
+
+- 云端数据：Supabase 自动备份
+- 本地导出：打开页面 → F12 Console → `sbFetch('clients','GET').then(d=>copy(JSON.stringify(d)))`
