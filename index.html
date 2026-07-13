@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
@@ -1690,7 +1690,7 @@ function dpToggle(btn) {
   pop._btn = btn;
   var btnRect = btn.getBoundingClientRect();
   var spaceBelow = window.innerHeight - btnRect.bottom;
-  pop.style.cssText = 'position:fixed;z-index:99999;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:4px;max-height:200px;overflow-y:auto;min-width:65px;';
+  pop.style.cssText = 'position:fixed;z-index:99999;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:4px;max-height:200px;overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;min-width:65px;';
   if (spaceBelow > 240) { pop.style.top = btnRect.bottom + 4 + 'px'; }
   else { pop.style.bottom = (window.innerHeight - btnRect.top) + 4 + 'px'; }
   pop.style.left = btnRect.left + 'px';
@@ -1893,7 +1893,7 @@ document.body.style.overflow='hidden';
             </div>
             <div class="form-group">
               <label class="form-label">预付金额</label>
-              <input class="form-input" id="mf_advanceAmount" type="number" inputmode="numeric" placeholder="留空=无预支" value="${escAttr(data.advanceAmount)}" autocomplete="off" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+              <input class="form-input" id="mf_advanceAmount" type="number" inputmode="numeric" placeholder="预付金额" value="${escAttr(data.advanceAmount)}" autocomplete="off" oninput="var v=parseInt(this.value.replace(/[^0-9]/g,''));this.value=isNaN(v)?'':Math.min(200,v)">
             </div>
           </div>
           <div class="form-row" id="mf_owner_row" style="display:none;">
@@ -1944,20 +1944,43 @@ document.body.style.overflow='hidden';
       if(open && open._btn === btn){ if(open._handler) document.removeEventListener('mousedown',open._handler); open.remove(); return; }
       if(open){ if(open._handler) document.removeEventListener('mousedown',open._handler); open.remove(); }
       var pop = document.createElement('div'); pop.className = 'cs-dropdown';
-      pop.style.cssText = 'position:fixed;z-index:99999;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:4px;max-height:200px;overflow-y:auto;min-width:65px;';
+      pop.style.cssText = 'position:fixed;z-index:99999;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:4px;max-height:200px;overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;min-width:65px;';
       var btnRect = btn.getBoundingClientRect();
       pop.style.top = btnRect.bottom + 4 + 'px';
       pop.style.left = btnRect.left + 'px';
       pop.style.width = btnRect.width + 'px';
+      // Add custom input for license type
+      if (sel.id === 'mf_licenseType') {
+        var customItem = document.createElement('div');
+        customItem.style.cssText = 'display:flex;gap:4px;padding:4px;border-bottom:1px solid rgba(0,0,0,.06);margin-bottom:4px;';
+        var customInput = document.createElement('input');
+        customInput.style.cssText = 'flex:1;padding:6px 8px;border:none;border-bottom:1px solid rgba(0,0,0,.15);border-radius:0;font-size:13px;font-family:inherit;outline:none;';
+        customInput.value = sel.value || '';
+        customInput.placeholder = sel.value ? '修改当前...' : '自定义...';
+        customInput.onclick = function(e){ e.stopPropagation(); };
+        customInput.onkeydown = function(e){ if(e.key==='Enter') pop.remove(); };
+        customInput.oninput = function(){
+          var v = this.value.trim();
+          if (v) {
+            var exists = Array.from(sel.options).some(function(o){ return o.value === v; });
+            if (!exists) { var opt = document.createElement('option'); opt.value = v; opt.textContent = v; sel.appendChild(opt); }
+            sel.value = v; btn.querySelector('span').textContent = v;
+          } else {
+            sel.value = ''; btn.querySelector('span').textContent = sel.options[0] ? sel.options[0].textContent : '';
+          }
+        };
+        setTimeout(function(){ document.addEventListener('click',function ce(e){ if(!pop.contains(e.target)&&!btn.contains(e.target)){pop.remove();document.removeEventListener('click',ce,true);} },true); },20);
+        customItem.appendChild(customInput);
+        pop.appendChild(customItem);
+      }
       Array.from(sel.options).filter(function(o){ return o.value !== ''; }).forEach(function(o){
         var item = document.createElement('button'); item.type='button';
         item.className = 'um-item'; item.textContent = o.textContent;
         item.onclick = function(){ sel.value = o.value; btn.querySelector('span').textContent = o.textContent; if(pop._handler) document.removeEventListener('mousedown',pop._handler); pop.remove(); };
         pop.appendChild(item);
       });
-      pop._btn = btn; var _scrollClose=function(){if(pop._handler)document.removeEventListener('mousedown',pop._handler,true);pop.remove();window.removeEventListener('scroll',_scrollClose,true)};window.addEventListener('scroll',_scrollClose,true); document.body.appendChild(pop);
-      // Close on outside click
-      setTimeout(function(){ pop._handler = function(ev){ if(!pop.contains(ev.target) && !btn.contains(ev.target)){ pop.remove(); document.removeEventListener('mousedown',pop._handler,true); } }; document.addEventListener('mousedown',pop._handler,true); },10);
+      pop._btn = btn; document.body.appendChild(pop);    // Close on outside click
+      setTimeout(function(){ pop._handler = function(ev){ if(!pop.contains(ev.target) && !btn.contains(ev.target)){ pop.remove(); document.removeEventListener('mousedown',pop._handler,true); } }; document.addEventListener('click',pop._handler,true); },10);
     };
     wrap.appendChild(btn);
     sel.parentNode.insertBefore(wrap, sel);
