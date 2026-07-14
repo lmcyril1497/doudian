@@ -1814,7 +1814,7 @@ function renderModal({ title, client, onSave, focusName }) {
     `<option value="${s.id}" ${String(data.stage) === String(s.id) ? 'selected' : ''}>${s.label}</option>`
   ).join('');
 
-  const licenseOptions = ['', '单个体', '单个体➕备案', '单个独➕备案', '自带电子执照'].map(t =>
+  const licenseOptions = ['', '单个体', '个体备案', '个独备案', '自带电子执照'].map(t =>
     `<option value="${t}" ${data.licenseType === t ? 'selected' : ''}>${t || '请选择执照类型'}</option>`
   ).join('');
 
