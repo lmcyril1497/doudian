@@ -4,6 +4,7 @@
 <meta charset="UTF-8"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="抖店注册"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,shrink-to-fit=no">
 <title>抖店</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 
 <style>
@@ -82,6 +83,8 @@
   --spring-bouncy: cubic-bezier(0.16, 1.02, 0.44, 1.15);
 }
 
+.transition-all { transition: box-shadow 0.25s var(--ease-apple), transform 0.25s var(--ease-apple), background 0.25s var(--ease-apple), border-color 0.25s var(--ease-apple), color 0.25s var(--ease-apple), opacity 0.25s var(--ease-apple); }
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html {
@@ -100,6 +103,8 @@ body {
   color: var(--text-primary);
   user-select: none;
   -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 /* ── Loading Screen ── */
@@ -147,27 +152,90 @@ body {
 
 /* ── Login Wall ── */
 .login-wall { position:fixed; inset:0; z-index:9999; background:linear-gradient(160deg,#f0f0f5,#e8e8f0); display:flex; align-items:center; justify-content:center; padding:20px; }
-.lw-card { width:360px; max-flex-shrink:0; background:#fff; border-radius:18px; box-shadow:0 4px 24px rgba(0,0,0,.08); padding:28px 32px 24px; display:flex; flex-direction:column; }
+.lw-card { width:360px; max-width:calc(100vw - 40px); background:#fff; border-radius:18px; box-shadow:0 4px 24px rgba(0,0,0,.08); padding:28px 32px 24px; display:flex; flex-direction:column; }
 .lw-header { text-align:center; margin-bottom:24px; }
 .lw-title { font-size:20px; font-weight:500; color:#1d1d1f; }
 .lw-desc { font-size:13px; color:#71717a; margin-top:6px; }
-.lw-fields { display:flex; flex-direction:column; gap:14px; }
-.lw-field input { width:100%; height:48px; padding:0 14px; border:2px solid #e4e4e7; border-radius:10px; font-size:15px; font-family:inherit; color:#1d1d1f; outline:none; transition:border-color .15s; }
-.lw-field input:focus { border-color:#667eea; }
-.lw-field input::placeholder { color:#a1a1aa; }
-.lw-btn { height:40px; border:none; border-radius:10px; background:#667eea; color:#fff; font-size:14px; font-weight:500; font-family:inherit; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
-.lw-btn:hover { background:#5a6fd6; }
+.lw-fields { display:flex; flex-direction:column; gap:12px; }
+.lw-field { display:flex; flex-direction:column; gap:0; padding:10px 14px 8px; border:1.5px solid #d4d4d8; border-radius:8px; cursor:text; transition:border-color .15s; }
+.lw-field:focus-within { border-color:#667eea; }
+.lw-field label { font-size:11px; color:#999; line-height:1.3; margin-bottom:2px; }
+.lw-field input { width:100%; height:20px; padding:0; border:none; outline:none; font-size:14px; font-family:inherit; color:#1d1d1f; background:transparent; }
+.lw-field input::-ms-reveal,
+.lw-field input::-webkit-autoFillControls { display:none; }
+.lw-pass-wrap input::-webkit-toggle-password-visibility,
+.pass-popup input::-webkit-toggle-password-visibility { display:none !important; }
+.lw-field input::placeholder { color:#c0c0c0; }
+.lw-btn { height:40px; border:none; border-radius:8px; background:#667eea; color:#fff; font-size:14px; font-weight:500; font-family:inherit; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; transition:opacity .15s; }
+.lw-btn:hover { opacity:.85; }
 .lw-forgot { text-align:right; margin:8px 0 16px; }
-.lw-forgot a { font-size:13px; color:#71717a; cursor:pointer; text-decoration:none; }
-.lw-divider { display:flex; align-items:center; gap:12px; margin:16px 0; color:#a1a1aa; font-size:12px; }
-.lw-divider:before,.lw-divider:after { content:''; flex:1; height:1px; background:#e4e4e7; }
-.lw-register { text-align:center; font-size:13px; color:#71717a; }
+.lw-forgot a { font-size:13px; color:#a0a0a0; cursor:pointer; text-decoration:none; }
+.lw-forgot a:hover { color:#667eea; }
+.lw-email-wrap { display:flex; align-items:center; border:1.5px solid #d4d4d8; border-radius:8px; transition:border-color .15s; cursor:text; }
+.lw-email-wrap:focus-within { border-color:#667eea; }
+.lw-email-wrap .lw-field { border:none; border-radius:0; min-width:0; flex:1; }
+.lw-email-wrap .lw-field:focus-within { border:none; box-shadow:none; }
+.lw-email-domain-wrap { display:flex; align-items:center; gap:2px; padding:0 10px 0 0; cursor:pointer; flex-shrink:0; user-select:none; }
+.lw-email-domain-text { font-size:14px; color:#1d1d1f; }
+.lw-email-arrow { width:14px; height:14px; color:#a1a1aa; flex-shrink:0; transition:transform .15s; }
+.lw-email-dd { position:fixed; z-index:99999; background:#fff; border-radius:14px; box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04); padding:4px; max-height:200px; overflow-y:auto; scrollbar-width:none; -ms-overflow-style:none; min-width:120px; }
+.lw-email-dd::-webkit-scrollbar { display:none; }
+.lw-email-dd .um-item { border-radius:8px; font-size:13px; padding:8px 12px; }
+.lw-pass-wrap { position:relative; }
+.lw-pass-wrap input { padding-right:44px; }
+.lw-pass-toggle { position:absolute; right:4px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; padding:6px; color:#b0b0b0; border-radius:6px; display:flex; align-items:center; justify-content:center; }
+.lw-pass-toggle:hover { color:#666; background:rgba(0,0,0,.05); }
+.lw-btn { width:100%; height:44px; margin-top:4px; }
+.lw-bottom { display:flex; align-items:center; gap:12px; margin:16px 0 0; color:#a1a1aa; font-size:12px; }
+.lw-bottom:before,.lw-bottom:after { content:''; flex:1; height:1px; background:#e4e4e7; }
+.lw-link { text-align:center; font-size:13px; color:#71717a; margin-top:12px; }
+.lw-link a { color:#667eea; cursor:pointer; text-decoration:none; font-weight:500; }
+.lw-link a:hover { opacity:.8; }
 .lw-register a { color:#71717a; cursor:pointer; text-decoration:none; }
-.lw-hint { font-size:13px; color:#ff3b30; min-height:18px; margin-top:12px; text-align:center; }
+.lw-hint { font-size:13px; color:#ff3b30; min-height:18px; margin-top:12px; text-align:center; transition:color .2s; }
+.lw-hint--info { color:#667eea; }
+.lw-hint--warn { color:#f5a623; }
+.lw-hint--success { color:#34c759; }
+.lw-hint--pulse { animation:lwPulse 1.5s ease-in-out infinite; }
+@keyframes lwPulse { 0%,100%{opacity:1;} 50%{opacity:.5;} }
+.lw-approval { display:none; margin-top:12px; padding:14px 12px; border-radius:8px; background:#f9fafb; border:1px solid #e4e4e7; text-align:center; }
+.lw-approval.show { display:block; }
+.lw-approval-icon { width:28px; height:28px; margin:0 auto 6px; border-radius:50%; background:#fff3cd; display:flex; align-items:center; justify-content:center; animation:apSpin 2s linear infinite; }
+@keyframes apSpin { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
+.lw-approval-icon svg { color:#f5a623; width:16px; height:16px; }
+.lw-approval-text { font-size:13px; color:#3f3f46; font-weight:500; margin-bottom:2px; }
+.lw-approval-sub { font-size:11px; color:#a1a1aa; margin-bottom:10px; }
+.lw-cancel { display:none; font-size:13px; color:#71717a; cursor:pointer; margin-top:0; text-align:center; text-decoration:none; padding:6px 16px; border-radius:6px; border:1px solid #e4e4e7; background:#fff; transition:all .15s; }
+.lw-cancel:hover { color:#1d1d1f; border-color:#999; background:#f9f9f9; }
+.lw-field input:disabled { background:#f5f5f5; color:#a1a1aa; cursor:not-allowed; }
+.lw-btn:disabled { background:#c7c7cc; cursor:not-allowed; }
 .um-item { display:flex; align-items:center; width:100%; padding:8px 12px; border:none; border-radius:8px; background:none; font-size:13px; font-family:inherit; color:#1d1d1f; cursor:pointer; text-align:left; }
 .um-item:hover { background:rgba(0,0,0,.04); }
 .um-item--danger { color:#ff3b30; }
 .um-item--danger:hover { background:rgba(255,59,48,.08); }
+.role-active { background:rgba(0,0,0,.06) !important; color:var(--text-primary) !important; }
+.ap-overlay { position:fixed; inset:0; z-index:1002; background:rgba(0,0,0,.18); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; animation:apFadeIn .15s ease; }
+@keyframes apFadeIn { from{opacity:0;} to{opacity:1;} }
+.ap-card { background:#fff; border-radius:14px; width:380px; max-width:calc(100vw - 40px); max-height:calc(100vh - 80px); overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,.14),0 0 0 1px rgba(0,0,0,.04); }
+.ap-header { padding:12px 16px 8px; }
+.ap-title { font-size:16px; font-weight:600; color:#1d1d1f; letter-spacing:-.2px; }
+.ap-subtitle { font-size:12px; color:#8e8e93; margin-top:1px; }
+.ap-list { margin:0 12px; display:flex; flex-direction:column; gap:8px; }
+.ap-item { display:flex; align-items:center; padding:12px 14px; position:relative; }
+.ap-item:hover { }
+.ap-info { display:flex; align-items:center; gap:10px; }
+.ap-email { font-size:14px; color:#1d1d1f; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ap-meta { font-size:12px; color:#8e8e93; margin-top:1px; }
+.ap-actions { display:flex; justify-content:flex-end; gap:16px; margin-top:10px; padding-top:10px; border-top:0.5px solid rgba(0,0,0,.06); }
+.ap-btn-approve { background:none; border:none; color:#007aff; font-size:14px; font-weight:500; font-family:inherit; cursor:pointer; padding:4px 8px; border-radius:6px; transition:background .12s; }
+.ap-btn-approve:hover { background:rgba(0,122,255,.08); }
+.ap-btn-reject { background:none; border:none; color:#8e8e93; font-size:14px; font-weight:400; font-family:inherit; cursor:pointer; padding:4px 8px; border-radius:6px; transition:all .12s; }
+.ap-btn-reject:hover { color:#ff3b30; background:rgba(255,59,48,.06); }
+.ap-footer { padding:8px 16px 10px; display:flex; justify-content:flex-end; gap:8px; }
+.ap-footer-btn { height:32px; padding:0 16px; border-radius:8px; border:1px solid #d1d1d6; background:#fff; color:#1d1d1f; font-size:13px; font-family:inherit; cursor:pointer; transition:all .12s; }
+.ap-footer-btn:hover { background:#f5f5f7; }
+.ap-empty { padding:32px 16px; text-align:center; color:#8e8e93; font-size:13px; }
+.ap-empty-icon { font-size:28px; margin-bottom:6px; opacity:.5; }
 
 /* ── App Shell ── */
 .app {
@@ -422,9 +490,8 @@ body {
 }
 .card:hover {
   box-shadow: var(--shadow-card-hover);
-  transform: translateY(-1px);
 }
-.card:active { cursor: grabbing; transform: scale(0.985); }
+.card:active { cursor: grabbing; }
 .card--dragging {
   opacity: 0.35;
   box-shadow: none;
@@ -472,6 +539,7 @@ body {
 .drag-ghost .dg-tag--green { background: rgba(52,199,89,0.08); color: #1D7A35; }
 .drag-ghost .dg-tag--blue  { background: rgba(0,113,227,0.08); color: #005BB5; }
 .drag-ghost .dg-tag--orange { background: rgba(255,149,0,0.08); color: #B06500; }
+.drag-ghost .dg-tag--purple { background: rgba(175,82,222,0.10); color: #AF52DE; }
 .drag-ghost .dg-copybar {
   padding: 7px 10px; margin: 6px 0 4px;
   background: rgba(52,199,89,0.05);
@@ -492,6 +560,18 @@ body {
   margin-bottom: 6px;
   letter-spacing: -0.01em;
 }
+.card-name-row {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 6px;
+}
+.card-name-row .card-name { margin-bottom: 0; }
+.summarize-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: none; padding: 0; flex-shrink: 0; cursor: pointer;
+  box-shadow: 0 0 0 2px #fff;
+}
+.summarize-dot--green { background: #34c759; }
+.summarize-dot--yellow { background: #ffcc00; }
 .card-phone {
   font-size: 12px; font-weight: 500;
   color: var(--text-secondary);
@@ -510,6 +590,7 @@ body {
 .card-tag--bank { background: rgba(52,199,89,0.08); color: #1D7A35; }
 .card-tag--id   { background: rgba(0,113,227,0.08); color: #005BB5; }
 .card-tag--note { background: rgba(255,149,0,0.08); color: #B06500; }
+.card-tag--memo { background: rgba(147,112,219,0.10); color: #9370DB; }
 
 .card-meta {
   display: flex; flex-direction: row; flex-wrap: wrap; gap: 5px;
@@ -773,30 +854,39 @@ body.is-admin .card-owner { display:block !important; }
 
 /* ── Toast ── */
 .toast-container {
-  position: fixed; top: 20px; right: 20px;
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
   z-index: 200;
-  display: flex; flex-direction: column; gap: 8px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
   pointer-events: none;
 }
 .toast {
-  padding: 14px 20px;
-  background: var(--surface-card);
-  border-radius: var(--radius-lg);
-  font-size: 13px; font-weight: 540;
-  color: var(--text-primary);
-  box-shadow: var(--shadow-toast);
-  animation: toast-in 0.4s var(--spring-smooth);
-  display: flex; align-items: center; gap: 8px;
-  min-width: 240px;
+  padding: 10px 18px;
+  background: rgba(30,30,30,0.78);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 980px;
+  font-size: 13px; font-weight: 500;
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12), 0 0 0 0.5px rgba(255,255,255,0.08) inset;
+  animation: toast-in 0.3s var(--spring-smooth);
+  display: flex; align-items: center; gap: 7px;
   pointer-events: auto;
+  white-space: nowrap;
 }
+.toast-in { pointer-events: none; }
 @keyframes toast-in {
-  from { opacity: 0; transform: translateX(40px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from { opacity: 0; transform: scale(0.92) translateY(6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
 }
-.toast--success { border-left: 3px solid var(--green); }
-.toast--info { border-left: 3px solid var(--blue); }
-.toast--error { border-left: 3px solid var(--red); }
+.toast-icon {
+  width: 18px; height: 18px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.toast-icon svg { width: 11px; height: 11px; }
+.toast--success .toast-icon { background: var(--green); }
+.toast--info .toast-icon { background: var(--blue); }
+.toast--error .toast-icon { background: var(--red); }
 
 /* ── Confirm Dialog ── */
 .confirm-content {
@@ -967,11 +1057,12 @@ body.is-admin .card-owner { display:block !important; }
   .modal-footer .btn { flex: 1; }
 
   /* Toast — smaller, top-right */
-  .toast-container { top: 12px; right: 12px; }
+  .toast-container { bottom: 16px; left: 50%; }
   .toast {
-    padding: 12px 16px; font-size: 12px;
+    padding: 8px 14px; font-size: 12px;
     min-width: auto; max-width: 280px;
-    border-radius: var(--radius-md);
+    border-radius: 980px;
+  }
   }
 
   /* Help/confirm panel */
@@ -992,7 +1083,8 @@ body.is-admin .card-owner { display:block !important; }
   .search-input { width: 80px; height: 28px; padding: 0 6px 0 24px; font-size: 12px; border-radius: 7px; }
   .search-input:focus { width: 110px; }
   .search-icon { left: 6px; }
-  .stats-strip { padding: 4px 8px 6px; gap: 4px; }
+  .stats-strip { padding: 4px 6px 6px; gap: 4px; }
+  .stats-inner { padding: 4px 0 4px !important; }
   .stat-pill { padding: 4px 10px; font-size: 11px; min-height: 28px; }
   .stat-count { font-size: 13px; }
   .kanban { padding: 0 6px 14px; gap: 6px; }
@@ -1009,7 +1101,7 @@ body.is-admin .card-owner { display:block !important; }
   .modal-body { padding: 12px 16px; gap: 10px; }
   .modal-footer { padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); }
   .form-input, .form-select { height: 38px; }
-  .toast { max-width: 240px; font-size: 11px; padding: 10px 14px; }
+  .toast { max-width: 280px; font-size: 11px; padding: 7px 12px calc(7px + env(safe-area-inset-bottom, 0px)); overflow: hidden; text-overflow: ellipsis; }
 }
 
 /* ── iOS touch fixes ── */
@@ -1084,15 +1176,44 @@ input,select,textarea,button { -webkit-appearance: none; }
 <div class="login-wall" id="loginWall">
   <div class="lw-card">
     <div class="lw-header"><div class="lw-title">信拓</div><div class="lw-desc">抖店 · 客户注册工作台</div></div>
-    <div class="lw-fields">
-      <div class="lw-field"><input id="lw_phone" type="text" placeholder="请输入手机号" maxlength="11" inputmode="numeric"></div>
-      <div class="lw-field"><input id="lw_pass" type="password" placeholder="请输入密码"></div>
+    <!-- 登录表单 -->
+    <div id="lwLoginView">
+      <div class="lw-fields">
+        <div class="lw-email-wrap" onclick="var i=this.querySelector('input');if(i)i.focus();">
+          <div class="lw-field"><label>邮箱</label><input id="lw_phone" type="text" placeholder="请输入邮箱" inputmode="text" style="border:none;" oninput="var v=this.value;var i=v.indexOf('@');if(i!==-1)this.value=v.substring(0,i);"></div>
+          <div class="lw-email-domain-wrap" id="lw_domain_wrap"><span class="lw-email-domain-text" id="lw_domain_text">@qq.com</span><svg class="lw-email-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+          <input type="hidden" id="lw_domain" value="@qq.com">
+        </div>
+        <div class="lw-field lw-pass-wrap"><label>密码</label><input id="lw_pass" type="password" placeholder="请输入密码" autocomplete="new-password"><button type="button" class="lw-pass-toggle" onclick="togglePassVis(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></svg></button></div>
+      </div>
+      <div class="lw-forgot"><a href="javascript:void(0)" onclick="showResetPwd()">忘记密码</a></div>
+      <button class="lw-btn" id="lw_btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 15h2v5h12V4H6v5H4V3a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zm6-4V8l5 4l-5 4v-3H2v-2z"/></svg>登录账号</button>
+      <div class="lw-bottom"><span>或</span></div>
+      <div class="lw-link">还没有账号？<a href="javascript:void(0)" onclick="switchAuthTab('register')">创建账号</a></div>
     </div>
-    <div class="lw-forgot"><a href="javascript:void(0)" onclick="showResetPwd()">忘记密码</a></div>
-    <button class="lw-btn" id="lw_btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>登录</button>
-    <div class="lw-divider"><span>或</span></div>
-    <div class="lw-register">还没有账号？ <a href="javascript:void(0)">首次登录自动注册</a></div>
+    <!-- 注册表单 -->
+    <div id="lwRegisterView" style="display:none;">
+      <div class="lw-fields">
+        <div class="lw-field"><label>昵称</label><input id="reg_nick" type="text" placeholder="请输入昵称"></div>
+        <div class="lw-email-wrap" onclick="var i=this.querySelector('input');if(i)i.focus();">
+          <div class="lw-field"><label>邮箱</label><input id="reg_email" type="text" placeholder="请输入邮箱" inputmode="text" style="border:none;" oninput="var v=this.value;var i=v.indexOf('@');if(i!==-1)this.value=v.substring(0,i);"></div>
+          <div class="lw-email-domain-wrap" id="reg_domain_wrap"><span class="lw-email-domain-text" id="reg_domain_text">@qq.com</span><svg class="lw-email-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+          <input type="hidden" id="reg_domain" value="@qq.com">
+        </div>
+        <div class="lw-field lw-pass-wrap"><label>密码</label><input id="reg_pass" type="password" placeholder="请输入密码（至少6位）" autocomplete="new-password"><button type="button" class="lw-pass-toggle" onclick="togglePassVis(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></svg></button></div>
+        <div class="lw-field lw-pass-wrap"><label>确认密码</label><input id="reg_pass2" type="password" placeholder="请再次输入密码" autocomplete="new-password"><button type="button" class="lw-pass-toggle" onclick="togglePassVis(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></svg></button></div>
+      </div>
+      <button class="lw-btn" id="reg_btn" onclick="handleRegister()" style="margin-top:8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>注册账号</button>
+      <div class="lw-bottom"><span>或</span></div>
+      <div class="lw-link">已有账号？<a href="javascript:void(0)" onclick="switchAuthTab('login')">去登录</a></div>
+    </div>
     <div class="lw-hint" id="lw_hint"></div>
+    <div class="lw-approval" id="lw_approval">
+      <div class="lw-approval-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+      <div class="lw-approval-text">注册成功，等待管理员审核</div>
+      <div class="lw-approval-sub">审核通过后即可登录使用</div>
+      <button class="lw-cancel" id="lw_cancel" onclick="cancelApprovalPoll()">取消等待</button>
+    </div>
   </div>
 </div>
 
@@ -1138,20 +1259,22 @@ input,select,textarea,button { -webkit-appearance: none; }
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
-// ============================================================
 // CLOUD SYNC (Supabase REST API)
-// ============================================================
 const SB_URL = 'https://ytqzuqqqytdihxybhhcy.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0cXp1cXFxeXRkaWh4eWJoaGN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1OTE4NzAsImV4cCI6MjA5OTE2Nzg3MH0.EQUhNToGoQkdXLsKpHsw8gITaTVA0mtFhtN1MEbxzBc';
+const _supabase = window.supabase.createClient(SB_URL, SB_KEY);
+let _sessionToken = null;
 let currentUser = localStorage.getItem('dou_user') || ''; let isAdmin = !!localStorage.getItem('dou_admin');
 let isSuperAdmin = !!localStorage.getItem('dou_super');
-document.body.classList.add('is-admin'); // Show card-owner by default, will be correct for admin
 
-function sbHead() { return { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' }; }
-function hashPassword(phone, password) {
-  var rounds = 3, hash = phone + ':' + password + ':xt_doudian_2024';
-  for (var i = 0; i < rounds; i++) { hash = btoa(hash); }
-  return Promise.resolve(hash);
+function sbHead() {
+  var token = _sessionToken || SB_KEY;
+  return { apikey: SB_KEY, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
+}
+async function refreshSession() {
+  var r = await _supabase.auth.getSession();
+  _sessionToken = r.data.session ? r.data.session.access_token : null;
+  return r.data.session;
 }
 async function sbFetch(table, method, body) {
   var url = SB_URL + '/rest/v1/' + table;
@@ -1161,62 +1284,175 @@ async function sbFetch(table, method, body) {
   try {
     var r = await fetch(url, opts);
     if (!r.ok) {
-      var err = await r.text();
-      console.log('Supabase error: ' + r.status + ' ' + err);
-      toast('同步失败: ' + r.status + ' ' + err.slice(0,50), 'error');
+      console.log('Supabase error: ' + r.status);
+      toast('同步失败，请稍后重试', 'error');
     }
     return r.ok ? (method === 'GET' ? r.json() : true) : (method === 'GET' ? [] : false);
   } catch(e) {
-    console.log('Supabase fetch error: ' + e.message);
-    toast('网络错误: ' + e.message, 'error');
+    console.log('Supabase fetch error');
+    toast('网络错误，请检查连接', 'error');
     return method === 'GET' ? [] : false;
   }
 }
 
+function switchAuthTab(tab){
+  document.getElementById('lwLoginView').style.display=tab==='login'?'':'none';
+  document.getElementById('lwRegisterView').style.display=tab==='register'?'':'none';
+  document.getElementById('lw_hint').textContent='';
+}
+function showRegister(){switchAuthTab('register');}
+function showLogin(){switchAuthTab('login');}
+function togglePassVis(btn){var inp=btn.parentElement.querySelector('input');var eyeOn='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>';var eyeOff='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></svg>';if(inp.style.webkitTextSecurity){if(inp.style.webkitTextSecurity==='disc'){inp.style.webkitTextSecurity='none';btn.innerHTML=eyeOn;}else{inp.style.webkitTextSecurity='disc';btn.innerHTML=eyeOff;}}else{if(inp.type==='password'){inp.type='text';btn.innerHTML=eyeOn;}else{inp.type='password';btn.innerHTML=eyeOff;}}}
+function _regHint(msg,type){
+  var h=document.getElementById('lw_hint');
+  h.textContent=msg;h.className='lw-hint'+(type==='error'?' error':type==='warn'?' warn pulse':'');
+}
+async function handleRegister(){
+  var nick=document.getElementById('reg_nick').value.trim();
+  var prefix=document.getElementById('reg_email').value.trim().split('@')[0].split('.')[0];
+  var email=prefix+document.getElementById('reg_domain').value;
+  var pw=document.getElementById('reg_pass').value.trim();
+  var pw2=document.getElementById('reg_pass2').value.trim();
+  if(!nick){_regHint('请输入昵称','error');return;}
+  if(!prefix){_regHint('请输入邮箱前缀','error');return;}
+  if(pw.length<6){_regHint('密码不少于6位','error');return;}
+  if(pw!==pw2){_regHint('两次密码不一致','error');return;}
+  _regHint('正在注册...','info');
+  document.getElementById('reg_btn').disabled=true;
+  try{
+    var {data:upData,error:upErr}=await _supabase.auth.signUp({email:email,password:pw});
+    if(upErr){
+      if(upErr.message&&upErr.message.includes('already registered')){
+        // Auth 账号已存在，尝试登录查看状态
+        var {data:loginData}=await _supabase.auth.signInWithPassword({email:email,password:pw});
+        if(loginData&&loginData.session){
+          await refreshSession();if(!_sessionToken)_sessionToken=loginData.session.access_token;
+          var chk=await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(email)+"&select=status",{headers:sbHead()});
+          var chkArr=chk.ok?await chk.json():[];
+          if(chkArr.length>0&&chkArr[0].status==='rejected'){
+            await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(email),{method:"PATCH",headers:sbHead(),body:JSON.stringify({status:"pending"})});
+            document.getElementById('reg_btn').disabled=false;
+            switchAuthTab('login');startApprovalPoll(email,pw);return;
+          }
+          if(chkArr.length===0){
+            // Auth 有账号但 users 表没有（残留），重新写入
+            await fetch(SB_URL+"/rest/v1/users",{method:"POST",headers:{apikey:SB_KEY,Authorization:'Bearer '+_sessionToken,'Content-Type':'application/json',Prefer:"resolution=merge-duplicates"},body:JSON.stringify({id:loginData.user.id,email:email,phone:email,nickname:nick,status:"pending",password_hash:"managed_by_supabase_auth",role:"user",reset_requested:false})});
+            document.getElementById('reg_btn').disabled=false;
+            switchAuthTab('login');startApprovalPoll(email,pw);return;
+          }
+        }
+        _regHint('该邮箱已注册，请直接登录','error');document.getElementById('reg_btn').disabled=false;return;
+      }
+      _regHint(upErr.message||'注册失败','error');document.getElementById('reg_btn').disabled=false;return;
+    }
+    if(upData&&upData.user&&upData.user.identities&&upData.user.identities.length===0){
+      // Auth 账号已存在但 identities 为空，尝试登录查看状态
+      var {data:loginData2}=await _supabase.auth.signInWithPassword({email:email,password:pw});
+      if(loginData2&&loginData2.session){
+        await refreshSession();if(!_sessionToken)_sessionToken=loginData2.session.access_token;
+        var chk2=await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(email)+"&select=status",{headers:sbHead()});
+        var chkArr2=chk2.ok?await chk2.json():[];
+        if(chkArr2.length>0&&chkArr2[0].status==='rejected'){
+          await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(email),{method:"PATCH",headers:sbHead(),body:JSON.stringify({status:"pending"})});
+          document.getElementById('reg_btn').disabled=false;
+          switchAuthTab('login');startApprovalPoll(email,pw);return;
+        }
+        if(chkArr2.length===0){
+          await fetch(SB_URL+"/rest/v1/users",{method:"POST",headers:{apikey:SB_KEY,Authorization:'Bearer '+_sessionToken,'Content-Type':'application/json',Prefer:"resolution=merge-duplicates"},body:JSON.stringify({id:loginData2.user.id,email:email,phone:email,nickname:nick,status:"pending",password_hash:"managed_by_supabase_auth",role:"user",reset_requested:false})});
+          document.getElementById('reg_btn').disabled=false;
+          switchAuthTab('login');startApprovalPoll(email,pw);return;
+        }
+      }
+      _regHint('该邮箱已注册，请直接登录','error');document.getElementById('reg_btn').disabled=false;return;
+    }
+    // signUp 在 confirm email 关闭时已返回 session，直接用
+    var token=upData.session?.access_token;
+    if(!token){
+      var {data:loginData}=await _supabase.auth.signInWithPassword({email:email,password:pw});
+      token=loginData?.session?.access_token;
+    }
+    var insResp=await fetch(SB_URL+"/rest/v1/users",{method:"POST",headers:{apikey:SB_KEY,Authorization:'Bearer '+token,'Content-Type':'application/json',Prefer:"resolution=merge-duplicates"},body:JSON.stringify({id:upData.user.id,email:email,phone:email,nickname:nick,status:"pending",password_hash:"managed_by_supabase_auth",role:"user",reset_requested:false})});
+    if(!insResp.ok){var insErr=await insResp.json();_regHint("注册失败: "+(insErr.message||"数据库写入错误"),'error');document.getElementById('reg_btn').disabled=false;return;}
+    document.getElementById('reg_btn').disabled=false;
+    await refreshSession();
+    if(!_sessionToken){_sessionToken=token;}
+    switchAuthTab('login');
+    startApprovalPoll(email,pw);
+  }catch(e){_regHint('网络异常，请稍后重试','error');document.getElementById('reg_btn').disabled=false;}
+}
+
 function showResetPwd(){
   var c=document.getElementById('modalContainer');
-  document.body.style.overflow='hidden'; c.innerHTML='<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal" style="width:340px;"><div class="modal-header"><div class="modal-title">忘记密码</div><button class="modal-close" onclick="closeModal()">✕</button></div><div class="modal-body" style="gap:12px;"><p style="font-size:13px;color:var(--text-secondary);">输入手机号，提交重置申请</p><div class="form-group"><label class="form-label">手机号</label><input class="form-input" id="rp_phone" type="text" placeholder="请输入11位手机号" maxlength="11"></div></div><div class="modal-footer"><button class="btn btn--ghost" onclick="closeModal()">取消</button><button class="btn btn--primary" id="rp_btn">提交申请</button></div></div></div>';
+  var defaultEmail=(document.getElementById("lw_phone")?document.getElementById("lw_phone").value.trim().split('@')[0].split('.')[0]:'')+((document.getElementById("lw_domain")&&document.getElementById("lw_domain").value)?document.getElementById("lw_domain").value:'');
+  document.body.style.overflow='hidden'; c.innerHTML='<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal" style="width:360px;border-radius:18px;box-shadow:0 4px 24px rgba(0,0,0,.08);padding:28px 32px 24px;display:flex;flex-direction:column;align-items:center;"><div style="font-size:20px;font-weight:500;color:#1d1d1f;margin-bottom:6px;">忘记密码</div><div style="font-size:13px;color:#71717a;margin-bottom:20px;text-align:center;">输入邮箱，发送重置链接到邮箱</div><div class="lw-field" style="width:100%;margin-bottom:16px;"><label>邮箱</label><input id="rp_email" type="email" placeholder="请输入邮箱" value="'+escAttr(defaultEmail)+'"></div><button class="lw-btn" id="rp_btn" style="width:100%;height:44px;">发送</button><div style="font-size:13px;color:#71717a;margin-top:14px;cursor:pointer;" onclick="closeModal()">返回登录</div></div></div>';
   document.getElementById('rp_btn').addEventListener('click',async function(){
-    var p=document.getElementById('rp_phone').value.trim();
-    if(!/^1[3-9]\d{9}$/.test(p)){toast('请输入正确的手机号','error');return;}
-    var r=await fetch(SB_URL+'/rest/v1/users?phone=eq.'+p,{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}});
-    var u=r.ok?(await r.json()):[];
-    if(u.length===0){toast('该手机号未注册','error');return;}
-    var patchRes=await fetch(SB_URL+'/rest/v1/users?phone=eq.'+p,{method:'PATCH',headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({reset_requested:true})});
-    if(!patchRes.ok){toast('提交失败，请联系管理员重置密码','error');return;}
-    closeModal();toast('已提交重置申请，等待管理员处理','success');
-  }); html += '</div>';
+    var btn=document.getElementById('rp_btn'); btn.disabled=true; btn.textContent='发送中...';
+    var e=document.getElementById('rp_email').value.trim();
+    if(!e||!e.includes("@")){toast('请输入正确的邮箱','error');btn.disabled=false;btn.textContent='发送';return;}
+    var {error}=await _supabase.auth.resetPasswordForEmail(e,{redirectTo:window.location.origin+window.location.pathname});
+    if(error){toast(error.message||'发送失败，请稍后重试','error');btn.disabled=false;btn.textContent='发送';return;}
+    try{await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(e),{method:"PATCH",headers:{apikey:SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({reset_requested:true})});}catch(x){}
+    closeModal();toast('重置链接已发送到邮箱，请查收','success');
+  });
+}
+function setHint(text, type) {
+  var hint = document.getElementById('lw_hint');
+  hint.textContent = text;
+  hint.className = 'lw-hint' + (type ? ' ' + type.split(' ').map(function(t){return 'lw-hint--'+t;}).join(' ') : '');
 }
 function showApp() { document.getElementById("loginWall").style.display="none"; document.getElementById("appShell").style.display=""; }
-function showLogin() { document.getElementById("appShell").style.display="none"; document.getElementById("loginWall").style.display=""; document.getElementById("lw_hint").textContent=""; document.getElementById("lw_phone").value=""; document.getElementById("lw_pass").value=""; }
+function showLogin() {
+  cancelApprovalPoll();
+  document.getElementById("appShell").style.display="none";document.getElementById("loginWall").style.display="";
+  setHint("");document.getElementById("lw_phone").value="";document.getElementById("lw_pass").value="";
+}
 async function handleLogin() {
   try {
-  var p=document.getElementById("lw_phone").value.trim();
+  var prefix=document.getElementById("lw_phone").value.trim().split('@')[0].split('.')[0];
+  var email=prefix+document.getElementById("lw_domain").value;
   var pw=document.getElementById("lw_pass").value.trim();
-  var hint=document.getElementById("lw_hint");
-  if(!/^1[3-9]\d{9}$/.test(p)){hint.textContent="请输入正确的11位手机号";return;}
-  if(pw.length<6){hint.textContent="密码至少6位";return;}
-  var pwHash=await hashPassword(p,pw);hint.textContent="登录中...";
-  var resp=await fetch(SB_URL+"/rest/v1/users?phone=eq."+p,{headers:sbHead()});
-  var users=resp.ok?(await resp.json()):[];
-  if(users.length>0){
-    var oldHash=btoa(p+":"+pw);if(users[0].password_hash!==pwHash&&users[0].password_hash!==oldHash){hint.textContent="密码错误";return;}
-    if(users[0].status!=="approved"){startApprovalPoll(p);return;}
-  }else{
-    await fetch(SB_URL+"/rest/v1/users",{method:"POST",headers:{...sbHead(),Prefer:"resolution=merge-duplicates"},body:JSON.stringify({phone:p,password_hash:pwHash,status:"pending"})});
-    startApprovalPoll(p);return;
+  if(!prefix){setHint("请输入邮箱前缀","info");return;}
+  if(pw.length<6){setHint("密码不少于6位","info");return;}
+  setHint("正在验证...","info");
+  // 先尝试登录 Auth
+  var {data:signData,error:signErr}=await _supabase.auth.signInWithPassword({email:email,password:pw});
+  if(signErr){
+    // 查 users 表判断用户是否存在
+    var chk=await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(email)+"&select=id",{headers:sbHead()});
+    var chkArr=chk.ok?await chk.json():[];
+    if(chkArr.length===0){
+      setHint("该邮箱未注册，请先「创建账号」","error");return;
+    }
+    setHint("密码错误，请重新输入","error");return;
   }
-  currentUser=p;localStorage.setItem("dou_user",p);isAdmin=users[0].role==="admin"||users[0].role==="owner";isSuperAdmin=users[0].role==="owner";localStorage.setItem("dou_admin",isAdmin?"1":"");localStorage.setItem("dou_super",isSuperAdmin?"1":"");if(isAdmin){document.body.classList.add("is-admin");var dv=localStorage.getItem('dou_view');window._viewingUser=(dv==='all'?null:p);localStorage.setItem('dou_view',p);}showApp();updateAuthBtn();showLoading();
+  // 登录成功，查 users 表获取角色
+  var token=signData.session?.access_token;
+  await refreshSession();
+  var resp=await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(email),{headers:{apikey:SB_KEY,Authorization:'Bearer '+token}});
+  var users=resp.ok?(await resp.json()):[];
+  if(users.length===0){
+    // Auth 有账号但 users 表没有（残留账号），提示注册
+    await _supabase.auth.signOut();_sessionToken=null;
+    setHint("该邮箱未完成注册，请先「创建账号」","error");return;
+  }
+  if(users[0].status==="rejected"){
+    await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(email),{method:"PATCH",headers:sbHead(),body:JSON.stringify({status:"pending"})});
+    setHint("您的账号已重新提交审核，请等待管理员审批","warn");
+    startApprovalPoll(email,document.getElementById("lw_pass").value.trim());return;
+  }
+  if(users[0].status!=="approved"){startApprovalPoll(email,document.getElementById("lw_pass").value.trim());return;}
+  await refreshSession();
+  currentUser=email;localStorage.setItem("dou_user",email);isAdmin=users[0].role==="admin"||users[0].role==="owner";isSuperAdmin=users[0].role==="owner";localStorage.setItem("dou_admin",isAdmin?"1":"");localStorage.setItem("dou_super",isSuperAdmin?"1":"");if(isAdmin){document.body.classList.add("is-admin");var dv=localStorage.getItem('dou_view');window._viewingUser=(dv==='all'?null:email);localStorage.setItem('dou_view',email);}showApp();updateAuthBtn();showLoading();
   clients=[];
-  await syncToCloud();
+  try {
   var data;
   if (isAdmin) {
     var dv2 = localStorage.getItem("dou_view");
     if (dv2 === "all") {
-      var rA = await fetch(SB_URL+"/rest/v1/clients?select=*",{headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
+      var rA = await fetch(SB_URL+"/rest/v1/clients?select=*",{headers:sbHead()});
       data = rA.ok ? await rA.json() : [];
     } else if (dv2 && dv2 !== currentUser) {
-      var rB = await fetch(SB_URL+"/rest/v1/clients?user_id=eq."+dv2+"&select=*",{headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
+      var rB = await fetch(SB_URL+"/rest/v1/clients?user_id=eq."+encodeURIComponent(dv2)+"&select=*",{headers:sbHead()});
       data = rB.ok ? await rB.json() : [];
     } else {
       data = await sbFetch("clients","GET");
@@ -1224,32 +1460,70 @@ async function handleLogin() {
   } else {
     data = await sbFetch("clients","GET");
   }
-  if(data.length>0){clients=data.map(mapClient);saveClients(clients);}
-  hideLoading();refreshAll(); if(isAdmin){initAdminSelect();}; var ca=document.getElementById("copyAllBtn"),cb=document.getElementById("copyAllAdvBtn"); if(ca)ca.style.display=(isAdmin&&window._viewingUser===null)?"":"none"; if(cb)cb.style.display=(isAdmin&&window._viewingUser===null)?"":"none";
-  } catch(e) { document.getElementById("lw_hint").textContent = "登录失败: " + (e.message||"网络错误"); }
+  if(data.length>0){clients=data.map(mapClient);}
+  } catch(e) { console.log("Login data load error:", e.message); }
+  hideLoading();refreshAll(); if(isAdmin){initAdminSelect();};
+  } catch(e) { setHint("网络异常，请检查网络后重试","error"); }
 }
-function startApprovalPoll(phone){
-  document.getElementById("lw_hint").textContent = "账号审核中，等待管理员通过...";
-  var timer = setInterval(async function(){
-    var r = await fetch(SB_URL+"/rest/v1/users?phone=eq."+phone,{headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
-    var u = r.ok ? await r.json() : [];
-    if(u.length===0){ clearInterval(timer); document.getElementById("lw_hint").textContent = "账号已被删除"; return; }
+var _approvalTimer=null,_approvalPhone='',_approvalPass='';
+function _setLoginDisabled(d){
+  document.getElementById('lw_phone').disabled=d;
+  document.getElementById('lw_pass').disabled=d;
+  document.getElementById('lw_btn').disabled=d;
+  document.getElementById('lw_domain_wrap').style.pointerEvents=d?'none':'';
+  document.getElementById('lw_approval').classList.toggle('show',d);
+}
+function startApprovalPoll(email,pass){
+  _approvalPhone=email;_approvalPass=pass||'';_setLoginDisabled(true);
+  _approvalTimer=setInterval(async function(){
+    try{
+    var r=await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(email),{headers:sbHead()});
+    var u=r.ok?await r.json():[];
+    if(u.length===0){cancelApprovalPoll();document.getElementById('lw_approval').classList.remove('show');setHint("账号已被删除，请联系管理员","error");return;}
     if(u[0].status==="approved"){
-      clearInterval(timer);
-      document.getElementById("lw_hint").textContent = "审批通过，正在登录...";
-      currentUser=phone; localStorage.setItem("dou_user",phone);
-      isAdmin=u[0].role==="admin"; isSuperAdmin=(phone===SUPER_ADMIN);
+      cancelApprovalPoll();
+      document.getElementById('lw_approval').classList.remove('show');
+      setHint("审批通过，正在登录...","success");
+      await _supabase.auth.signOut();_sessionToken=null;
+      await new Promise(function(r){setTimeout(r,500);});
+      var {error:signErr}=await _supabase.auth.signInWithPassword({email:email,password:_approvalPass||document.getElementById("lw_pass").value.trim()});
+      if(signErr){setHint("登录失败，请重试","error");return;}
+      await refreshSession();
+      currentUser=email;localStorage.setItem("dou_user",email);
+      isAdmin=u[0].role==="admin";isSuperAdmin=u[0].role==="owner";
       localStorage.setItem("dou_admin",isAdmin?"1":"");
-      if(isAdmin){ document.body.classList.add("is-admin"); localStorage.setItem("dou_view",phone); window._viewingUser=phone; }
-      showApp(); updateAuthBtn(); showLoading();
-      await syncToCloud();
-      var data = await sbFetch("clients","GET");
-      if(data.length>0){ clients=data.map(mapClient); saveClients(clients); }
-      hideLoading(); refreshAll(); if(isAdmin){initAdminSelect();}
+      if(isAdmin){document.body.classList.add("is-admin");localStorage.setItem("dou_view",email);window._viewingUser=email;}
+      showApp();updateAuthBtn();showLoading();
+      try{var data=await sbFetch("clients","GET");if(data.length>0){clients=data.map(mapClient);saveClients(clients);}}catch(e){}
+      hideLoading();refreshAll();if(isAdmin){initAdminSelect();}
     }
-  }, 5000);
+    }catch(e){}
+  },8000);
 }
-function doLogout(){currentUser='';isAdmin=false;localStorage.removeItem('dou_admin');localStorage.removeItem('dou_user');localStorage.removeItem('dou_view');clients=[];updateAuthBtn();document.body.classList.remove('is-admin');showLogin();}
+function cancelApprovalPoll(){
+  if(_approvalTimer){clearInterval(_approvalTimer);_approvalTimer=null;}
+  _setLoginDisabled(false);setHint("","");
+  document.getElementById('lw_approval').classList.remove('show');
+}
+async function doLogout(){
+  if(currentUser&&clients.length>0){
+    var synced=false;
+    for(var i=0;i<3;i++){
+      try{await syncToCloud();synced=true;break;}catch(e){console.log('Sync retry '+(i+1)+' failed');}
+    }
+    if(!synced){
+      if(!confirm('数据同步失败，退出后未保存数据将丢失。\n\n确定退出吗？'))return;
+    }
+  }
+  try{await _supabase.auth.signOut();}catch(e){}
+  cancelApprovalPoll();
+  clearInterval(_heartbeatTimer);
+  _sessionToken=null;
+  currentUser='';isAdmin=false;isSuperAdmin=false;window._viewingUser=null;window._adminUsers=null;window._nicks=null;
+  localStorage.clear();sessionStorage.clear();
+  clients=[];updateAuthBtn();document.body.classList.remove('is-admin');showLogin();
+  setTimeout(function(){location.reload();},100);
+}
 // Touch drag-to-dismiss for mobile modal sheets (Apple spring style)
 var _dragModal = null, _dragStartY = 0;
 document.addEventListener('touchstart', function(e) {
@@ -1271,11 +1545,14 @@ document.addEventListener('touchend', function() {
   if (dy > 180) { _dragModal.style.transform = 'translateY(100vh)'; if (overlay) overlay.style.opacity = '0'; setTimeout(function() { closeModal(); }, 350); _dragModal = null; } else { _dragModal.style.transform = ''; if (overlay) overlay.style.opacity = ''; _dragModal = null; }
 });
 // Heartbeat: every 5s check if current user still exists, force logout if deleted/revoked
-setInterval(async function(){
+var _heartbeatTimer=setInterval(async function(){
   if(!currentUser) return;
-  var r=await fetch(SB_URL+'/rest/v1/users?phone=eq.'+currentUser,{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}});
-  var u=r.ok?await r.json():[];
+  try {
+  var r=await fetch(SB_URL+'/rest/v1/users?email=eq.'+encodeURIComponent(currentUser),{headers:sbHead()});
+  if(!r.ok) return;
+  var u=await r.json();
   if(u.length===0||u[0].status!=='approved'){ toast('账号已被管理员删除或禁用，即将退出','error'); setTimeout(doLogout,1500); }
+  } catch(e) { /* network error, skip this check */ }
 },5000);
 function updateAuthBtn() {
   var b = document.getElementById('authBtn');
@@ -1339,7 +1616,7 @@ function showAuthModal() {
   var right = Math.max(8, window.innerWidth - rect.right);
   menu.style.cssText = 'position:fixed;top:'+(rect.bottom+6)+'px;right:'+right+'px;z-index:1000;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:6px;min-width:180px;';
   var html = '<div style="padding:8px 12px 6px;"><div style="font-size:13px;font-weight:600;color:#1d1d1f;">'+currentUser+'</div>'+(isSuperAdmin?'<div style="font-size:11px;color:#FF6B00;">主账号</div>':(isAdmin?'<div style="font-size:11px;color:#667eea;">管理员</div>':''))+'</div><div style="height:1px;background:#f0f0f0;margin:4px 0;"></div>';
-  if (isAdmin) { html += '<button class="um-item" onclick="closeUserMenu();showAdminPanel()">用户审批</button><button class="um-item" onclick="closeUserMenu();showNicknameModal()">设置昵称</button>'; if(isSuperAdmin){ html += '<button class="um-item" onclick="closeUserMenu();showRolePanel()">权限管理</button>'; } }
+  if (isAdmin) { html += '<button class="um-item" onclick="closeUserMenu();showAdminPanel()">用户审批</button>'; if(isSuperAdmin){ html += '<button class="um-item" onclick="closeUserMenu();showRolePanel()">权限管理</button><button class="um-item" onclick="closeUserMenu();showNicknameModal()">设置昵称</button>'; } }
   html += '<button class="um-item" onclick="closeUserMenu();showMyNickModal()">修改昵称</button><button class="um-item" onclick="closeUserMenu();showChangePassModal()">修改密码</button><button class="um-item um-item--danger" onclick="closeUserMenu();confirmDialog(\u0027退出登录\u0027,\u0027退出登录 '+currentUser+'？\u0027,doLogout)">退出登录</button>';
   menu.innerHTML = html;
   document.body.appendChild(menu);
@@ -1352,16 +1629,14 @@ function toggleAdminFilter(e){
   var existing=document.querySelector('.admin-filter-menu');
   if(existing){ closeAdminFilter(); return; }
   _filterOpening = true; setTimeout(function(){ _filterOpening = false; }, 500);
-  var existing=document.querySelector('.admin-filter-menu');
-  if(existing){existing.remove();return;}
   var btn=document.getElementById('adminFilterBtn');
-  var rect=btn.getBoundingClientRect();
-  var menu=document.createElement('div');
+  var menu=createPopup(btn,{padding:'6px',width:'160px',maxHeight:'220px'});
+  menu.style.minWidth='160px';
+  menu.style.maxWidth='calc(100vw - 16px)';
   menu.className='admin-filter-menu';
-  menu.style.cssText='position:fixed;top:'+(rect.bottom+6)+'px;right:'+Math.max(8,window.innerWidth-rect.right)+'px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:6px;min-width:160px;max-width:calc(100vw - 16px);max-height:220px;overflow-y:auto;scrollbar-width:none;';
   var html='<button class="um-item" onclick="switchToUserView(\'all\');closeAdminFilter()">全部</button>';
   (window._adminUsers||[]).forEach(function(u){
-    if(u.phone!=='all') html+='<button class="um-item" onclick="switchToUserView(\''+u.phone+'\');closeAdminFilter()">'+u.label+'</button>';
+    if(u.email!=='all') html+='<button class="um-item" onclick="switchToUserView(\''+escAttr(u.email)+'\');closeAdminFilter()">'+escHtml(u.label)+'</button>';
   });
   menu.innerHTML=html;
   document.body.appendChild(menu);
@@ -1373,117 +1648,250 @@ async function switchToUserView(phone){
   try {
   localStorage.setItem('dou_view', phone);
   if(phone==='all'){
-    var r=await fetch(SB_URL+'/rest/v1/clients?select=*',{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}});
-    clients=r.ok?(await r.json()).map(mapClient).filter(function(c){return !window._adminUsers||window._adminUsers.some(function(u){return u.phone===c.user_id});}):[];
+    var r=await fetch(SB_URL+'/rest/v1/clients?select=*',{headers:sbHead()});
+    clients=r.ok?(await r.json()).map(mapClient).filter(function(c){return !window._adminUsers||window._adminUsers.some(function(u){return u.email===c.user_id});}):[];
     window._viewingUser=null;
   }else{
-    var r2=await fetch(SB_URL+'/rest/v1/clients?user_id=eq.'+phone+'&select=*',{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}});
+    var r2=await fetch(SB_URL+'/rest/v1/clients?user_id=eq.'+encodeURIComponent(phone)+'&select=*',{headers:sbHead()});
     clients=r2.ok?(await r2.json()).map(mapClient):[];
     window._viewingUser=phone;
   }
   
   refreshAll();
-  var ca=document.getElementById("copyAllBtn"),cb=document.getElementById("copyAllAdvBtn");
-  if(ca)ca.style.display=(isAdmin&&window._viewingUser===null)?"":"none";
-  if(cb)cb.style.display=(isAdmin&&window._viewingUser===null)?"":"none";
-  } catch(e) { toast("切换视图失败: "+e.message,"error"); }
+  } catch(e) { toast("切换视图失败，请稍后重试","error"); }
 }
 async function syncToCloud() {
   if (!currentUser) { console.log('sync skipped: not logged in'); return; }
-  var rows = clients.map(function(c) { return { id: c.id, user_id: c.user_id||currentUser, name: c.name, licenseType: c.licenseType||'', cardType: c.cardType||'', advanceAmount: c.advanceAmount||'', notes: c.notes||'', stage: c.stage, createdAt: c.createdAt, stageTimestamps: c.stageTimestamps||{} }; });
-  try { var ok = await sbFetch("clients","POST",rows); }
-  catch(e) { console.log("Sync exception:",e.message); toast("同步失败，请检查网络连接","error"); return; }
-  if (!ok) { console.log("Sync failed"); toast("同步失败，请稍后重试","error"); }
+  var rows;
+  if(isSuperAdmin){
+    rows = clients.map(function(c) { return { id: c.id, user_id: c.user_id||currentUser, name: c.name, licenseType: c.licenseType||'', cardType: c.cardType||'', advanceAmount: c.advanceAmount||'', notes: c.notes||'', stage: c.stage, createdAt: c.createdAt, stageTimestamps: c.stageTimestamps||{} }; });
+  }else{
+    rows = clients.filter(function(c){return c.user_id===currentUser;}).map(function(c) { return { id: c.id, user_id: c.user_id, name: c.name, licenseType: c.licenseType||'', cardType: c.cardType||'', advanceAmount: c.advanceAmount||'', notes: c.notes||'', stage: c.stage, createdAt: c.createdAt, stageTimestamps: c.stageTimestamps||{} }; });
+  }
+  if (rows.length === 0) { console.log('sync skipped: no user data'); return; }
+  var ok = await sbFetch("clients","POST",rows);
+  if (!ok) { throw new Error("sync failed"); }
 }
 
 async function initAdminSelect(){
   try {
-  var r=await fetch(SB_URL+"/rest/v1/users?select=phone,nickname",{headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
+  var r=await fetch(SB_URL+"/rest/v1/users?select=email,nickname&status=eq.approved",{headers:sbHead()});
   var u=r.ok?(await r.json()):[];window._adminUsers=[];window._nicks={};
-  u.forEach(function(x){window._adminUsers.push({phone:x.phone,label:x.nickname||x.phone});window._nicks[x.phone]=x.nickname||x.phone;});
+  u.forEach(function(x){window._adminUsers.push({email:x.email,label:x.nickname||x.email});window._nicks[x.email]=x.nickname||x.email;});
   renderStats(); renderKanban();
-  } catch(e) { console.log("initAdminSelect error:",e.message); }
+  } catch(e) { console.log("initAdminSelect error"); }
 }
 
 async function showAdminPanel(){
   if (_adminModalOpening) return; _adminModalOpening = true;
   closeUserMenu(); var old=document.querySelector('.admin-popup'); if(old) old.remove();
-  var r=await fetch(SB_URL+"/rest/v1/users?select=*",{headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
-  var u=r.ok?(await r.json()).filter(function(x){return x.status==='pending'||x.reset_requested;}):[];
-  var btn=document.getElementById("authBtn");var rect=btn.getBoundingClientRect();
-  var menu=document.createElement("div");menu.className="admin-popup";
-  menu.style.cssText="position:fixed;top:"+(rect.bottom+6)+"px;right:"+Math.max(8,window.innerWidth-rect.right)+"px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:8px;width:280px;max-height:220px;overflow-y:auto;scrollbar-width:none;";
-  var html='<div style="padding:4px 8px 8px;font-size:14px;font-weight:600;color:#1d1d1f;">用户审批</div>';
-  if(u.length===0){html+='<div style="padding:16px;text-align:center;color:var(--text-tertiary);font-size:13px;">暂无待处理请求</div>';}
-  else{u.forEach(function(x){
-    if(x.status==='pending'){html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:8px;"><span style="font-size:13px;">'+x.phone+'</span><span style="font-size:11px;color:#ff9500;">注册审批</span><button class="btn btn--primary" style="height:28px;font-size:11px;padding:0 10px;" onclick="approveUser(\''+x.phone+'\')">通过</button><button class="btn btn--ghost" style="height:28px;font-size:11px;padding:0 10px;color:#FF3B30;margin-left:4px;" onclick="rejectUser(\''+x.phone+'\')">拒绝</button></div>';}
-    if(x.reset_requested){html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:8px;"><span style="font-size:13px;">'+x.phone+'</span><span style="font-size:11px;color:#ff3b30;">密码重置</span><button class="btn btn--primary" style="height:28px;font-size:11px;padding:0 10px;" onclick="resetUserPwd(\''+x.phone+'\')">重置</button><button class="btn btn--ghost" style="height:28px;font-size:11px;padding:0 10px;color:#FF3B30;margin-left:4px;" onclick="rejectUser(\''+x.phone+'\')">拒绝</button></div>';}
-  });}
-  html+='<div style="padding:8px 8px 4px;"><button class="btn btn--ghost" style="width:100%;height:30px;font-size:12px;justify-content:center;" onclick="closeAdminPopup()">关闭</button></div>';
-  menu.innerHTML=html;document.body.appendChild(menu);
-  setTimeout(function(){document.addEventListener("mousedown",function ce(e){if(!menu.contains(e.target)){closeAdminPopup();document.removeEventListener("mousedown",ce,true);}},true);},10);
-}
-function closeAdminPopup(){var m=document.querySelector(".admin-popup");if(m)m.remove();}
-async function rejectUser(p){
-  await fetch(SB_URL+"/rest/v1/users?phone=eq."+p,{method:"DELETE",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
-  clients=clients.filter(function(c){return c.user_id!==p;}); saveClients(clients);
-  toast(p+" 已拒绝","success");closeAdminPopup();showAdminPanel();
-}
-async function approveUser(p){
-  try { await fetch(SB_URL+"/rest/v1/users?phone=eq."+p,{method:"PATCH",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({status:"approved"})}); } catch(e) { toast("操作失败: "+e.message,"error"); return; }
-  toast(p+" 已通过","success");closeAdminPopup();showAdminPanel();
-}
-async function resetUserPwd(p){
-  try { await fetch(SB_URL+"/rest/v1/users?phone=eq."+p,{method:"PATCH",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({password_hash:await hashPassword(p,"123456"),reset_requested:false})}); } catch(e) { toast("操作失败: "+e.message,"error"); return; }
-  toast(p+" 密码已重置为123456","success");closeAdminPopup();showAdminPanel();
-}
-
-async function toggleRole(btn, phone, makeAdmin){
-  btn.disabled=true;
-  await fetch(SB_URL+"/rest/v1/users?phone=eq."+phone,{method:"PATCH",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({role:makeAdmin?"admin":"user"})});
-  toast(phone+(makeAdmin?" 已设为管理员":" 已取消管理员"),"success");
-  var row=btn.parentElement.parentElement;
-  var label=row.querySelector("span span");
-  if(makeAdmin){
-    if(!label){ var s=row.querySelector("span"); s.innerHTML+="<span style=font-size:11px;color:#667eea;margin-left:6px;>管理员</span>"; }
-  } else {
-    if(label) label.remove();
+  var r=await fetch(SB_URL+"/rest/v1/users?select=*",{headers:sbHead()});
+  var u=r.ok?(await r.json()).filter(function(x){return x.status==='pending';}):[];
+  var colors=['#667eea','#f5a623','#34c759','#ff9500','#5856d6','#ff2d55','#007aff','#af52de'];
+  function avatarColor(email){var h=0;for(var i=0;i<email.length;i++){h=((h<<5)-h)+email.charCodeAt(i);h|=0;}return colors[Math.abs(h)%colors.length];}
+  function initials(email){var p=email.split('@')[0];return p.substring(0,2).toUpperCase();}
+  function timeAgo(ts){if(!ts)return'';var s=Math.floor((Date.now()-new Date(ts).getTime())/1000);if(s<60)return'刚刚';if(s<3600)return Math.floor(s/60)+' 分钟前';if(s<86400)return Math.floor(s/3600)+' 小时前';return Math.floor(s/86400)+' 天前';}
+  var pending=u;
+  var btn=document.getElementById("authBtn");
+  var menu=createPopup(btn,{padding:'0'});
+  menu.className="admin-popup";menu.style.display="flex";menu.style.flexDirection="column";menu.style.overflow="hidden";
+  var html='<div class="ap-header" style="flex-shrink:0;"><div class="ap-title">用户审批</div>'+(u.length?'<div class="ap-subtitle">'+u.length+' 位新用户等待管理员审批</div>':'')+'</div>';
+  if(u.length===0){html+='<div class="ap-list" style="flex:1;overflow-y:auto;display:flex;align-items:center;justify-content:center;min-height:160px;"><div style="font-size:14px;color:#8e8e93;">暂无待审批用户</div></div>';}
+  else{
+    html+='<div class="ap-list" style="flex:1;overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;">';
+    if(pending.length>0){
+      pending.forEach(function(x){
+        var email=x.email||x.phone||'未知';
+        var nick=x.nickname||'';
+        var ts=x.created_at;
+        html+='<div class="ap-item" data-email="'+escAttr(email)+'">';
+        html+='<div class="ap-avatar" style="background:'+avatarColor(email)+';width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;flex-shrink:0;">'+initials(email)+'</div>';
+        html+='<div style="flex:1;min-width:0;margin-left:10px;"><div style="font-size:14px;font-weight:500;color:#1d1d1f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+escHtml(nick||email)+'</div>'+(nick?'<div style="font-size:12px;color:#8e8e93;margin-top:1px;">'+escHtml(email)+'</div>':'')+'</div>';
+        html+='<div style="display:flex;gap:6px;flex-shrink:0;margin-left:8px;"><button class="ap-btn-reject" onclick="rejectUser(\''+escAttr(email)+'\')">拒绝</button><button class="ap-btn-approve" onclick="approveUser(\''+escAttr(email)+'\')">通过</button></div>';
+        html+='</div>';
+      });
+    }
+    html+='</div>';
   }
-  var newOnclick=makeAdmin?"event.stopPropagation();toggleRole(this,'"+phone+"',false)":"event.stopPropagation();toggleRole(this,'"+phone+"',true)";
-  btn.outerHTML="<button class=\"btn btn--primary\" style=\"height:28px;font-size:11px;padding:0 10px;margin-right:4px;\" onclick=\""+newOnclick+"\">"+(makeAdmin?"取消管理员":"设为管理员")+"</button>";
-  btn.disabled=false;
-}
-
-function confirmDelete(btn, phone){
-  var div=btn.parentElement, oldHTML=div.innerHTML;
-  div.innerHTML="<span style=\"font-size:12px;color:#FF3B30;margin-right:8px;\">确认删除？</span><button class=\"btn btn--primary\" style=\"height:28px;font-size:11px;padding:0 10px;margin-right:4px;\" onclick=\"event.stopPropagation();deleteUser('"+phone+"')\">是</button><button class=\"btn btn--ghost\" style=\"height:28px;font-size:11px;padding:0 10px;\" onclick=\"event.stopPropagation();div.innerHTML=oldHTML\">否</button>";
-
-}
-async function deleteUser(phone){
-  await fetch(SB_URL+"/rest/v1/users?phone=eq."+phone,{method:"DELETE",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
-  toast(phone+" 已删除","success"); window._adminUsers=(window._adminUsers||[]).filter(function(u){return u.phone!==phone;}); delete window._nicks[phone]; clients=clients.filter(function(c){return c.user_id!==phone;}); saveClients(clients); renderStats(); renderKanban();
-  var row=document.querySelector(".role-menu");
-  if(row) showRolePanel();
-}
-
-function closeRolePanel(){var m=document.querySelector(".role-menu");if(m)m.remove();}
-async function showRolePanel(){
-  closeUserMenu(); var old=document.querySelector(".role-menu"); if(old) old.remove();
-  var r=await fetch(SB_URL+"/rest/v1/users?select=*&status=eq.approved",{headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
-  var users=r.ok?await r.json():[];
-  var btn=document.getElementById("authBtn");var rect=btn.getBoundingClientRect();
-  var menu=document.createElement("div");menu.className="role-menu";
-  menu.style.cssText="position:fixed;top:"+(rect.bottom+6)+"px;right:"+Math.max(8,window.innerWidth-rect.right)+"px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:8px;width:300px;max-height:220px;overflow-y:auto;scrollbar-width:none;";
-  var html="<div style=\"padding:4px 8px 8px;font-size:14px;font-weight:600;color:#1d1d1f;\">权限管理</div>";
-  if(users.length===0){html+="<div style=\"padding:16px;text-align:center;color:var(--text-tertiary);font-size:13px;\">暂无已审批用户</div>";}
-  else{users.forEach(function(u){
-    if(u.role==="owner") return;
-    var isAdminUser=u.role==="admin";
-    html+="<div style=\"display:flex;align-items:center;justify-content:space-between;padding:8px;\"><span style=\"font-size:13px;\">"+getNick(u.phone)+(isAdminUser?"<span style=\"font-size:11px;color:#667eea;margin-left:6px;\">管理员</span>":"")+"</span><div>"+(isAdminUser?"<button class=\"btn btn--primary\" style=\"height:28px;font-size:11px;padding:0 10px;margin-right:4px;\" onclick=\"event.stopPropagation();toggleRole(this,\u0027"+u.phone+"\u0027,false)\">取消管理员</button>":"<button class=\"btn btn--primary\" style=\"height:28px;font-size:11px;padding:0 10px;margin-right:4px;\" onclick=\"event.stopPropagation();toggleRole(this,\u0027"+u.phone+"\u0027,true)\">设为管理员</button>")+"<button class=\"btn btn--ghost\" style=\"height:28px;font-size:11px;padding:0 10px;color:#FF3B30;\" onclick=\"event.stopPropagation();confirmDelete(this,\u0027"+u.phone+"\u0027)\">删除</button></div></div>";
-  });}
-  html+="<div style=\"padding:8px 8px 4px;\"><button class=\"btn btn--ghost\" style=\"width:100%;height:30px;font-size:12px;justify-content:center;\" onclick=\"closeRolePanel()\">关闭</button></div>";
+  html+='<div class="ap-footer"><button class="ap-footer-btn" onclick="closeAdminPopup()">关闭</button></div>';
   menu.innerHTML=html;document.body.appendChild(menu);
-  setTimeout(function(){document.addEventListener("mousedown",function ce(e){if(!menu.contains(e.target)){closeRolePanel();document.removeEventListener("mousedown",ce,true);}},true);},10);
+  closeOnOutside(menu,closeAdminPopup);
+}
+function closeAdminPopup(){var m=document.querySelector(".admin-popup");if(m)m.remove();var o=document.querySelector(".ap-overlay");if(o)o.remove();}
+async function rejectUser(id){
+  await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(id),{method:"PATCH",headers:sbHead(),body:JSON.stringify({status:"rejected"})});
+  toast(id+" 已拒绝","success");
+  var row=document.querySelector('.ap-item[data-email="'+id+'"]');
+  if(row){row.style.transition='opacity .2s,transform .2s';row.style.opacity='0';row.style.transform='translateX(20px)';setTimeout(function(){row.remove();var list=document.querySelector('.ap-list');if(list&&list.children.length===0){list.innerHTML='<div class="ap-empty"><div class="ap-empty-icon">&#10003;</div>所有用户已处理，太棒了！</div>';}var sub=document.querySelector('.ap-subtitle');if(sub){var cnt=document.querySelectorAll('.ap-item').length;sub.textContent=cnt?cnt+' 位新用户等待管理员审批':'暂无待审批用户';}},200);}
+}
+async function approveUser(id){
+  try { await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(id),{method:"PATCH",headers:sbHead(),body:JSON.stringify({status:"approved"})}); } catch(e) { toast("操作失败，请稍后重试","error"); return; }
+  toast(id+" 已通过","success");
+  var row=document.querySelector('.ap-item[data-email="'+id+'"]');
+  if(row){row.style.transition='opacity .2s,transform .2s';row.style.opacity='0';row.style.transform='translateX(-20px)';setTimeout(function(){row.remove();var list=document.querySelector('.ap-list');if(list&&list.children.length===0){list.innerHTML='<div class="ap-empty"><div class="ap-empty-icon">&#10003;</div>所有用户已处理，太棒了！</div>';}var sub=document.querySelector('.ap-subtitle');if(sub){var cnt=document.querySelectorAll('.ap-item').length;sub.textContent=cnt?cnt+' 位新用户等待管理员审批':'暂无待审批用户';}},200);}
+}
+async function resetUserPwd(id){
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(id)+"&select=id",{headers:sbHead()});
+    var u=await r.json();
+    if(!u||u.length===0){toast('用户不存在','error');return;}
+    var uid=u[0].id;
+    var sr=await fetch(SB_URL+"/auth/v1/admin/users/"+uid+"/password",{
+      method:"POST",
+      headers:{apikey:window._serviceRoleKey||SB_KEY,Authorization:'Bearer '+(window._serviceRoleKey||SB_KEY),'Content-Type':'application/json'},
+      body:JSON.stringify({password:'123456'})
+    });
+    if(!sr.ok){
+      var c=document.getElementById('modalContainer');
+      document.body.style.overflow='hidden'; c.innerHTML='<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal modal--alert" style="width:340px;"><div class="modal-header"><div class="modal-title">重置密码</div><button class="modal-close" onclick="closeModal()">✕</button></div><div class="modal-body"><p style="font-size:13px;color:var(--text-secondary);">自动重置需要管理员密钥，请在 Supabase Dashboard 手动操作：</p><ol style="font-size:13px;color:var(--text-secondary);padding-left:18px;margin-top:8px;line-height:1.8;"><li>Authentication → Users → 找到 <b>'+escHtml(id)+'</b></li><li>点击用户 → Reset password</li><li>设置新密码为 <b>123456</b></li></ol></div><div class="modal-footer"><button class="btn btn--primary" onclick="closeModal()">知道了</button></div></div></div>';
+      return;
+    }
+    await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(id),{method:"PATCH",headers:sbHead(),body:JSON.stringify({reset_requested:false})});
+    toast(id+' 密码已重置为 123456','success');closeAdminPopup();showAdminPanel();
+  }catch(e){
+    toast('操作失败，请在 Supabase Dashboard 手动重置','error');
+  }
+}
+
+function showRoleMenu(btn, phone, isAdminStr) {
+  // 如果点击的是同一个按钮，直接关闭
+  if (btn === _activeRoleBtn) { closeRoleActionMenu(); return; }
+  // 恢复旧按钮高亮
+  if (_activeRoleBtn) _activeRoleBtn.classList.remove('role-active');
+  closeRoleActionMenu();
+  // 高亮当前按钮
+  btn.classList.add('role-active');
+  _activeRoleBtn = btn;
+  var rect = btn.getBoundingClientRect();
+  var menu = document.createElement('div');
+  menu.className = 'role-action-menu';
+  var top = rect.top;
+  var left = rect.right + 4;
+  if (left + 140 > window.innerWidth) { left = rect.left - 144; }
+  if (left < 4) { left = rect.right + 4; }
+  menu.style.cssText = 'position:fixed;top:'+top+'px;left:'+left+'px;z-index:1002;background:#fff;border-radius:10px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.06);padding:4px;width:140px;';
+  var isAdm = isAdminStr === 'true';
+  var html = '';
+  if (isAdm) {
+    html += '<button class="um-item" onclick="applyRoleChange(\''+phone+'\',false);closeRoleActionMenu()">取消管理员</button>';
+  } else {
+    html += '<button class="um-item" onclick="applyRoleChange(\''+phone+'\',true);closeRoleActionMenu()">设为管理员</button>';
+  }
+  html += '<div style="height:1px;background:#f0f0f0;margin:4px 0;"></div>';
+  html += '<button class="um-item um-item--danger" onclick="applyDelete(\''+phone+'\');closeRoleActionMenu()">删除用户</button>';
+  menu.innerHTML = html;
+  document.body.appendChild(menu);
+  // 点击外部关闭
+  setTimeout(function() {
+    var closeHandler = function(e) {
+      if (!menu.contains(e.target) && !btn.contains(e.target)) {
+        closeRoleActionMenu();
+        document.removeEventListener('mousedown', closeHandler, true);
+      }
+    };
+    document.addEventListener('mousedown', closeHandler, true);
+  }, 10);
+}
+var _activeRoleBtn = null;
+function closeRoleActionMenu() {
+  var m = document.querySelector('.role-action-menu');
+  if (m) m.remove();
+  if (_activeRoleBtn) { _activeRoleBtn.classList.remove('role-active'); _activeRoleBtn = null; }
+}
+function applyRoleChange(phone, makeAdmin) {
+  closeRoleActionMenu();
+  fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(phone),{method:"PATCH",headers:sbHead(),body:JSON.stringify({role:makeAdmin?"admin":"user"})}).then(function(res) {
+    if (!res.ok) { console.log('API error: ' + res.status); toast('操作失败，请重试','error'); return; }
+    toast(phone+(makeAdmin?" 已设为管理员":" 已取消管理员"),"success");
+    var row = document.querySelector('.role-menu [data-phone="'+phone+'"]');
+    if (!row) return;
+    var badge = row.querySelector('span:nth-child(2)');
+    if (badge) {
+      if (makeAdmin) {
+        badge.setAttribute('style', 'background:rgba(102,126,234,.08);color:#667eea;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;margin-right:8px;');
+        badge.textContent = '管理员';
+      } else {
+        badge.setAttribute('style', 'background:rgba(0,0,0,.04);color:rgba(0,0,0,.45);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;margin-right:8px;');
+        badge.textContent = '普通用户';
+      }
+    }
+    var btn = row.querySelector('button');
+    if (btn) {
+      var newIsAdmin = makeAdmin ? 'true' : 'false';
+      btn.outerHTML = '<button style="width:28px;height:28px;border:none;border-radius:6px;background:transparent;cursor:pointer;font-size:16px;line-height:1;color:var(--text-tertiary);display:flex;align-items:center;justify-content:center;transition:background .15s,transform .1s;" onclick="event.stopPropagation();showRoleMenu(this,\'' + phone + '\',\'' + newIsAdmin + '\')">•••</button>';
+    }
+    if (window._adminUsers) {
+      var u = window._adminUsers.find(function(x){ return x.email === phone; });
+      if (u) u.role = makeAdmin ? 'admin' : 'user';
+    }
+  }).catch(function(e) { console.log('applyRoleChange error'); toast('操作失败，请重试','error'); });
+}
+function applyDelete(phone) {
+  closeRoleActionMenu();
+  fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(phone),{method:"PATCH",headers:sbHead(),body:JSON.stringify({status:"rejected"})}).then(function() {
+    toast(phone+" 已删除","success");
+    // Remove from global caches
+    if (window._adminUsers) window._adminUsers = window._adminUsers.filter(function(u){return u.email!==phone;});
+    if (window._nicks) delete window._nicks[phone];
+    clients = clients.filter(function(c){return c.user_id!==phone;});
+    saveClients(clients); renderStats(); renderKanban();
+    // Inline remove: find and remove the row
+    var row = document.querySelector('.role-menu [data-phone="'+phone+'"]');
+    if (row) row.remove();
+    // Refresh the menu title count
+    var titleEl = document.querySelector('.role-menu > div:first-child');
+    if (titleEl) {
+      var remaining = document.querySelectorAll('.role-menu [data-phone]').length;
+      titleEl.textContent = '权限管理 (' + remaining + ')';
+    }
+  });
+}
+
+async function showRolePanel(){
+  if (_roleModalOpening) return; _roleModalOpening = true;
+  closeUserMenu(); var old=document.querySelector(".role-menu"); if(old) old.remove();
+  var r=await fetch(SB_URL+"/rest/v1/users?select=*&status=eq.approved",{headers:sbHead()});
+  var users=r.ok?await r.json():[];
+  var btn=document.getElementById("authBtn");
+  var menu=createPopup(btn,{});
+  menu.className="role-menu";
+  var filtered=users.filter(function(u){return u.role!=='owner';});
+  var colors=['#667eea','#f5a623','#34c759','#ff9500','#5856d6','#ff2d55','#007aff','#af52de'];
+  function avatarColor(email){var h=0;for(var i=0;i<email.length;i++){h=((h<<5)-h)+email.charCodeAt(i);h|=0;}return colors[Math.abs(h)%colors.length];}
+  function avatarInitials(email){var p=email.split('@')[0];return p.substring(0,2).toUpperCase();}
+  var html="<div style=\"padding:4px 8px 8px;font-size:14px;font-weight:600;color:#1d1d1f;\">权限管理 ("+filtered.length+")</div>";
+  if(filtered.length===0){html+="<div style=\"padding:16px;text-align:center;color:var(--text-tertiary);font-size:13px;\">暂无已审批用户</div>";}
+  else{html+="<div style=\"max-height:240px;overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;\">";  filtered.forEach(function(u,i){
+    var isAdminUser=u.role==="admin";
+    var badgeStyle=isAdminUser?"background:rgba(102,126,234,.08);color:#667eea;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;":"background:rgba(0,0,0,.04);color:rgba(0,0,0,.45);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;";
+    var roleLabel=isAdminUser?"管理员":"普通用户";
+    var email=u.email||'';
+    var borderStyle=i<filtered.length-1?"border-bottom:1px solid rgba(0,0,0,.05);":"";
+    html+='<div style="display:flex;align-items:center;padding:10px 8px;'+borderStyle+'" data-phone="'+escAttr(email)+'">';
+    html+='<div style="width:32px;height:32px;border-radius:50%;background:'+avatarColor(email)+';display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;flex-shrink:0;">'+avatarInitials(email)+'</div>';
+    html+="<span style=\"flex:1;margin-left:10px;\"><span style=\"font-size:14px;font-weight:500;\">"+escHtml(getNick(email))+"</span><br><span style=\"font-size:12px;color:#999;\">"+escHtml(email)+"</span></span>";
+    html+="<span style=\""+badgeStyle+"margin-right:8px;\">"+roleLabel+"</span>";
+    html+="<button style=\"width:28px;height:28px;border:none;border-radius:6px;background:transparent;cursor:pointer;font-size:16px;line-height:1;color:var(--text-tertiary);display:flex;align-items:center;justify-content:center;transition:background .15s,transform .1s;\" onmouseover=\"this.style.background='rgba(0,0,0,.05)'\" onmouseout=\"this.style.background='transparent'\" onclick=\"event.stopPropagation();showRoleMenu(this,'"+escAttr(email)+"','"+(isAdminUser?"true":"false")+"')\">•••</button>";
+    html+="</div>";
+  });html+="</div>";}
+  html+="<div style=\"display:flex;gap:6px;padding:8px 8px 4px;\"><button class=\"btn btn--ghost\" style=\"flex:1;height:32px;font-size:12px;justify-content:center;\" onclick=\"closeRolePanel()\">关闭</button></div>";
+  menu.innerHTML=html;document.body.appendChild(menu);
+  // Close sub-menu on scroll
+  var scrollArea = menu.querySelector('[style*="max-height"]');
+  if (scrollArea) scrollArea.addEventListener('scroll', closeRoleActionMenu, { passive: true });
+  // Close on outside mousedown (capture phase to intercept before sub-menu clicks)
+  setTimeout(function(){
+    var closeHandler = function(e) {
+      if (!menu.contains(e.target)) {
+        // Don't close if clicking inside the role action submenu
+        var subMenu = document.querySelector('.role-action-menu');
+        if (subMenu && subMenu.contains(e.target)) return;
+        closeRolePanel();
+        document.removeEventListener('mousedown', closeHandler, true);
+      }
+    };
+    document.addEventListener("mousedown", closeHandler, true);
+  },10);
 }
 
 var _passModalOpening = false;
@@ -1491,20 +1899,21 @@ async function showChangePassModal(){
   if (_passModalOpening) return; _passModalOpening = true;
   closeUserMenu();
   document.querySelectorAll('.pass-popup').forEach(function(p){p.remove();});
-  var btn=document.getElementById("authBtn");var rect=btn.getBoundingClientRect();
-  var menu=document.createElement("div");menu.className="pass-popup";
-  menu.style.cssText="position:fixed;top:"+(rect.bottom+6)+"px;right:"+Math.max(8,window.innerWidth-rect.right)+"px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:8px;width:300px;";
-  menu.innerHTML='<div style="padding:4px 8px 8px;font-size:14px;font-weight:600;color:#1d1d1f;">修改密码</div><div style="padding:0 8px;"><input class="form-input" id="cp_old" type="password" placeholder="旧密码" style="margin-bottom:8px;"><input class="form-input" id="cp_new" type="password" placeholder="新密码（6位以上）" style="margin-bottom:10px;"></div><div style="display:flex;gap:6px;padding:8px 8px 4px;"><button class="btn btn--ghost" style="flex:1;height:32px;font-size:12px;justify-content:center;" onclick="closePassPopup()">取消</button><button class="btn btn--primary" style="flex:1;height:32px;font-size:12px;justify-content:center;" id="cp_btn">确认</button></div>';
+  var btn=document.getElementById("authBtn");
+  var menu=createPopup(btn,{});
+  menu.className="pass-popup";
+  menu.innerHTML='<div style="padding:4px 8px 8px;font-size:14px;font-weight:600;color:#1d1d1f;">修改密码</div><div style="padding:0 8px;"><div class="lw-pass-wrap" style="margin-bottom:8px;position:relative;"><input id="cp_old" type="text" placeholder="旧密码" autocomplete="off" style="width:100%;padding:6px 36px 6px 0;border:none;border-bottom:1px solid rgba(0,0,0,.15);border-radius:0;font-size:14px;font-family:inherit;outline:none;-webkit-text-security:disc;"><button type="button" class="lw-pass-toggle" onclick="togglePassVis(this)" style="position:absolute;right:0;top:50%;transform:translateY(-50%);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></svg></button></div><div class="lw-pass-wrap" style="position:relative;"><input id="cp_new" type="text" placeholder="新密码（6位以上）" autocomplete="new-password" style="width:100%;padding:6px 36px 6px 0;border:none;border-bottom:1px solid rgba(0,0,0,.15);border-radius:0;font-size:14px;font-family:inherit;outline:none;-webkit-text-security:disc;"><button type="button" class="lw-pass-toggle" onclick="togglePassVis(this)" style="position:absolute;right:0;top:50%;transform:translateY(-50%);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></svg></button></div></div><div style="display:flex;gap:6px;padding:8px 8px 4px;"><button class="btn btn--ghost" style="flex:1;height:32px;font-size:12px;justify-content:center;" onclick="closePassPopup()">取消</button><button class="btn btn--primary" style="flex:1;height:32px;font-size:12px;justify-content:center;" id="cp_btn">保存</button></div>';
   document.body.appendChild(menu);
   document.getElementById("cp_btn").addEventListener("click",async function(){
     try {
     var o=document.getElementById("cp_old").value.trim();var n=document.getElementById("cp_new").value.trim();
     if(n.length<6){toast("新密码至少6位","error");return;}
-    var r=await fetch(SB_URL+"/rest/v1/users?phone=eq."+currentUser,{headers:sbHead()});var u=r.ok?(await r.json()):[];
-    var newOldHash=btoa(currentUser+":"+o);if(u.length===0||(u[0].password_hash!==await hashPassword(currentUser,o)&&u[0].password_hash!==newOldHash)){toast("旧密码错误","error");return;}
-    await fetch(SB_URL+"/rest/v1/users?phone=eq."+currentUser,{method:"PATCH",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({password_hash:await hashPassword(currentUser,n)})});
+    var {error:signErr}=await _supabase.auth.signInWithPassword({email:currentUser,password:o});
+    if(signErr){toast("旧密码错误","error");return;}
+    var {error:updErr}=await _supabase.auth.updateUser({password:n});
+    if(updErr){toast("修改密码失败","error");return;}
     closePassPopup();toast("密码已修改","success");
-    } catch(e) { toast("修改密码失败: "+e.message,"error"); }
+    } catch(e) { toast("修改密码失败，请稍后重试","error"); }
   });
   setTimeout(function(){ var ce=function(e){ if(!menu.contains(e.target)){ closePassPopup(); document.removeEventListener('mousedown',ce,true); } }; document.addEventListener('mousedown',ce,true); },10);
   _passModalOpening = false; }
@@ -1514,79 +1923,64 @@ async function showNicknameModal(){
   if (_nickModalOpening) return; _nickModalOpening = true;
   closeUserMenu(); var old=document.querySelector('.nick-menu'); if(old) old.remove();
   try {
-  var r=await fetch(SB_URL+"/rest/v1/users?select=phone,nickname",{headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
+  var r=await fetch(SB_URL+"/rest/v1/users?select=email,nickname&status=eq.approved",{headers:sbHead()});
   var u=r.ok ? await r.json() : [];
   } catch(e) { toast("加载用户列表失败","error"); return; }
-  var btn=document.getElementById("authBtn");var rect=btn.getBoundingClientRect();
-  var menu=document.createElement("div");menu.className="nick-menu";
-  menu.style.cssText="position:fixed;top:"+(rect.bottom+6)+"px;right:"+Math.max(8,window.innerWidth-rect.right)+"px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:8px;width:300px;";
+  var btn=document.getElementById("authBtn");
+  var menu=createPopup(btn,{});
+  menu.className="nick-menu";
   var html='<div style="padding:4px 8px 8px;font-size:14px;font-weight:600;color:#1d1d1f;">设置昵称</div>';
   html+='<div style="max-height:160px;overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;">';
-  u.forEach(function(x){html+='<div style="display:flex;align-items:center;padding:8px 8px;"><span style="flex:1;font-size:13px;color:var(--text-primary);">'+x.phone+'</span><input style="width:100px;padding:6px 0;border:none;border-bottom:1px solid rgba(0,0,0,.15);border-radius:0;font-size:13px;font-family:inherit;outline:none;text-align:center;" value="'+(x.nickname||"")+'" placeholder="昵称" data-phone="'+x.phone+'"></div>';});
+  u.forEach(function(x){var em=x.email||'';html+='<div style="display:flex;align-items:center;padding:8px 8px;"><span style="flex:1;font-size:13px;color:var(--text-primary);">'+escHtml(em)+'</span><input style="width:100px;padding:6px 0;border:none;border-bottom:1px solid rgba(0,0,0,.15);border-radius:0;font-size:13px;font-family:inherit;outline:none;text-align:center;" value="'+escAttr(x.nickname||"")+'" placeholder="昵称" data-phone="'+escAttr(em)+'"></div>';});
   html+='</div>';
   html+='<div style="display:flex;gap:6px;padding:8px 8px 4px;"><button class="btn btn--ghost" style="flex:1;height:32px;font-size:12px;justify-content:center;" onclick="closeNickMenu()">关闭</button><button class="btn btn--primary" style="flex:1;height:32px;font-size:12px;justify-content:center;" onclick="saveNicknames(false)">保存</button></div>';
   menu.innerHTML=html;document.body.appendChild(menu);
-  setTimeout(function(){document.addEventListener("mousedown",function ce(e){if(!menu.contains(e.target)){closeNickMenu();document.removeEventListener("mousedown",ce,true);}},true);},10);
+  closeOnOutside(menu,closeNickMenu);
 }
 function closeNickMenu(){var m=document.querySelector(".nick-menu");if(m)m.remove(); _nickModalOpening=false;}
 var _nickModalOpening = false;
-function closeAdminPopup(){var m=document.querySelector(".admin-popup");if(m)m.remove(); _adminModalOpening=false;}
+function closeAdminPopup(){var m=document.querySelector(".admin-popup");if(m)m.remove();var o=document.querySelector(".ap-overlay");if(o)o.remove(); _adminModalOpening=false;}
 var _adminModalOpening = false;
 function closeRolePanel(){var m=document.querySelector(".role-menu");if(m)m.remove(); _roleModalOpening=false;}
 var _roleModalOpening = false;
-function closeAdminFilter(){var m=document.querySelector('.admin-filter-menu');if(m)m.remove(); _filterOpening=false; var b=document.getElementById('adminFilterBtn');if(b)b.textContent=(window._viewingUser?(window._nicks&&window._nicks[window._viewingUser]||window._viewingUser):'全部');}
+function closeAdminFilter(){var m=document.querySelector('.admin-filter-menu');if(m)m.remove(); _filterOpening=false; var b=document.getElementById('adminFilterBtn');if(b){var s=b.querySelector('span');if(s)s.textContent=(window._viewingUser?(window._nicks&&window._nicks[window._viewingUser]||window._viewingUser):'全部');}}
 var _filterOpening = false;
 async function saveNicknames(closeAfter){
   if(closeAfter===undefined)closeAfter=true;
   var inputs=document.querySelectorAll(".nick-menu input");
-  for(var i=0;i<inputs.length;i++){var p=inputs[i].getAttribute("data-phone");var n=inputs[i].value.trim();window._nicks=window._nicks||{};window._nicks[p]=n;await fetch(SB_URL+"/rest/v1/users?phone=eq."+p,{method:"PATCH",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({nickname:n||null})});}
+  for(var i=0;i<inputs.length;i++){var p=inputs[i].getAttribute("data-phone");var n=inputs[i].value.trim();window._nicks=window._nicks||{};window._nicks[p]=n;await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(p),{method:"PATCH",headers:sbHead(),body:JSON.stringify({nickname:n||null})});}
   initAdminSelect();toast("昵称已保存","success");
   if(closeAfter)closeNickMenu();
 }
 
 function showMyNickModal(){
   closeUserMenu();
-  var btn=document.getElementById("authBtn");var rect=btn.getBoundingClientRect();
+  var btn=document.getElementById("authBtn");
   var curNick=window._nicks&&window._nicks[currentUser]||"";
-  var m=document.createElement("div");m.className="my-nick-popup";
-  m.style.cssText="position:fixed;top:"+(rect.bottom+6)+"px;right:"+Math.max(8,window.innerWidth-rect.right)+"px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:8px;width:300px;";
-  m.innerHTML='<div style="padding:4px 8px 8px;font-size:14px;font-weight:600;color:#1d1d1f;">修改昵称</div><div style="padding:0 8px;"><input id="mn_input" style="width:100%;padding:6px 0;border:none;border-bottom:1px solid rgba(0,0,0,.15);border-radius:0;font-size:14px;font-family:inherit;outline:none;" value="'+curNick+'" placeholder="输入你的昵称"></div><div style="display:flex;gap:6px;padding:8px 8px 4px;"><button class="btn btn--ghost" style="flex:1;height:32px;font-size:12px;justify-content:center;" onclick="closeMyNickMenu()">取消</button><button class="btn btn--primary" style="flex:1;height:32px;font-size:12px;justify-content:center;" id="mn_save">保存</button></div>';
+  var m=createPopup(btn,{});
+  m.className="my-nick-popup";
+  m.innerHTML='<div style="padding:4px 8px 8px;font-size:14px;font-weight:600;color:#1d1d1f;">修改昵称</div><div style="padding:0 8px;"><input id="mn_input" style="width:100%;padding:6px 0;border:none;border-bottom:1px solid rgba(0,0,0,.15);border-radius:0;font-size:14px;font-family:inherit;outline:none;" value="'+escAttr(curNick)+'" placeholder="输入你的昵称"></div><div style="display:flex;gap:6px;padding:8px 8px 4px;"><button class="btn btn--ghost" style="flex:1;height:32px;font-size:12px;justify-content:center;" onclick="closeMyNickMenu()">取消</button><button class="btn btn--primary" style="flex:1;height:32px;font-size:12px;justify-content:center;" id="mn_save">保存</button></div>';
   document.body.appendChild(m);
   document.getElementById("mn_save").onclick=async function(){
     var n=document.getElementById("mn_input").value.trim();
     window._nicks=window._nicks||{}; window._nicks[currentUser]=n;
-    await fetch(SB_URL+"/rest/v1/users?phone=eq."+currentUser,{method:"PATCH",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({nickname:n||null})});
+    await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(currentUser),{method:"PATCH",headers:sbHead(),body:JSON.stringify({nickname:n||null})});
     closeMyNickMenu(); toast("昵称已更新","success");
     if(isAdmin) initAdminSelect();
   };
-  setTimeout(function(){document.addEventListener("mousedown",function ce(e){if(!m.contains(e.target)){closeMyNickMenu();document.removeEventListener("mousedown",ce,true);}},true);},10);
+  closeOnOutside(m,closeMyNickMenu);
 }
 function closeMyNickMenu(){var m=document.querySelector(".my-nick-popup");if(m)m.remove();}
 
 updateAuthBtn();
 
-// ============================================================
 // DATA LAYER
-// ============================================================
 const SVGS = {
-    // Stage icons — SF Symbols style
-    review:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><circle cx="11" cy="15" r="3"/><path d="M13.3 17.3L16 20"/></svg>',
-    signed:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.174 6.812a1 1 0 00-3.986-3.987L3.842 16.174a2 2 0 00-.5.83l-1.321 4.352a.5.5 0 00.623.623l4.353-1.32a2 2 0 00.83-.498l13.347-13.35z"/><path d="M15 5l4 4"/></svg>',
-    licensed:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M8 12.5l2.5 2.5 5-5"/></svg>',
-    qrdone:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="4"/><path d="M7 8v.01M7 12v.01M7 16v.01M12 8v.01M12 12v.01M12 16v.01M17 8v.01M17 12v.01M17 16v.01"/></svg>',
-    // Utility icons
-    magnifier: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
-    pen:       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>',
-    cert:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 12l2 2 4-4"/></svg>',
-    phone:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>',
-    check:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/></svg>',
+    pen:       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.364 13.634a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506l4.013-4.009a1 1 0 0 0-3.004-3.004z"/><path d="M14.487 7.858A1 1 0 0 1 14 7V2"/><path d="M20 19.645V20a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l2.516 2.516"/><path d="M8 18h1"/></svg>',
     grid:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
     cash:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>',
     card:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>',
     doc:       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
-    copy:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>',
-    trash:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>',
-    plus:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
   };
   const STAGES = [
     { id: 0, key: 'review',   label: '资料名单', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><circle cx="11.5" cy="14.5" r="2.5"/><line x1="13.5" y1="16.5" x2="16" y2="19"/></svg>',   color: '#FF9500', bg: 'rgba(255,149,0,0.08)' },
@@ -1595,14 +1989,11 @@ const SVGS = {
     { id: 3, key: 'qr_done',  label: '已扫码',   icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></svg>',   color: '#AF52DE', bg: 'rgba(175,82,222,0.08)' },
     { id: 4, key: 'done',     label: '已完结',   icon: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/></svg>',   color: '#8E8E93', bg: 'rgba(142,142,147,0.08)' },
   ];
-  const STORAGE_KEY = 'doudian_clients';
   const TRASH_KEY = 'doudian_trash';
 
-function loadClients() { return []; }
+function saveClients(clients) { syncToCloud().catch(function(e){toast("同步失败，请检查网络","error");}); }
 
-function saveClients(clients) { syncToCloud(); }
-
-let clients = loadClients();
+let clients = [];
 
 function mapClient(r) {
   return {
@@ -1618,14 +2009,31 @@ function mapClient(r) {
     user_id: r.user_id || ""
   };
 }
+function buildTags(c){
+  var tags=[];
+  if(c.licenseType) tags.push('<span class="card-tag card-tag--id">'+SVGS.doc+' '+escHtml(c.licenseType)+'</span>');
+  if(c.cardType) tags.push('<span class="card-tag card-tag--bank">'+SVGS.card+' '+escHtml(c.cardType)+'</span>');
+  if(c.advanceAmount&&c.advanceAmount!=='0') tags.push('<span class="card-tag card-tag--note">'+SVGS.cash+' 预付'+escHtml(c.advanceAmount)+'</span>');
+  if(c.notes) tags.push('<span class="card-tag card-tag--memo">'+SVGS.pen+' '+escHtml(c.notes.slice(0,15))+(c.notes.length>15?'…':'')+'</span>');
+  return tags;
+}
+function createPopup(anchor,opts){
+  var rect=anchor.getBoundingClientRect();
+  var w=Math.min(parseInt(opts.width)||300,window.innerWidth-16);
+  var m=document.createElement('div');
+  m.style.cssText='position:fixed;top:'+(rect.bottom+6)+'px;right:'+Math.max(8,window.innerWidth-rect.right)+'px;z-index:1001;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04);padding:'+(opts.padding||'8px')+';width:'+w+'px;max-width:calc(100vw - 16px);box-sizing:border-box;'+(opts.maxHeight?'max-height:'+opts.maxHeight+';overflow-y:auto;scrollbar-width:none;':'');
+  document.body.appendChild(m);
+  return m;
+}
+function closeOnOutside(menu,closeFn){
+  setTimeout(function(){document.addEventListener("mousedown",function ce(e){if(!menu.contains(e.target)){closeFn();document.removeEventListener("mousedown",ce,true);}},true);},10);
+}
 let activeFilter = null; // null = show all, number = stage id
 let searchQuery = '';
 let draggedClientId = null;
 let dragHappened = false;
 
-// ============================================================
 // HELPERS
-// ============================================================
 function genId() {
   return 'c_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
 }
@@ -1728,23 +2136,31 @@ function activeCount() {
   return clients.filter(c => c.stage !== 4).length;
 }
 
-// ============================================================
 // TOAST
-// ============================================================
-function toast(msg, type, undoCallback) {
+function toast(msg, type, undoFn) {
   var container = document.getElementById("toastContainer");
   var el = document.createElement("div");
   el.className = "toast toast--" + (type || "info");
-  el.innerHTML = "<span>" + msg + "</span>";
-  if (undoCallback) { el.innerHTML += "<span class=\"toast-undo\" style=\"cursor:pointer;margin-left:8px;font-weight:600;color:var(--blue);\" onclick=\"this.closest('.toast').remove();(" + undoCallback + ")()\">撤销</span>"; }
+  var iconSvg = type === 'success'
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+    : type === 'error'
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+  el.innerHTML = '<span class="toast-icon">' + iconSvg + '</span><span>' + escHtml(msg) + '</span>';
+  if (undoFn) {
+    var undoBtn = document.createElement("span");
+    undoBtn.className = "toast-undo";
+    undoBtn.style.cssText = "cursor:pointer;margin-left:4px;font-weight:600;color:#4fc3f7;";
+    undoBtn.textContent = "撤销";
+    undoBtn.onclick = function() { el.remove(); undoFn(); };
+    el.appendChild(undoBtn);
+  }
   container.appendChild(el);
-  var remove = function() { if (el.parentNode) { el.style.opacity = "0"; el.style.transition = "opacity 0.3s"; setTimeout(function() { el.remove(); }, 300); } };
-  setTimeout(remove, undoCallback ? 5000 : 1000);
+  var remove = function() { if (el.parentNode) { el.style.opacity = "0"; el.style.transform = "scale(0.92)"; el.style.transition = "opacity 0.2s, transform 0.2s"; setTimeout(function() { el.remove(); }, 200); } };
+  setTimeout(remove, undoFn ? 5000 : 1000);
 }
 
-// ============================================================
 // MODAL
-// ============================================================
 function openAddModal() {
   window._savedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
   renderModal({
@@ -1759,6 +2175,7 @@ function openAddModal() {
         cardType: data.cardType || '',
         advanceAmount: data.advanceAmount || '',
         notes: data.notes,
+        paymentStatus: data.paymentStatus || '',
         stage: parseInt(data.stage) || 0,
         createdAt: parseReviewDate(data.reviewDate) || Date.now(),
         stageTimestamps: { [data.stage || 0]: Date.now() },user_id: data.owner || currentUser,
@@ -1784,6 +2201,7 @@ function openEditModal(clientId) {
       client.cardType = data.cardType || '';
       client.advanceAmount = data.advanceAmount || '';
       client.notes = data.notes;
+      client.paymentStatus = data.paymentStatus || '';
       if (data.owner) client.user_id = data.owner;
       if (data.reviewDate) {
         var newTs = parseReviewDate(data.reviewDate);
@@ -1805,7 +2223,7 @@ function openEditModal(clientId) {
 
 function renderModal({ title, client, onSave, focusName }) {
   const container = document.getElementById('modalContainer');
-  const data = client || { name:'', licenseType:'', cardType:'', advanceAmount:'', notes:'', stage:0 };
+  const data = client || { name:'', licenseType:'', cardType:'', advanceAmount:'', notes:'', stage:0, paymentStatus:'' };
   // Show reviewDate (createdAt) in form — default today
   var now = new Date();
   data.reviewDate = client ? formatReviewDate(client.createdAt) : `${now.getMonth()+1}.${now.getDate()}`;
@@ -1814,12 +2232,18 @@ function renderModal({ title, client, onSave, focusName }) {
     `<option value="${s.id}" ${String(data.stage) === String(s.id) ? 'selected' : ''}>${s.label}</option>`
   ).join('');
 
-  const licenseOptions = ['', '单个体', '个体备案', '个独备案', '自带电子执照'].map(t =>
-    `<option value="${t}" ${data.licenseType === t ? 'selected' : ''}>${t || '请选择执照类型'}</option>`
+  var licenseList = ['', '单个体', '个体备案', '个独备案', '自带电子执照'];
+  var licenseMatch = data.licenseType && licenseList.includes(data.licenseType) ? data.licenseType : null;
+  if (data.licenseType && !licenseMatch) { licenseList.unshift(data.licenseType); }
+  const licenseOptions = licenseList.map(t =>
+    `<option value="${t}" ${(licenseMatch || data.licenseType) === t ? 'selected' : ''}>${t || '请选择执照类型'}</option>`
   ).join('');
 
-  const cardTypeOptions = ['', '一类', '二类', '三类'].map(t =>
-    `<option value="${t}" ${data.cardType === t ? 'selected' : ''}>${t || '请选择银行卡类型'}</option>`
+  var cardTypeList = ['', '一类', '二类', '三类'];
+  var cardTypeMatch = data.cardType && cardTypeList.includes(data.cardType) ? data.cardType : null;
+  if (data.cardType && !cardTypeMatch) { cardTypeList.unshift(data.cardType); }
+  const cardTypeOptions = cardTypeList.map(t =>
+    `<option value="${t}" ${(cardTypeMatch || data.cardType) === t ? 'selected' : ''}>${t || '请选择银行卡类型'}</option>`
   ).join('');
 
 document.body.style.overflow='hidden';
@@ -1882,14 +2306,27 @@ document.body.style.overflow='hidden';
               <input class="form-input" id="mf_advanceAmount" type="number" inputmode="numeric" placeholder="预付金额" value="${escAttr(data.advanceAmount)}" autocomplete="off" oninput="var v=parseInt(this.value.replace(/[^0-9]/g,''));this.value=isNaN(v)?'':Math.min(200,v)">
             </div>
           </div>
+          <div class="form-row" id="mf_payment_row" style="display:none;">
+            <div class="form-group">
+              <label class="form-label">收款状态</label>
+              <select class="form-select" id="mf_paymentStatus">
+                <option value="pending" ${data.paymentStatus!=='received'?'selected':''}>未收</option>
+                <option value="received" ${data.paymentStatus==='received'?'selected':''}>已收</option>
+              </select>
+            </div>
+            <div class="form-group" id="mf_notes_in_pay">
+              <label class="form-label">备注</label>
+              <input class="form-input" id="mf_notes_pay" placeholder="可选备注" value="${escAttr(data.notes)}" autocomplete="off">
+            </div>
+          </div>
           <div class="form-row" id="mf_owner_row" style="display:none;">
             <div class="form-group">
               <label class="form-label">归属用户</label>
-              <select class="form-select" id="mf_owner">${(window._adminUsers||[]).map(function(u){return '<option value="'+u.phone+'"'+((data.user_id||currentUser)===u.phone?' selected':'')+'>'+u.label+'</option>';}).join('')}</select>
+              <select class="form-select" id="mf_owner">${(window._adminUsers||[]).map(function(u){return '<option value="'+escAttr(u.email)+'"'+((data.user_id||currentUser)===u.email?' selected':'')+'>'+u.label+'</option>';}).join('')}</select>
             </div>
-            <div class="form-group">
+            <div class="form-group" id="mf_notes_in_owner">
               <label class="form-label">备注</label>
-              <input class="form-input" id="mf_notes" placeholder="可选备注" value="${escAttr(data.notes)}" autocomplete="off">
+              <input class="form-input" id="mf_notes_owner" placeholder="可选备注" value="${escAttr(data.notes)}" autocomplete="off">
             </div>
           </div>
           <div class="form-group" id="mf_notes_full">
@@ -1913,7 +2350,23 @@ document.body.style.overflow='hidden';
   }, 100);
 
   // Show owner for admin + prevent autofocus
-  if (isAdmin) { var g = document.getElementById('mf_owner_row'); if (g) g.style.display = ''; var f = document.getElementById('mf_notes_full'); if (f) f.style.display = 'none'; }
+  if (isSuperAdmin) { var g = document.getElementById('mf_owner_row'); if (g) g.style.display = ''; }
+  // Show payment status row for stage 3
+  function togglePaymentRow() {
+    var stageSel = document.getElementById('mf_stage');
+    var payRow = document.getElementById('mf_payment_row');
+    var notesFull = document.getElementById('mf_notes_full');
+    var notesInPay = document.getElementById('mf_notes_in_pay');
+    var notesInOwner = document.getElementById('mf_notes_in_owner');
+    var isStage3 = stageSel && stageSel.value === '3';
+    if (payRow) { payRow.style.display = isStage3 ? '' : 'none'; }
+    if (notesFull) { notesFull.style.display = (isStage3 || isSuperAdmin) ? 'none' : ''; }
+    if (notesInPay) { notesInPay.style.display = isStage3 ? '' : 'none'; }
+    if (notesInOwner) { notesInOwner.style.display = (!isStage3 && isSuperAdmin) ? '' : 'none'; }
+  }
+  togglePaymentRow();
+  var stageSel = document.getElementById('mf_stage');
+  if (stageSel) { stageSel.addEventListener('change', togglePaymentRow); }
   setTimeout(function(){ var el=document.getElementById('mf_name'); if(el){ el.disabled=false; if(focusName)el.focus(); } },100);
 
   // Custom selects — replace native with Apple-style dropdowns
@@ -1982,9 +2435,10 @@ document.body.style.overflow='hidden';
       cardType: document.getElementById('mf_cardType').value,
       reviewDate: (function(){ var m=document.getElementById('mf_reviewMonth').value||document.getElementById('mf_reviewMonthVal').value; var d=document.getElementById('mf_reviewDay').value||document.getElementById('mf_reviewDayVal').value; return m&&d?m+'.'+d:''; })(),
       advanceAmount: document.getElementById('mf_advanceAmount').value.trim(),
-      notes: (document.getElementById('mf_notes2').offsetParent!==null?document.getElementById('mf_notes2'):document.getElementById('mf_notes')).value.trim(),
+      notes: (function(){ var el=document.getElementById('mf_notes_pay'); if(el&&el.offsetParent!==null) return el.value.trim(); el=document.getElementById('mf_notes_owner'); if(el&&el.offsetParent!==null) return el.value.trim(); el=document.getElementById('mf_notes2'); return el?el.value.trim():''; })(),
       stage: document.getElementById('mf_stage').value,
       owner: (function(){ var o=document.getElementById('mf_owner'); return o?o.value:''; })(),
+      paymentStatus: (function(){ var el=document.getElementById('mf_paymentStatus'); return el?el.value:''; })(),
     };
     if (!formData.name) { toast('请输入客户姓名', 'error'); return; }
     onSave(formData);
@@ -2003,7 +2457,7 @@ function openModal(html) { document.body.style.overflow = 'hidden'; document.get
 function closeModal() { _dragModal = null;
   var modalEl = document.querySelector('.modal');
   if (modalEl) { modalEl.style.transform = ''; }
-  document.getElementById('modalContainer').innerHTML = ''; document.querySelectorAll('.dp-popup,.cs-dropdown,.user-menu,.admin-filter-menu,.admin-popup,.pass-popup,.nick-menu,.role-menu').forEach(function(el){el.remove();});
+  document.getElementById('modalContainer').innerHTML = ''; document.querySelectorAll('.dp-popup,.cs-dropdown,.user-menu,.admin-filter-menu,.admin-popup,.ap-overlay,.pass-popup,.nick-menu,.role-menu,.role-action-menu').forEach(function(el){el.remove();});
   document.body.style.overflow = '';
 }
 
@@ -2028,21 +2482,19 @@ function escHtml(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-// ============================================================
 // CONFIRM DIALOG
-// ============================================================
 function confirmDialog(title, msg, onConfirm) {
   const container = document.getElementById('modalContainer');
   container.innerHTML = `
     <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
       <div class="modal modal--alert" style="width:300px;border-radius:14px;">
         <div style="text-align:center;padding:24px 16px 0;">
-          <div style="font-size:17px;font-weight:600;color:var(--text-primary);margin-bottom:8px;">${title}</div>
-          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">${msg}</div>
+          <div style="font-size:17px;font-weight:600;color:var(--text-primary);margin-bottom:8px;">${escHtml(title)}</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">${escHtml(msg)}</div>
         </div>
         <div style="display:flex;border-top:1px solid var(--border-subtle);margin-top:20px;">
           <button onclick="closeModal()" style="flex:1;height:44px;border:none;background:none;font-size:17px;color:var(--blue);cursor:pointer;border-right:1px solid var(--border-subtle);font-family:inherit;">取消</button>
-          <button id="cf_confirmBtn" style="flex:1;height:44px;border:none;background:none;font-size:17px;color:var(--red);cursor:pointer;font-family:inherit;font-weight:600;">${title}</button>
+          <button id="cf_confirmBtn" style="flex:1;height:44px;border:none;background:none;font-size:17px;color:var(--red);cursor:pointer;font-family:inherit;font-weight:600;">${escHtml(title)}</button>
         </div>
       </div>
     </div>
@@ -2053,12 +2505,11 @@ function confirmDialog(title, msg, onConfirm) {
   });
 }
 
-// ============================================================
 // CLIENT ACTIONS
-// ============================================================
 function moveClient(clientId, toStage) {
   const client = clients.find(c => c.id === clientId);
   if (!client) return;
+  if (client.user_id !== currentUser && !isSuperAdmin) return;
   if (client.stage === toStage) return;
   var fromStage = client.stage;
   const fromLabel = STAGES[fromStage]?.label || '';
@@ -2081,12 +2532,10 @@ function deleteClient(clientId) {
   trash.push(Object.assign({}, client, { deletedAt: Date.now() }));
   saveTrash(trash);
   refreshAll();
-  toast("已删除: " + client.name, "warning", "restoreFromTrash('" + clientId + "',true)");
+  toast("已删除: " + client.name, "warning", function(){ restoreFromTrash(clientId, true); });
 }
 
-// ============================================================
 // COPY TEXT — robust across http/https & mobile
-// ============================================================
 function copyToClipboard(text, successMsg) {
   // Try modern Clipboard API first
   if (navigator.clipboard && window.isSecureContext) {
@@ -2167,9 +2616,7 @@ function copyOneText(text) {
   copyToClipboard(text, '已复制: ' + text);
 }
 
-// ============================================================
 // COPY ISSUE TEXT (批量)
-// ============================================================
 function copyIssueText() {
   const issued = clients.filter(c => c.stage === 2); issued.sort(function(a,b){ var da=a.createdAt||0; var db=b.createdAt||0; if(da!==db)return da-db; var sa=a.stageTimestamps?(a.stageTimestamps[2]||0):0; var sb=b.stageTimestamps?(b.stageTimestamps[2]||0):0; return sa-sb; });
   if (issued.length === 0) { toast('出证名单暂无客户', 'info'); return; }
@@ -2183,26 +2630,29 @@ function copyIssueText() {
       ? `${date} ${c.name} ${licType} ${cType}`
       : `${date} ${c.name} ${licType} ${cType} 已出`;
   });
-  copyToClipboard(lines.join('\n'), '已复制 ' + lines.length + ' 条出证文本');
+  copyToClipboard(lines.join('\n'), '已复制');
 }
 
-// ============================================================
 // COPY ADVANCE LIST (预付名单 — 除完结名单外所有人)
-// ============================================================
 function copyAdvanceList() {
-  const active = clients.filter(c => c.stage === 3);
-  if (active.length === 0) { toast('扫抖音码后名单暂无客户', 'info'); return; }
+  var today4am = new Date(); today4am.setHours(4,0,0,0); var ts4am = today4am.getTime();
+  var active = clients.filter(function(c){
+    if (c.stage !== 3) return false;
+    var ts = c.stageTimestamps ? (c.stageTimestamps[3] || c.createdAt || 0) : (c.createdAt || 0);
+    if (c.overrideSummarize === true) return true;
+    return ts < ts4am;
+  });
+  if (active.length === 0) { toast('暂无可复制的已扫码客户', 'info'); return; }
   const lines = active.map(c => {
     if (c.advanceAmount && c.advanceAmount !== '0') {
-      return `${c.name} 预支${c.advanceAmount} 未收`;
+      return `${c.name} 预付${c.advanceAmount} 未收`;
     } else {
-      return `${c.name} 🈚️预支 未收`;
+      return `${c.name} 🈚️预付 未收`;
     }
   });
-  copyToClipboard(lines.join('\n'), '已复制 ' + lines.length + ' 条预付名单');
+  copyToClipboard(lines.join('\n'), '已复制');
 }
 
-// ============================================================
 function copyAllClients() {
   if (!isAdmin || window._viewingUser !== null) { toast("仅管理员在全部视图可用","info"); return; }
   var issued = clients.filter(function(c){ return c.stage === 2; });
@@ -2221,66 +2671,47 @@ function copyAllClients() {
     });
     lines.push("");
   });
-  copyToClipboard(lines.join("\n"), "已复制 "+gids.length+" 位用户的已出证数据");
+  copyToClipboard(lines.join("\n"), "已复制");
 }
 
 function copyAllAdvance() {
   if (!isAdmin || window._viewingUser !== null) { toast("仅管理员在全部视图可用","info"); return; }
-  var scanned = clients.filter(function(c){ return c.stage === 3; });
+  var today4am = new Date(); today4am.setHours(4,0,0,0); var ts4am = today4am.getTime();
+  var scanned = clients.filter(function(c){
+    if (c.stage !== 3) return false;
+    var ts = c.stageTimestamps ? (c.stageTimestamps[3] || c.createdAt || 0) : (c.createdAt || 0);
+    if (c.overrideSummarize === true) return true;
+    return ts < ts4am;
+  });
   if (scanned.length === 0) { toast("暂无已扫码客户","info"); return; }
   var groups = {};
   scanned.forEach(function(c){ var uid = c.user_id || "未知"; if(!groups[uid]) groups[uid]=[]; groups[uid].push(c); });
-  var lines = [];
+  var now = new Date();
+  var lines = [(now.getMonth()+1)+'.'+String(now.getDate()).padStart(2,'0')];
   var gids = Object.keys(groups).sort();
   gids.forEach(function(uid){
     lines.push(getNick(uid));
     groups[uid].forEach(function(c){
-      var amt = c.advanceAmount ? "预支"+c.advanceAmount : "🈚️预支";
-      lines.push(c.name+" "+amt+" 未收");
+      var amt = c.advanceAmount ? "预付"+c.advanceAmount : "🈚️预付";
+      var payStatus = c.paymentStatus === 'received' ? '已收' : '未收';
+      lines.push(c.name+" "+amt+" "+payStatus);
     });
     lines.push("");
   });
-  copyToClipboard(lines.join("\n"), "已复制 "+gids.length+" 位用户的已扫码数据");
+  copyToClipboard(lines.join("\n"), "已复制");
 }
 
-// EXPORT
-// ============================================================
-function exportData() {
-  if (clients.length === 0) { toast('暂无数据可导出', 'info'); return; }
-  const rows = clients.map(c => {
-    const stage = STAGES.find(s => s.id === c.stage);
-    return [
-      c.name, c.licenseType || '', c.cardType || '', c.advanceAmount || '',
-      stage ? stage.label : '', c.notes || '', formatReviewDate(c.createdAt)
-    ].join(',');
-  });
-  const header = '姓名,执照类型,银行卡类型,预付金额,当前阶段,备注,创建时间';
-  const csv = '﻿' + header + '\n' + rows.join('\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `抖店客户数据_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-  toast('导出成功', 'success');
-}
-
-// ============================================================
 // FILTER
-// ============================================================
 function setFilter(stageId) {
   activeFilter = (activeFilter === stageId) ? null : stageId;
   renderStats();
   renderKanban();
 }
 
-// ============================================================
 // RENDER: Stats Strip
-// ============================================================
 function renderStats() {
   const strip = document.getElementById('statsStrip');
-  let html = '<div style="display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;padding:12px 16px 14px;scrollbar-width:none;-ms-overflow-style:none;">'+`
+  let html = '<div class="stats-inner" style="display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;padding:12px 16px 14px;scrollbar-width:none;-ms-overflow-style:none;">'+`
     <div class="stat-pill ${activeFilter === null ? 'stat-pill--active' : ''}" onclick="setFilter(null)">
       <span style="width:15px;height:15px;display:flex;align-items:center;">${SVGS.grid.replace('viewBox="0 0 24 24"','width="15" height="15" viewBox="0 0 24 24"')}</span>
       <span>全部</span>
@@ -2298,16 +2729,14 @@ function renderStats() {
       </div>
     `;
   });
-  if (isAdmin && window._adminUsers && window._adminUsers.length > 1) {
+  if (isAdmin && window._adminUsers && window._adminUsers.length > 0) {
     var currentLabel = window._viewingUser ? (window._nicks&&window._nicks[window._viewingUser]||window._viewingUser) : '全部';
     html += '</div><div style="padding: 12px 16px 12px;"><button id="adminFilterBtn" class="stat-pill" onclick="toggleAdminFilter(event)" style="overflow:hidden;display:flex;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;">'+currentLabel+'</span><span style="flex-shrink:0;margin-left:2px;"> ▾</span></button></div>';
   }
   strip.innerHTML = html;
 }
 
-// ============================================================
 // RENDER: Kanban Board
-// ============================================================
 function renderKanban(stageIds) {
   const board = document.getElementById('kanban');
 
@@ -2336,6 +2765,7 @@ function renderKanban(stageIds) {
       var stageClients = filteredClients.filter(c => c.stage === stage.id);
       if (stage.id === 2) { stageClients.sort(function(a,b){ var da=a.createdAt||0; var db=b.createdAt||0; if(da!==db)return da-db; var sa=a.stageTimestamps?(a.stageTimestamps[2]||0):0; var sb=b.stageTimestamps?(b.stageTimestamps[2]||0):0; return sa-sb; }); }
       if (stage.id === 4) { stageClients.sort(function(a,b){ var sa = a.stageTimestamps ? (a.stageTimestamps[4] || a.createdAt || 0) : (a.createdAt || 0); var sb = b.stageTimestamps ? (b.stageTimestamps[4] || b.createdAt || 0) : (b.createdAt || 0); return sb - sa; }); }
+      if (stage.id === 0 || stage.id === 1) { stageClients.sort(function(a,b){ return (a.createdAt||0) - (b.createdAt||0); }); }
       // Update count
       var countEl = col.querySelector('.column-count');
       if (countEl) countEl.textContent = stageClients.length;
@@ -2393,11 +2823,7 @@ function renderKanban(stageIds) {
     var nameEl = card.querySelector('.card-name');
     if (nameEl) nameEl.textContent = c.name;
     // Update tags
-    var tagsHtml = [];
-    if (c.licenseType) tagsHtml.push('<span class="card-tag card-tag--id">' + SVGS.doc + ' ' + escHtml(c.licenseType) + '</span>');
-    if (c.cardType) tagsHtml.push('<span class="card-tag card-tag--bank">' + SVGS.card + ' ' + escHtml(c.cardType) + '</span>');
-    if (c.advanceAmount && c.advanceAmount !== '0') tagsHtml.push('<span class="card-tag card-tag--note">' + SVGS.cash + ' 预支' + escHtml(c.advanceAmount) + '</span>');
-    if (c.notes) tagsHtml.push('<span class="card-tag card-tag--note">' + SVGS.pen + ' ' + escHtml(c.notes.slice(0,15)) + (c.notes.length>15?'…':'') + '</span>');
+    var tagsHtml = buildTags(c);
     var metaEl = card.querySelector('.card-meta');
     if (tagsHtml.length > 0) {
       if (metaEl) { metaEl.innerHTML = tagsHtml.join(''); }
@@ -2428,6 +2854,29 @@ function renderKanban(stageIds) {
     if (ownerEl && c.user_id) {
       ownerEl.textContent = getNick(c.user_id);
     }
+    // Update summarize dot
+    var oldDot = card.querySelector('.summarize-dot');
+    var nameRow = card.querySelector('.card-name-row');
+    if (c.stage === 3) {
+      var ts = c.stageTimestamps ? (c.stageTimestamps[3] || c.createdAt || 0) : (c.createdAt || 0);
+      var today4am = new Date(); today4am.setHours(4,0,0,0);
+      var canSum = c.overrideSummarize === true || ts < today4am.getTime();
+      var dotTitle = canSum ? '已开启汇总，点击关闭' : '今日不可汇总，点击开启';
+      if (oldDot) {
+        oldDot.className = 'summarize-dot ' + (canSum ? 'summarize-dot--green' : 'summarize-dot--yellow');
+        oldDot.title = dotTitle;
+      } else if (nameRow) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'summarize-dot ' + (canSum ? 'summarize-dot--green' : 'summarize-dot--yellow');
+        btn.setAttribute('onmousedown', 'event.stopPropagation()');
+        btn.setAttribute('onclick', "event.stopPropagation();toggleSummarize('" + c.id + "')");
+        btn.title = dotTitle;
+        nameRow.insertBefore(btn, nameRow.firstChild);
+      }
+    } else if (oldDot) {
+      oldDot.remove();
+    }
   }
 
   // Full rebuild
@@ -2441,7 +2890,7 @@ function renderKanban(stageIds) {
 
   board.style.opacity = '0';
   board.innerHTML = columnsToRender.map(stage => {
-    const stageClients = filteredClients.filter(c => c.stage === stage.id); if (stage.id === 2) { stageClients.sort(function(a,b){ var da=a.createdAt||0; var db=b.createdAt||0; if(da!==db)return da-db; var sa=a.stageTimestamps?(a.stageTimestamps[2]||0):0; var sb=b.stageTimestamps?(b.stageTimestamps[2]||0):0; return sa-sb; }); } if (stage.id === 4) { stageClients.sort(function(a,b){ var sa = a.stageTimestamps ? (a.stageTimestamps[4] || a.createdAt || 0) : (a.createdAt || 0); var sb = b.stageTimestamps ? (b.stageTimestamps[4] || b.createdAt || 0) : (b.createdAt || 0); return sb - sa; }); }
+    const stageClients = filteredClients.filter(c => c.stage === stage.id); if (stage.id === 2) { stageClients.sort(function(a,b){ var da=a.createdAt||0; var db=b.createdAt||0; if(da!==db)return da-db; var sa=a.stageTimestamps?(a.stageTimestamps[2]||0):0; var sb=b.stageTimestamps?(b.stageTimestamps[2]||0):0; return sa-sb; }); } if (stage.id === 4) { stageClients.sort(function(a,b){ var sa = a.stageTimestamps ? (a.stageTimestamps[4] || a.createdAt || 0) : (a.createdAt || 0); var sb = b.stageTimestamps ? (b.stageTimestamps[4] || b.createdAt || 0) : (b.createdAt || 0); return sb - sa; }); } if (stage.id === 0 || stage.id === 1) { stageClients.sort(function(a,b){ return (a.createdAt||0) - (b.createdAt||0); }); }
     const copyBtn = stage.id === 2 ? `
       <button class="btn btn--primary" style="height:28px;padding:0 12px;font-size:11px;gap:4px;flex-shrink:0;"
               onclick="event.stopPropagation();copyIssueText()" title="复制出证文本"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> 复制</button>` : '';
@@ -2496,11 +2945,7 @@ function renderKanban(stageIds) {
 function getNick(phone){ return (window._nicks&&window._nicks[phone])||phone||''; }
 function renderCard(c) {
   const stage = STAGES[c.stage];
-  const tags = [];
-  if (c.licenseType) tags.push(`<span class="card-tag card-tag--id">${SVGS.doc} ${escHtml(c.licenseType)}</span>`);
-  if (c.cardType) tags.push(`<span class="card-tag card-tag--bank">${SVGS.card} ${escHtml(c.cardType)}</span>`);
-  if (c.advanceAmount && c.advanceAmount !== '0') tags.push(`<span class="card-tag card-tag--note">${SVGS.cash} 预支${escHtml(c.advanceAmount)}</span>`);
-  if (c.notes) tags.push(`<span class="card-tag card-tag--note">${SVGS.pen} ${escHtml(c.notes.slice(0,15))}${c.notes.length>15?'…':''}</span>`);
+  const tags = buildTags(c);
 
   const canGoNext = c.stage < STAGES.length - 1;
   const nextStage = canGoNext ? STAGES[c.stage + 1] : null;
@@ -2524,15 +2969,23 @@ function renderCard(c) {
   }
 
 
-  // 已完结复制文本（按完成时间排序算套数）
+  // 已完结复制文本（按完成时间排序算套数，只算当月）
   let doneCopyBar = '';
   if (c.stage === 4) {
-    const doneClients = clients.filter(function(x) { return x.stage === 4; });
+    var now = new Date();
+    var curYear = now.getFullYear();
+    var curMonth = now.getMonth();
+    var monthStart = new Date(curYear, curMonth, 1).getTime();
+    var monthEnd = new Date(curYear, curMonth + 1, 1).getTime();
+    var doneClients = clients.filter(function(x) {
+      if (x.stage !== 4) return false;
+      var ts = x.stageTimestamps ? (x.stageTimestamps[4] || x.createdAt || 0) : (x.createdAt || 0);
+      return ts >= monthStart && ts < monthEnd;
+    });
     doneClients.sort(function(a, b) { var sa = a.stageTimestamps ? (a.stageTimestamps[4] || a.createdAt || 0) : (a.createdAt || 0); var sb = b.stageTimestamps ? (b.stageTimestamps[4] || b.createdAt || 0) : (b.createdAt || 0); return sa - sb; });
-    const rank = doneClients.findIndex(function(x) { return x.id === c.id; }) + 1;
-    const m = new Date().getMonth() + 1;
-    const doneLine = c.name + '完结 ' + m + '月完结' + rank + '套';
-    doneCopyBar = '<div class="card-copy-bar" onclick="event.stopPropagation();copyOneText(\'' + doneLine.replace(/'/g, "\\'") + '\')" title="点击复制此行"><span class="card-copy-text">' + escHtml(doneLine) + '</span><span class="card-copy-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></span></div>';
+    var rank = doneClients.findIndex(function(x) { return x.id === c.id; }) + 1;
+    var doneLine = c.name + '完结 ' + (curMonth + 1) + '月完结' + rank + '套';
+    doneCopyBar = '<div class="card-copy-bar" onclick="event.stopPropagation();copyOneText(\'' + escAttr(doneLine) + '\')" title="点击复制此行"><span class="card-copy-text">' + escHtml(doneLine) + '</span><span class="card-copy-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></span></div>';
   }
   return `
     <div class="card"
@@ -2540,28 +2993,34 @@ function renderCard(c) {
          data-client-id="${c.id}"
          ondragstart="handleDragStart(event)"
          ondragend="handleDragEnd(event)"
-         onclick="handleCardClick('${c.id}')">
-      <div class="card-name">${escHtml(c.name)}</div>
+         onclick="handleCardClick('${c.id}',event)">
+      <div class="card-name-row">
+        ${c.stage === 3 ? (function(){
+          var ts = c.stageTimestamps ? (c.stageTimestamps[3] || c.createdAt || 0) : (c.createdAt || 0);
+          var today4am = new Date(); today4am.setHours(4,0,0,0);
+          var canSum = c.overrideSummarize === true || ts < today4am.getTime();
+          return '<button type="button" class="summarize-dot' + (canSum ? ' summarize-dot--green' : ' summarize-dot--yellow') + '" onmousedown="event.stopPropagation()" onclick="event.stopPropagation();toggleSummarize(\'' + c.id + '\')" title="' + (canSum ? '已开启汇总，点击关闭' : '今日不可汇总，点击开启') + '"></button>';
+        })() : ''}
+        <div class="card-name">${escHtml(c.name)}</div>
+      </div>
       ${tags.length ? `<div class="card-meta">${tags.join('')}</div>` : ''}
       ${copyBar}
       ${doneCopyBar}
-      <div class="card-actions">
-        <button class="card-action card-action--delete" onclick="event.stopPropagation();deleteClient('${c.id}')" title="删除">✕</button>
-      </div>
+      ${(c.user_id === currentUser || isSuperAdmin) ? '<div class="card-actions"><button class="card-action card-action--delete" onclick="event.stopPropagation();deleteClient(\'' + c.id + '\')" title="删除">✕</button></div>' : ''}
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div class="card-time" style="margin-top:0;">${formatReviewDate(c.createdAt)}</div>
-        <div class="card-owner">${getNick(c.user_id)}</div>
+        <div class="card-owner">${escHtml(getNick(c.user_id))}</div>
       </div>
     </div>
   `;
 }
 
-// ============================================================
 // DRAG & DROP
-// ============================================================
 function handleDragStart(e) {
   draggedClientId = e.target.dataset.clientId;
   if (!draggedClientId) return;
+  var c = clients.find(function(x) { return x.id === draggedClientId; });
+  if (c && c.user_id !== currentUser && !isSuperAdmin) { e.preventDefault(); return; }
   e.target.classList.add('card--dragging');
   e.dataTransfer.effectAllowed = 'move';
   e.dataTransfer.setData('text/plain', draggedClientId);
@@ -2580,6 +3039,7 @@ function handleDragStart(e) {
     var cls = 'dg-tag--blue';
     if (t.classList.contains('card-tag--bank')) cls = 'dg-tag--green';
     if (t.classList.contains('card-tag--note')) cls = 'dg-tag--orange';
+    if (t.classList.contains('card-tag--memo')) cls = 'dg-tag--purple';
     tags.push({ cls: cls, text: raw });
   });
 
@@ -2648,8 +3108,20 @@ function handleDragEnd(e) {
   draggedClientId = null;
 }
 
-function handleCardClick(clientId) {
+function toggleSummarize(clientId, e) {
+  if (e) { e.stopPropagation(); e.preventDefault(); }
+  var c = clients.find(function(x) { return x.id === clientId; });
+  if (!c) return;
+  c.overrideSummarize = !c.overrideSummarize;
+  saveClients(clients);
+  refreshAll([3]);
+}
+
+function handleCardClick(clientId, e) {
   if (dragHappened) return;
+  if (e && e.target.closest('button[title*="汇总"]')) return;
+  var c = clients.find(function(x) { return x.id === clientId; });
+  if (c && c.user_id !== currentUser && !isSuperAdmin) return;
   openEditModal(clientId);
 }
 
@@ -2681,17 +3153,16 @@ function handleDrop(e) {
   const stageId = parseInt(column.dataset.stage);
   const clientId = e.dataTransfer.getData('text/plain') || draggedClientId;
   if (clientId && !isNaN(stageId)) {
+    var c = clients.find(function(x) { return x.id === clientId; });
+    if (c && c.user_id !== currentUser && !isSuperAdmin) return;
     moveClient(clientId, stageId);
   }
   draggedClientId = null;
 }
 
-// ============================================================
 // REFRESH
-// ============================================================
 function refreshAll(stageIds) { renderStats(); renderKanban(stageIds); }
 
-// ========== TRASH ==========
 function loadTrash() { try { return JSON.parse(localStorage.getItem(TRASH_KEY)) || []; } catch { return []; } }
 function saveTrash(arr) { try { localStorage.setItem(TRASH_KEY, JSON.stringify(arr)); } catch(e) { console.log("saveTrash localStorage error:",e.message); } }
 function restoreFromTrash(clientId, silent) {
@@ -2717,9 +3188,7 @@ function openTrash() {
 }
 function closeTrash() { closeModal(); }
 
-// ============================================================
 // SEARCH
-// ============================================================
 document.addEventListener('DOMContentLoaded', () => {
   // Search toggle
   var searchToggle = document.getElementById('searchToggle');
@@ -2734,12 +3203,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     // Close search on blur (mobile keyboard done)
   }
+  // 密码重置回调：检测 URL 中的 access_token & type=recovery
+  var hash=window.location.hash;
+  if(hash&&hash.includes('type=recovery')){
+    var params=new URLSearchParams(hash.substring(1));
+    var accessToken=params.get('access_token');
+    if(accessToken){
+      window.history.replaceState(null,'',window.location.pathname);
+      _supabase.auth.updateUser({password:'123456'}).then(function(result){
+        if(result.error){toast('重置失败，请重试','error');return;}
+        var c=document.getElementById('modalContainer');
+        document.body.style.overflow='hidden';c.innerHTML='<div class="modal-overlay"><div class="modal modal--alert" style="width:340px;"><div class="modal-header"><div class="modal-title">密码已重置</div></div><div class="modal-body"><p style="font-size:13px;color:var(--text-secondary);">您的密码已重置为 <b>123456</b>，请登录后及时修改密码。</p></div><div class="modal-footer"><button class="btn btn--primary" onclick="closeModal()">知道了</button></div></div></div>';
+      });
+    }
+  }
 
 });
 
-// ============================================================
 // KEYBOARD SHORTCUTS
-// ============================================================
 document.addEventListener('keydown', (e) => {
   // Cmd/Ctrl + K: focus search
   if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -2750,9 +3231,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { closeModal(); } if (e.key === '?' && document.activeElement === document.body) { e.preventDefault(); toggleHelp(); }
 });
 
-// ============================================================
 // INIT
-// ============================================================
 // Migrate old data (9-stage → 5-stage) — only run once
 // Loading helpers
 function showLoading() {
@@ -2769,24 +3248,50 @@ showLoading();
 // Hide after a minimum display time
 setTimeout(function() { if (!window._loaded) { window._minLoadDone = true; } }, 600);
 
+document.querySelectorAll('.lw-field').forEach(function(f){f.addEventListener('click',function(){var inp=f.querySelector('input');if(inp)inp.focus();});});
+function _initEmailDomain(wrapId,textId,hiddenId){
+  var domains=['@qq.com','@163.com','@126.com','@sina.com','@foxmail.com','@gmail.com','@outlook.com','@hotmail.com'];
+  document.getElementById(wrapId).addEventListener('click',function(e){
+    e.stopPropagation();
+    var old=document.querySelector('.lw-email-dd');if(old)old.remove();
+    var pop=document.createElement('div');pop.className='lw-email-dd';
+    var rect=this.getBoundingClientRect();
+    var spaceBelow=window.innerHeight-rect.bottom;
+    if(spaceBelow<220){pop.style.bottom=(window.innerHeight-rect.top+4)+'px';}
+    else{pop.style.top=rect.bottom+4+'px';}
+    pop.style.left=rect.left+'px';pop.style.width=rect.width+'px';
+    var cur=document.getElementById(hiddenId).value;
+    domains.forEach(function(d){
+      var item=document.createElement('button');item.type='button';item.className='um-item';
+      item.textContent=d;
+      if(d===cur){item.style.background='rgba(102,126,234,.08)';item.style.color='#667eea';item.style.fontWeight='500';}
+      item.onmousedown=function(ev){ev.preventDefault();document.getElementById(textId).textContent=d;document.getElementById(hiddenId).value=d;pop.remove();};
+      pop.appendChild(item);
+    });
+    document.body.appendChild(pop);
+    setTimeout(function(){document.addEventListener('mousedown',function handler(ev){if(!pop.contains(ev.target)){pop.remove();document.removeEventListener('mousedown',handler);}},true);},10);
+  });
+}
+_initEmailDomain('lw_domain_wrap','lw_domain_text','lw_domain');
+_initEmailDomain('reg_domain_wrap','reg_domain_text','reg_domain');
 document.getElementById("lw_btn").addEventListener("click",handleLogin);
 document.getElementById("lw_pass").addEventListener("keydown",function(e){if(e.key==="Enter")handleLogin();});
-// Floating labels
-document.querySelectorAll('.lw-field input').forEach(function(inp){ inp.addEventListener('input',function(){ this.parentElement.classList.toggle('has-value',this.value.length>0); }); });
+document.getElementById("reg_pass2").addEventListener("keydown",function(e){if(e.key==="Enter")handleRegister();});
 if(currentUser){showApp();}else{document.getElementById("appShell").style.display="none";}
 
 // Init — pull from cloud if logged in
 if (currentUser) {
   showLoading();
+  refreshSession().then(function(session) {
   // Check if admin
-  fetch(SB_URL + '/rest/v1/users?phone=eq.' + currentUser, { headers: { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY } }).then(function(r) { return r.json(); }).then(function(ud) {
+  return fetch(SB_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(currentUser), { headers: sbHead() }).then(function(r) { return r.json(); }).then(function(ud) {
     isAdmin = !!(ud[0] && (ud[0].role === 'admin' || ud[0].role === 'owner')); isSuperAdmin = !!(ud[0] && ud[0].role === 'owner'); localStorage.setItem('dou_super', isSuperAdmin?'1':'');
     localStorage.setItem('dou_admin', isAdmin ? '1' : '');
     if (isAdmin) document.body.classList.add('is-admin');
     if (isAdmin) {
-      return fetch(SB_URL+'/rest/v1/users?select=phone,nickname',{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}}).then(function(r2){return r2.json();}).then(function(nu){
+      return fetch(SB_URL+'/rest/v1/users?select=email,nickname&status=eq.approved',{headers:sbHead()}).then(function(r2){return r2.json();}).then(function(nu){
         window._nicks={};window._adminUsers=[];
-        (nu||[]).forEach(function(x){window._adminUsers.push({phone:x.phone,label:x.nickname||x.phone});window._nicks[x.phone]=x.nickname||x.phone;});
+        (nu||[]).forEach(function(x){window._adminUsers.push({email:x.email,label:x.nickname||x.email});window._nicks[x.email]=x.nickname||x.email;});
         var dv2 = localStorage.getItem('dou_view');
         window._viewingUser = (dv2 === 'all') ? null : (dv2 || currentUser);
       });
@@ -2795,12 +3300,13 @@ if (currentUser) {
     return syncToCloud();
   }).then(function() {
     var dv = localStorage.getItem('dou_view');
-    if (isAdmin && dv === 'all') return fetch(SB_URL+'/rest/v1/clients?select=*',{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}}).then(function(r){return r.json();}).then(function(data){return data.filter(function(c){return !window._adminUsers||window._adminUsers.some(function(u){return u.phone===c.user_id});});});
-    if (isAdmin && dv && dv !== currentUser) return fetch(SB_URL+'/rest/v1/clients?user_id=eq.'+dv+'&select=*',{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}}).then(function(r){return r.json();});
+    if (isAdmin && dv === 'all') return fetch(SB_URL+'/rest/v1/clients?select=*',{headers:sbHead()}).then(function(r){return r.json();}).then(function(data){return data.filter(function(c){return !window._adminUsers||window._adminUsers.some(function(u){return u.email===c.user_id});});});
+    if (isAdmin && dv && dv !== currentUser) return fetch(SB_URL+'/rest/v1/clients?user_id=eq.'+encodeURIComponent(dv)+'&select=*',{headers:sbHead()}).then(function(r){return r.json();});
     return sbFetch('clients', 'GET');
   }).then(function(data) {
     if (data.length > 0) { clients = data.map(mapClient); }
-  }).catch(function(err) { console.log("Init error:", err); toast("加载失败，请检查网络连接","error"); }).finally(function() { hideLoading(); refreshAll(); if(isAdmin)initAdminSelect(); var ca=document.getElementById("copyAllBtn"),cb=document.getElementById("copyAllAdvBtn"); if(ca)ca.style.display=(isAdmin&&window._viewingUser===null)?"":"none"; if(cb)cb.style.display=(isAdmin&&window._viewingUser===null)?"":"none"; });
+  }).catch(function(err) { console.log("Init error:", err); toast("加载失败，请检查网络连接","error"); }).finally(function() { hideLoading(); refreshAll(); if(isAdmin)initAdminSelect(); });
+  });
 } else {
   setTimeout(function() { hideLoading(); }, 400);
   refreshAll();

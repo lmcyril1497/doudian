@@ -187,3 +187,26 @@ phone, password_hash, status, role, nickname, reset_requested
 
 - 云端数据：Supabase 自动备份
 - 本地导出：打开页面 → F12 Console → `sbFetch('clients','GET').then(d=>copy(JSON.stringify(d)))`
+
+---
+
+## 近期功能更新（2026-07-16）
+
+### 权限管理弹窗重构
+- 移除行内操作按钮，改为 Badge + `•••` 更多按钮
+- 角色 Badge：管理员蓝色背景浅蓝字，普通用户灰色背景灰字
+- `•••` 按钮点击后弹出子菜单（角色切换 + 删除），紧贴按钮右侧定位
+- 子菜单超出屏幕时自动翻转
+- 操作采用 inline DOM 更新，不重建弹窗，无闪烁
+- 修改密码弹窗输入框改为底线风格，与修改昵称统一
+
+### 新增函数
+- `showRoleMenu(btn, phone, isAdminStr)` — 弹出角色操作子菜单
+- `closeRoleActionMenu()` — 关闭子菜单并恢复按钮高亮
+- `applyRoleChange(phone, makeAdmin)` — 内联更新角色（不重建弹窗）
+- `applyDelete(phone)` — 内联删除用户行（不重建弹窗）
+
+### Bug 修复
+17. 修改密码弹窗输入框风格不匹配 — 改为底线风格
+18. 权限管理弹窗标题和关闭按钮可滚动 — 列表独立滚动
+19. 权限管理弹窗按钮样式优化 — Badge + `•••` 子菜单模式
