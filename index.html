@@ -205,7 +205,7 @@ body {
 .lw-approval-icon svg { color:#f5a623; width:16px; height:16px; }
 .lw-approval-text { font-size:13px; color:#3f3f46; font-weight:500; margin-bottom:2px; }
 .lw-approval-sub { font-size:11px; color:#a1a1aa; margin-bottom:10px; }
-.lw-cancel { display:none; font-size:13px; color:#71717a; cursor:pointer; margin-top:0; text-align:center; text-decoration:none; padding:6px 16px; border-radius:6px; border:1px solid #e4e4e7; background:#fff; transition:all .15s; }
+.lw-cancel { display:none; font-size:13px; color:#71717a; cursor:pointer; margin-top:0; text-align:center; text-decoration:none; padding:6px 16px; border-radius:6px; border:1px solid #e4e4e7; background:#fff; transition: background .15s, border-color .15s, color .15s; }
 .lw-cancel:hover { color:#1d1d1f; border-color:#999; background:#f9f9f9; }
 .lw-field input:disabled { background:#f5f5f5; color:#a1a1aa; cursor:not-allowed; }
 .lw-btn:disabled { background:#c7c7cc; cursor:not-allowed; }
@@ -229,10 +229,10 @@ body {
 .ap-actions { display:flex; justify-content:flex-end; gap:16px; margin-top:10px; padding-top:10px; border-top:0.5px solid rgba(0,0,0,.06); }
 .ap-btn-approve { background:none; border:none; color:#007aff; font-size:14px; font-weight:500; font-family:inherit; cursor:pointer; padding:4px 8px; border-radius:6px; transition:background .12s; }
 .ap-btn-approve:hover { background:rgba(0,122,255,.08); }
-.ap-btn-reject { background:none; border:none; color:#8e8e93; font-size:14px; font-weight:400; font-family:inherit; cursor:pointer; padding:4px 8px; border-radius:6px; transition:all .12s; }
+.ap-btn-reject { background:none; border:none; color:#8e8e93; font-size:14px; font-weight:400; font-family:inherit; cursor:pointer; padding:4px 8px; border-radius:6px; transition: color .12s, background .12s; }
 .ap-btn-reject:hover { color:#ff3b30; background:rgba(255,59,48,.06); }
 .ap-footer { padding:8px 16px 10px; display:flex; justify-content:flex-end; gap:8px; }
-.ap-footer-btn { height:32px; padding:0 16px; border-radius:8px; border:1px solid #d1d1d6; background:#fff; color:#1d1d1f; font-size:13px; font-family:inherit; cursor:pointer; transition:all .12s; }
+.ap-footer-btn { height:32px; padding:0 16px; border-radius:8px; border:1px solid #d1d1d6; background:#fff; color:#1d1d1f; font-size:13px; font-family:inherit; cursor:pointer; transition: background .12s, border-color .12s, color .12s; }
 .ap-footer-btn:hover { background:#f5f5f7; }
 .ap-empty { padding:32px 16px; text-align:center; color:#8e8e93; font-size:13px; }
 .ap-empty-icon { font-size:28px; margin-bottom:6px; opacity:.5; }
@@ -359,6 +359,8 @@ body {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
+.compact-toggle { display:none; }
+.card-compact-row { display:none; }
 .stats-strip::-webkit-scrollbar { display: none; }
 .stat-pill {
   display: flex; align-items: center; gap: 7px;
@@ -421,9 +423,9 @@ body {
   overflow: hidden;
 }
 .column--drag-over {
-  background: rgba(0,113,227,0.03);
-  border-color: rgba(0,113,227,0.18);
-  box-shadow: 0 0 0 3px rgba(0,113,227,0.06);
+  background: rgba(0, 0, 0, 0.03);
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
 }
 .column-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -465,17 +467,17 @@ body {
 }
 .column-cards::-webkit-scrollbar { display: none; }
 .column-drop-hint {
-  text-align: center; padding: 28px 8px;
-  color: var(--text-tertiary); font-size: 12px; font-weight: 500;
-  border: 2px dashed rgba(0,0,0,0.05);
-  border-radius: var(--radius-md);
-  margin: 4px 0;
-  transition: box-shadow 0.25s var(--ease-apple), transform 0.25s var(--ease-apple), background 0.25s var(--ease-apple), border-color 0.25s var(--ease-apple), color 0.25s var(--ease-apple), opacity 0.25s var(--ease-apple);
+  text-align: center;
+  padding: 40px 8px;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
 }
 .column--drag-over .column-drop-hint {
-  border-color: rgba(0,113,227,0.18);
-  color: var(--blue);
-  background: rgba(0,113,227,0.02);
+  border: none;
+  color: var(--text-secondary);
+  background: transparent;
 }
 
 /* ── Client Card ── */
@@ -493,9 +495,11 @@ body {
 }
 .card:active { cursor: grabbing; }
 .card--dragging {
-  opacity: 0.35;
+  opacity: 0.35 !important;
+  background: #f5f5f7;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  border-radius: var(--radius-lg);
   box-shadow: none;
-  border-color: transparent;
 }
 .card--highlight { box-shadow: 0 0 0 3px rgba(0,113,227,0.16); }
 
@@ -518,6 +522,8 @@ body {
   z-index: 9999;
   min-width: 180px;
   max-width: 260px;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .drag-ghost .dg-name {
   font-size: 15px; font-weight: 620;
@@ -552,6 +558,43 @@ body {
 .drag-ghost .dg-time {
   font-size: 10px; color: var(--text-tertiary);
   margin-top: 4px;
+}
+
+/* Compact capsule drag ghost */
+.dg-compact {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(48px) saturate(300%);
+  -webkit-backdrop-filter: blur(48px) saturate(300%);
+  border-radius: 980px;
+  border: 0.5px solid rgba(0,0,0,0.08);
+  clip-path: inset(0 round 980px);
+  -webkit-clip-path: inset(0 round 980px);
+  filter: drop-shadow(0 20px 40px rgba(0,0,0,0.18)) drop-shadow(0 4px 12px rgba(0,0,0,0.08));
+  -webkit-filter: drop-shadow(0 20px 40px rgba(0,0,0,0.18)) drop-shadow(0 4px 12px rgba(0,0,0,0.08));
+  padding: 10px 16px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", sans-serif;
+  pointer-events: none;
+  z-index: 9999;
+  white-space: nowrap;
+  min-width: auto; max-width: none;
+  transform: scale(1.05);
+  user-select: none;
+  -webkit-user-select: none;
+}
+.dg-compact .dg-date { font-size:12px; color:var(--text-tertiary); font-weight:500; }
+.dg-compact .dg-name { font-size:12px; font-weight:600; color:var(--text-primary); }
+.dg-compact .dg-info { font-size:12px; color:var(--text-secondary); }
+.dg-compact .dg-notes { font-size:12px; color:var(--text-secondary); }
+
+/* Drop-in bounce animation */
+@keyframes card-drop-in {
+  0%   { opacity: 0; transform: scale(0.92) translateY(-8px); }
+  60%  { opacity: 1; transform: scale(1.02) translateY(0); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.card--drop-in {
+  animation: card-drop-in 0.35s var(--spring-smooth);
 }
 
 .card-name {
@@ -926,6 +969,100 @@ body.is-admin .card-owner { display:block !important; }
   .search-input:focus { width: 200px; }
 }
 
+/* ── Compact/Capsule View Toggle ── */
+.compact-toggle { display:flex; }
+.compact-bar { display:flex; align-items:center; gap:8px; padding:0 16px; }
+.compact-bar .stats-strip { flex:1; overflow-x:auto; padding:12px 0 14px; }
+.compact-toggle {
+  width:32px; height:32px; border-radius:980px; flex-shrink:0;
+  border:1px solid var(--border-subtle); background:var(--surface-card);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:background 0.2s, border-color 0.2s;
+}
+.compact-toggle:active { background:var(--fill-primary); }
+.compact-toggle svg { width:16px; height:16px; color:var(--text-secondary); }
+
+/* ── Card: will-change for FLIP ── */
+.card { will-change:transform; }
+
+/* ── Compact Row (capsule content) ── */
+.card-compact-row {
+  display:none; align-items:center; gap:4px; width:100%;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  transition: opacity 0.25s ease, max-height 0.25s ease;
+}
+.cc-date { font-size:12px; color:var(--text-tertiary); font-weight:500; flex-shrink:0; width:28px; }
+.cc-name { font-size:12px; font-weight:600; color:var(--text-primary); flex-shrink:0; width:44px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cc-info { font-size:12px; color:var(--text-secondary); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.cc-notes { font-size:12px; color:var(--text-secondary); flex-shrink:0; width:44px; overflow:hidden; text-overflow:ellipsis; }
+.cc-status { font-size:11px; font-weight:500; flex-shrink:0; display:flex; align-items:center; margin-left:auto; }
+.cc-status--copy { cursor:pointer; }
+.cc-status--copy:active { opacity:0.6; }
+.card-compact-row .cc-info { text-align:center; }
+.card-compact-row .cc-name { text-align:center; }
+.cc-status--green { color:#34C759; }
+.cc-status--blue { color:var(--blue); }
+.cc-status--purple { color:var(--purple); }
+.cc-del {
+  width:20px; height:20px; border-radius:50%; border:none; flex-shrink:0;
+  background:transparent; color:var(--red); font-size:12px;
+  display:none; align-items:center; justify-content:center; cursor:pointer;
+}
+.cc-del:active { background:var(--red-light); color:var(--red-hover); }
+
+/* ── Card view elements: fade transition ── */
+.card-name-row, .card-meta, .card-copy-bar, .card-time-wrap, .card-owner {
+  transition: opacity 0.25s ease, max-height 0.25s ease;
+}
+
+/* ── Compact Mode ── */
+.compact-mode .column-cards {
+  flex-direction:column; overflow-x:hidden; overflow-y:auto;
+  gap:6px; min-height:auto; scroll-snap-type:none;
+  -webkit-overflow-scrolling:touch;
+}
+.compact-mode .column-cards::-webkit-scrollbar { width:0; height:0; }
+.compact-mode .card {
+  min-width:0; max-width:none; width:100%;
+  padding:8px 12px; border-radius:980px;
+  scroll-snap-align:none;
+}
+.compact-mode .card-name-row,
+.compact-mode .card-meta,
+.compact-mode .card-owner {
+  opacity:0; max-height:0; overflow:hidden; margin:0; padding:0;
+}
+.compact-mode .card-copy-bar {
+  opacity:0; max-height:0; overflow:hidden; margin:0; padding:0; pointer-events:none;
+}
+.compact-mode .card-time-wrap {
+  opacity:0; max-height:0; overflow:hidden;
+}
+.compact-mode .card-compact-row {
+  display:flex; opacity:1; max-height:40px;
+}
+.compact-mode .cc-info {
+  flex: 0 1 64px;
+  min-width: 0;
+  width: 64px;
+}
+.compact-mode .cc-del {
+  display:flex; opacity:0; pointer-events:none;
+  margin-left: auto;
+  transition: opacity 0.18s var(--ease-apple);
+}
+.compact-mode .card:hover .cc-del {
+  opacity:1; pointer-events:auto;
+}
+.compact-mode .card--dragging {
+  opacity: 0.35 !important;
+  background: #f5f5f7;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  border-radius: 980px;
+  box-shadow: none;
+}
+.compact-mode .card-actions { display:none; }
+
 /* ── Phone: vertical stack, cards scroll horizontally ── */
 @media (max-width: 768px) {
   html { font-size: 14px; }
@@ -1002,11 +1139,15 @@ body.is-admin .card-owner { display:block !important; }
     padding: 14px;
     border-radius: var(--radius-md);
     scroll-snap-align: start;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
   }
   .card-name { font-size: 14px; }
   .card-tag { font-size: 11px; padding: 3px 7px; }
   .card-actions { opacity: 1; pointer-events: auto; } /* always show on touch */
   .card-action { height: 24px; width: 24px; }
+  .compact-mode .card:hover .cc-del { opacity: 0; pointer-events: none; }
 
   /* Modal — iOS bottom sheet (except alerts) */
   .modal-overlay:not(:has(.modal--alert)) {
@@ -1062,16 +1203,15 @@ body.is-admin .card-owner { display:block !important; }
     padding: 8px 14px; font-size: 12px;
     min-width: auto; max-width: 280px;
     border-radius: 980px;
-  }
-  }
+    }
 
-  /* Help/confirm panel */
-  .confirm-panel {
-    width: 92vw; padding: 24px;
-    border-radius: 20px;
-    max-height: 50vh; overflow-y: auto;
-  }
-  .confirm-panel h3 { font-size: 17px; }
+   /* Help/confirm panel */
+   .confirm-panel {
+     width: 92vw; padding: 24px;
+     border-radius: 20px;
+     max-height: 50vh; overflow-y: auto;
+   }
+   .confirm-panel h3 { font-size: 17px; }
 }
 
 /* ── Small phone: tighter still ── */
@@ -1164,7 +1304,7 @@ input,select,textarea,button { -webkit-appearance: none; }
 <!-- Loading Screen -->
 <div class="loading-screen" id="loadingScreen">
   <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
-    <div style="position:relative;width:120px;height:90px;">
+    <div style="position:relative;width:120px;height:90px;overflow:hidden;">
       <div class="ls-mascot"><div class="ls-logo">抖</div></div>
       <div class="ls-bar"></div>
     </div>
@@ -1245,8 +1385,13 @@ input,select,textarea,button { -webkit-appearance: none; }
     </div>
   </header>
 
-  <!-- Stats Strip -->
-  <div class="stats-strip" id="statsStrip"></div>
+  <!-- Stats Strip + View Toggle -->
+  <div class="compact-bar">
+    <div class="stats-strip" id="statsStrip"></div>
+    <button class="compact-toggle" id="compactToggle" onclick="toggleCompactView()" title="切换卡片/胶囊视图">
+      <svg id="compactIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
 
   <!-- Kanban Board -->
   <div class="kanban" id="kanban"></div>
@@ -1805,7 +1950,7 @@ function applyRoleChange(phone, makeAdmin) {
     toast(phone+(makeAdmin?" 已设为管理员":" 已取消管理员"),"success");
     var row = document.querySelector('.role-menu [data-phone="'+phone+'"]');
     if (!row) return;
-    var badge = row.querySelector('span:nth-child(2)');
+    var badge = row.querySelector('.role-badge');
     if (badge) {
       if (makeAdmin) {
         badge.setAttribute('style', 'background:rgba(102,126,234,.08);color:#667eea;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;margin-right:8px;');
@@ -1870,7 +2015,7 @@ async function showRolePanel(){
     html+='<div style="display:flex;align-items:center;padding:10px 8px;'+borderStyle+'" data-phone="'+escAttr(email)+'">';
     html+='<div style="width:32px;height:32px;border-radius:50%;background:'+avatarColor(email)+';display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;flex-shrink:0;">'+avatarInitials(email)+'</div>';
     html+="<span style=\"flex:1;margin-left:10px;\"><span style=\"font-size:14px;font-weight:500;\">"+escHtml(getNick(email))+"</span><br><span style=\"font-size:12px;color:#999;\">"+escHtml(email)+"</span></span>";
-    html+="<span style=\""+badgeStyle+"margin-right:8px;\">"+roleLabel+"</span>";
+    html+="<span class=\"role-badge\" style=\""+badgeStyle+"margin-right:8px;\">"+roleLabel+"</span>";
     html+="<button style=\"width:28px;height:28px;border:none;border-radius:6px;background:transparent;cursor:pointer;font-size:16px;line-height:1;color:var(--text-tertiary);display:flex;align-items:center;justify-content:center;transition:background .15s,transform .1s;\" onmouseover=\"this.style.background='rgba(0,0,0,.05)'\" onmouseout=\"this.style.background='transparent'\" onclick=\"event.stopPropagation();showRoleMenu(this,'"+escAttr(email)+"','"+(isAdminUser?"true":"false")+"')\">•••</button>";
     html+="</div>";
   });html+="</div>";}
@@ -2711,7 +2856,7 @@ function setFilter(stageId) {
 // RENDER: Stats Strip
 function renderStats() {
   const strip = document.getElementById('statsStrip');
-  let html = '<div class="stats-inner" style="display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;padding:12px 16px 14px;scrollbar-width:none;-ms-overflow-style:none;">'+`
+  let html = '<div class="stats-inner" style="display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;padding:0;scrollbar-width:none;-ms-overflow-style:none;">'+`
     <div class="stat-pill ${activeFilter === null ? 'stat-pill--active' : ''}" onclick="setFilter(null)">
       <span style="width:15px;height:15px;display:flex;align-items:center;">${SVGS.grid.replace('viewBox="0 0 24 24"','width="15" height="15" viewBox="0 0 24 24"')}</span>
       <span>全部</span>
@@ -2731,9 +2876,90 @@ function renderStats() {
   });
   if (isAdmin && window._adminUsers && window._adminUsers.length > 0) {
     var currentLabel = window._viewingUser ? (window._nicks&&window._nicks[window._viewingUser]||window._viewingUser) : '全部';
-    html += '</div><div style="padding: 12px 16px 12px;"><button id="adminFilterBtn" class="stat-pill" onclick="toggleAdminFilter(event)" style="overflow:hidden;display:flex;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;">'+currentLabel+'</span><span style="flex-shrink:0;margin-left:2px;"> ▾</span></button></div>';
+    html += '</div><div style="padding: 0;"><button id="adminFilterBtn" class="stat-pill" onclick="toggleAdminFilter(event)" style="overflow:hidden;display:flex;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;">'+currentLabel+'</span><span style="flex-shrink:0;margin-left:2px;"> ▾</span></button></div>';
   }
   strip.innerHTML = html;
+  updateToggleIcon();
+}
+
+// COMPACT/CAPSULE VIEW TOGGLE — Apple FLIP animation
+function toggleCompactView() {
+  var board = document.getElementById('kanban');
+  var cards = Array.from(board.querySelectorAll('.card'));
+  if (cards.length === 0) return;
+
+  // 1. First: record old positions + sizes
+  var oldStates = [];
+  cards.forEach(function(card) {
+    var rect = card.getBoundingClientRect();
+    oldStates.push({
+      el: card,
+      left: rect.left, top: rect.top, width: rect.width, height: rect.height
+    });
+  });
+
+  // 1.5 Freeze inner content transitions — prevent them from interfering with FLIP
+  cards.forEach(function(card) {
+    card.querySelectorAll('.card-name-row, .card-meta, .card-copy-bar, .card-time-wrap, .card-owner').forEach(function(el) {
+      el.style.transition = 'none';
+    });
+  });
+
+  // 2. Toggle state
+  window._compactView = !window._compactView;
+  localStorage.setItem('dou_compact', window._compactView ? '1' : '0');
+  board.classList.toggle('compact-mode', window._compactView);
+  updateToggleIcon();
+
+  // 3. Force reflow — inner content now jumps to final state instantly (no transition)
+  board.offsetHeight;
+
+  // 4. Invert: record new positions, set old sizes + inverse transforms
+  oldStates.forEach(function(s) {
+    var card = s.el;
+    var newRect = card.getBoundingClientRect();
+    var dx = s.left - newRect.left;
+    var dy = s.top - newRect.top;
+    card.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+    card.style.transition = 'none';
+  });
+
+  // 5. Force reflow
+  board.offsetHeight;
+
+  // 6. Play: animate only transform + shape
+  var dur = '0.35s';
+  var ease = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
+  oldStates.forEach(function(s) {
+    var card = s.el;
+    card.style.transition = 'transform ' + dur + ' ' + ease;
+    card.style.transform = '';
+    card.addEventListener('transitionend', function handler(e) {
+      if (e.propertyName !== 'transform') return;
+      // Restore inner content transitions
+      card.querySelectorAll('.card-name-row, .card-meta, .card-copy-bar, .card-time-wrap, .card-owner').forEach(function(el) {
+        el.style.transition = '';
+      });
+      card.style.transition = '';
+      card.style.transform = '';
+      card.removeEventListener('transitionend', handler);
+    });
+  });
+}
+
+function updateToggleIcon() {
+  var icon = document.getElementById('compactIcon');
+  var btn = document.getElementById('compactToggle');
+  if (!icon || !btn) return;
+  if (window._compactView) {
+    // Show card icon (switch to card view)
+    icon.innerHTML = '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>';
+    btn.title = '切换到卡片视图';
+  } else {
+    // Show list icon (switch to capsule view)
+    icon.innerHTML = '<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>';
+    btn.title = '切换到胶囊视图';
+  }
 }
 
 // RENDER: Kanban Board
@@ -2822,6 +3048,68 @@ function renderKanban(stageIds) {
   function updateCardContent(card, c) {
     var nameEl = card.querySelector('.card-name');
     if (nameEl) nameEl.textContent = c.name;
+    // Update compact row
+    var compactRow = card.querySelector('.card-compact-row');
+    if (compactRow) {
+      var ccDate = compactRow.querySelector('.cc-date');
+      if (ccDate) ccDate.textContent = formatReviewDate(c.createdAt);
+      var ccName = compactRow.querySelector('.cc-name');
+      if (ccName) ccName.textContent = c.name;
+      var ccInfo = compactRow.querySelector('.cc-info');
+      var newLicText = c.licenseType ? escHtml(c.licenseType) : '';
+      if (ccInfo) {
+        if (newLicText) { ccInfo.textContent = newLicText; }
+        else { ccInfo.remove(); ccInfo = null; }
+      } else if (newLicText) {
+        ccInfo = document.createElement('span');
+        ccInfo.className = 'cc-info';
+        ccInfo.textContent = newLicText;
+        var ccNameEl = compactRow.querySelector('.cc-name');
+        if (ccNameEl) ccNameEl.after(ccInfo);
+      }
+      compactRow.classList.toggle('card-compact-row--done', c.stage === 4);
+      var ccStatus = compactRow.querySelector('.cc-status');
+      var statusText = '', statusCls = '';
+      if (c.stage === 4) { statusText = '完结'; statusCls = 'cc-status--blue'; }
+      if (ccStatus) {
+        if (statusText || c.stage === 4) {
+          if (c.stage === 4) {
+            var doneLineU = c.name + '完结 ' + (new Date().getMonth() + 1) + '月完结' + getDoneRank(c.id) + '套';
+            ccStatus.className = 'cc-status cc-status--blue cc-status--copy';
+            ccStatus.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
+            ccStatus.onclick = function(e){e.stopPropagation();copyOneText(doneLineU);};
+          } else {
+            ccStatus.textContent = statusText;
+            ccStatus.className = 'cc-status ' + statusCls;
+            ccStatus.onclick = null;
+          }
+        } else { ccStatus.remove(); }
+      } else if (c.stage === 4 || statusText) {
+        var newStatus = document.createElement('span');
+        newStatus.className = c.stage === 4 ? 'cc-status cc-status--blue cc-status--copy' : 'cc-status ' + statusCls;
+        if (c.stage === 4) {
+          newStatus.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
+          var doneLineN = c.name + '完结 ' + (new Date().getMonth() + 1) + '月完结' + getDoneRank(c.id) + '套';
+          newStatus.onclick = function(e){e.stopPropagation();copyOneText(doneLineN);};
+        } else {
+          newStatus.textContent = statusText;
+        }
+        var ccInfo2 = compactRow.querySelector('.cc-info') || compactRow.querySelector('.cc-name');
+        if (ccInfo2) ccInfo2.after(newStatus);
+      }
+      var ccNotes = compactRow.querySelector('.cc-notes');
+      var notesText = (c.notes && c.stage !== 4) ? escHtml(c.notes.slice(0,8)) + (c.notes.length>8?'…':'') : '';
+      if (ccNotes) {
+        if (notesText) { ccNotes.textContent = notesText; }
+        else { ccNotes.remove(); }
+      } else if (notesText) {
+        var newNotes = document.createElement('span');
+        newNotes.className = 'cc-notes';
+        newNotes.textContent = notesText;
+        var ccInfo3 = compactRow.querySelector('.cc-info') || compactRow.querySelector('.cc-name');
+        if (ccInfo3) ccInfo3.after(newNotes);
+      }
+    }
     // Update tags
     var tagsHtml = buildTags(c);
     var metaEl = card.querySelector('.card-meta');
@@ -2972,28 +3260,38 @@ function renderCard(c) {
   // 已完结复制文本（按完成时间排序算套数，只算当月）
   let doneCopyBar = '';
   if (c.stage === 4) {
-    var now = new Date();
-    var curYear = now.getFullYear();
-    var curMonth = now.getMonth();
-    var monthStart = new Date(curYear, curMonth, 1).getTime();
-    var monthEnd = new Date(curYear, curMonth + 1, 1).getTime();
-    var doneClients = clients.filter(function(x) {
-      if (x.stage !== 4) return false;
-      var ts = x.stageTimestamps ? (x.stageTimestamps[4] || x.createdAt || 0) : (x.createdAt || 0);
-      return ts >= monthStart && ts < monthEnd;
-    });
-    doneClients.sort(function(a, b) { var sa = a.stageTimestamps ? (a.stageTimestamps[4] || a.createdAt || 0) : (a.createdAt || 0); var sb = b.stageTimestamps ? (b.stageTimestamps[4] || b.createdAt || 0) : (b.createdAt || 0); return sa - sb; });
-    var rank = doneClients.findIndex(function(x) { return x.id === c.id; }) + 1;
+    var curMonth = new Date().getMonth();
+    var rank = getDoneRank(c.id);
     var doneLine = c.name + '完结 ' + (curMonth + 1) + '月完结' + rank + '套';
     doneCopyBar = '<div class="card-copy-bar" onclick="event.stopPropagation();copyOneText(\'' + escAttr(doneLine) + '\')" title="点击复制此行"><span class="card-copy-text">' + escHtml(doneLine) + '</span><span class="card-copy-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></span></div>';
   }
+  // Build compact row content for capsule view
+  const cDate = formatReviewDate(c.createdAt);
+  const cName = escHtml(c.name);
+  const cType = c.licenseType ? escHtml(c.licenseType) : '';
+  var statusText = '', statusCls = '';
+  if (c.stage === 4) { statusText = '完结'; statusCls = 'cc-status--blue'; }
+  var compactRow = '<div class="card-compact-row' + (c.stage === 4 ? ' card-compact-row--done' : '') + '">'
+    + '<span class="cc-date">' + cDate + '</span>'
+    + '<span class="cc-name">' + cName + '</span>'
+    + (cType ? '<span class="cc-info">' + cType + '</span>' : '')
+    + (c.notes && c.stage !== 4 ? '<span class="cc-notes">' + escHtml(c.notes.slice(0,8)) + (c.notes.length>8?'…':'') + '</span>' : '')
+    + (c.stage === 4
+      ? '<span class="cc-status cc-status--blue cc-status--copy" onclick="event.stopPropagation();copyOneText(\'' + escAttr(doneLine) + '\')" title="点击复制"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></span>'
+      : (statusText ? '<span class="cc-status ' + statusCls + '">' + statusText + '</span>' : ''))
+    + ((c.user_id === currentUser || isSuperAdmin) ? '<button class="cc-del" onmousedown="event.stopPropagation()" onclick="event.stopPropagation();deleteClient(\'' + escAttr(c.id) + '\')" title="删除">✕</button>' : '')
+    + '</div>';
+
   return `
     <div class="card"
          draggable="true"
          data-client-id="${c.id}"
+         data-stage="${c.stage}"
          ondragstart="handleDragStart(event)"
          ondragend="handleDragEnd(event)"
-         onclick="handleCardClick('${c.id}',event)">
+         onclick="handleCardClick('${c.id}',event)"
+         onselectstart="return false">
+      ${compactRow}
       <div class="card-name-row">
         ${c.stage === 3 ? (function(){
           var ts = c.stageTimestamps ? (c.stageTimestamps[3] || c.createdAt || 0) : (c.createdAt || 0);
@@ -3007,7 +3305,7 @@ function renderCard(c) {
       ${copyBar}
       ${doneCopyBar}
       ${(c.user_id === currentUser || isSuperAdmin) ? '<div class="card-actions"><button class="card-action card-action--delete" onclick="event.stopPropagation();deleteClient(\'' + c.id + '\')" title="删除">✕</button></div>' : ''}
-      <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="card-time-wrap" style="display:flex;justify-content:space-between;align-items:center;">
         <div class="card-time" style="margin-top:0;">${formatReviewDate(c.createdAt)}</div>
         <div class="card-owner">${escHtml(getNick(c.user_id))}</div>
       </div>
@@ -3023,7 +3321,7 @@ function handleDragStart(e) {
   if (c && c.user_id !== currentUser && !isSuperAdmin) { e.preventDefault(); return; }
   e.target.classList.add('card--dragging');
   e.dataTransfer.effectAllowed = 'move';
-  e.dataTransfer.setData('text/plain', draggedClientId);
+  e.dataTransfer.setData('text/x-client-id', draggedClientId);
 
   // Build full-card drag ghost with Apple-polished shape
   var card = e.target;
@@ -3051,41 +3349,58 @@ function handleDragStart(e) {
 
   // Build ghost DOM
   var ghost = document.createElement('div');
-  ghost.className = 'drag-ghost';
 
-  // Name
-  var nameDiv = document.createElement('div');
-  nameDiv.className = 'dg-name';
-  nameDiv.textContent = clientName;
-  ghost.appendChild(nameDiv);
-
-  // Tags
-  if (tags.length > 0) {
-    var tagsWrap = document.createElement('div');
-    tagsWrap.className = 'dg-tags';
-    tags.forEach(function(t) {
-      var tag = document.createElement('span');
-      tag.className = 'dg-tag ' + t.cls;
-      tag.textContent = t.text;
-      tagsWrap.appendChild(tag);
-    });
-    ghost.appendChild(tagsWrap);
-  }
-
-  // Copy bar (出证/完结)
-  if (copyText) {
-    var copyDiv = document.createElement('div');
-    copyDiv.className = 'dg-copybar';
-    copyDiv.textContent = copyText;
-    ghost.appendChild(copyDiv);
-  }
-
-  // Time
-  if (timeText) {
-    var timeDiv = document.createElement('div');
-    timeDiv.className = 'dg-time';
-    timeDiv.textContent = timeText;
-    ghost.appendChild(timeDiv);
+  if (window._compactView) {
+    // Compact capsule ghost
+    ghost.className = 'drag-ghost dg-compact';
+    var dateSpan = document.createElement('span');
+    dateSpan.className = 'dg-date';
+    dateSpan.textContent = formatReviewDate(c.createdAt);
+    ghost.appendChild(dateSpan);
+    var nameSpan = document.createElement('span');
+    nameSpan.className = 'dg-name';
+    nameSpan.textContent = clientName;
+    ghost.appendChild(nameSpan);
+    var infoSpan = document.createElement('span');
+    infoSpan.className = 'dg-info';
+    infoSpan.textContent = c.licenseType || '单个体';
+    ghost.appendChild(infoSpan);
+    if (c.notes && c.stage !== 4) {
+      var notesSpan = document.createElement('span');
+      notesSpan.className = 'dg-notes';
+      notesSpan.textContent = c.notes.slice(0,8) + (c.notes.length>8?'…':'');
+      ghost.appendChild(notesSpan);
+    }
+  } else {
+    // Full card ghost
+    ghost.className = 'drag-ghost';
+    var nameDiv = document.createElement('div');
+    nameDiv.className = 'dg-name';
+    nameDiv.textContent = clientName;
+    ghost.appendChild(nameDiv);
+    if (tags.length > 0) {
+      var tagsWrap = document.createElement('div');
+      tagsWrap.className = 'dg-tags';
+      tags.forEach(function(t) {
+        var tag = document.createElement('span');
+        tag.className = 'dg-tag ' + t.cls;
+        tag.textContent = t.text;
+        tagsWrap.appendChild(tag);
+      });
+      ghost.appendChild(tagsWrap);
+    }
+    if (copyText) {
+      var copyDiv = document.createElement('div');
+      copyDiv.className = 'dg-copybar';
+      copyDiv.textContent = copyText;
+      ghost.appendChild(copyDiv);
+    }
+    if (timeText) {
+      var timeDiv = document.createElement('div');
+      timeDiv.className = 'dg-time';
+      timeDiv.textContent = timeText;
+      ghost.appendChild(timeDiv);
+    }
   }
 
   ghost.style.top = '-9999px';
@@ -3103,6 +3418,11 @@ function handleDragStart(e) {
 function handleDragEnd(e) {
   e.target.classList.remove('card--dragging');
   document.querySelectorAll('.column--drag-over').forEach(el => el.classList.remove('column--drag-over'));
+  e.target.classList.add('card--drop-in');
+  e.target.addEventListener('animationend', function handler() {
+    e.target.classList.remove('card--drop-in');
+    e.target.removeEventListener('animationend', handler);
+  });
   dragHappened = true;
   setTimeout(() => { dragHappened = false; }, 0);
   draggedClientId = null;
@@ -3117,13 +3437,52 @@ function toggleSummarize(clientId, e) {
   refreshAll([3]);
 }
 
+var _cardTapClientId = null;
+var _cardHideTimer = null;
 function handleCardClick(clientId, e) {
   if (dragHappened) return;
   if (e && e.target.closest('button[title*="汇总"]')) return;
   var c = clients.find(function(x) { return x.id === clientId; });
   if (c && c.user_id !== currentUser && !isSuperAdmin) return;
-  openEditModal(clientId);
+  if (!('ontouchstart' in window)) {
+    openEditModal(clientId);
+    return;
+  }
+  var card = e.target.closest('.card');
+  var del = card ? card.querySelector('.cc-del') : null;
+  if (_cardTapClientId === clientId && del && del.style.opacity === '1') {
+    clearTimeout(_cardHideTimer);
+    _cardTapClientId = null;
+    if (del) { del.style.opacity = ''; del.style.pointerEvents = ''; }
+    openEditModal(clientId);
+    return;
+  }
+  clearTimeout(_cardHideTimer);
+  if (_cardTapClientId && _cardTapClientId !== clientId) {
+    var oldCard = document.querySelector('.card[data-client-id="' + _cardTapClientId + '"]');
+    if (oldCard) {
+      var oldDel = oldCard.querySelector('.cc-del');
+      if (oldDel) { oldDel.style.opacity = ''; oldDel.style.pointerEvents = ''; }
+    }
+  }
+  _cardTapClientId = clientId;
+  if (del) { del.style.opacity = '1'; del.style.pointerEvents = 'auto'; }
+  _cardHideTimer = setTimeout(function() {
+    if (del) { del.style.opacity = ''; del.style.pointerEvents = ''; }
+    _cardTapClientId = null;
+  }, 1500);
 }
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.card') && _cardTapClientId) {
+    clearTimeout(_cardHideTimer);
+    var oldCard = document.querySelector('.card[data-client-id="' + _cardTapClientId + '"]');
+    if (oldCard) {
+      var oldDel = oldCard.querySelector('.cc-del');
+      if (oldDel) { oldDel.style.opacity = ''; oldDel.style.pointerEvents = ''; }
+    }
+    _cardTapClientId = null;
+  }
+});
 
 function handleDragOver(e) {
   e.preventDefault();
@@ -3151,7 +3510,7 @@ function handleDrop(e) {
   if (!column) return;
   column.classList.remove('column--drag-over');
   const stageId = parseInt(column.dataset.stage);
-  const clientId = e.dataTransfer.getData('text/plain') || draggedClientId;
+  const clientId = e.dataTransfer.getData('text/x-client-id') || draggedClientId;
   if (clientId && !isNaN(stageId)) {
     var c = clients.find(function(x) { return x.id === clientId; });
     if (c && c.user_id !== currentUser && !isSuperAdmin) return;
@@ -3161,7 +3520,28 @@ function handleDrop(e) {
 }
 
 // REFRESH
-function refreshAll(stageIds) { renderStats(); renderKanban(stageIds); }
+var _doneRankCache = null;
+function getDoneRank(clientId) {
+  if (!_doneRankCache) {
+    var now = new Date();
+    var ms = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+    var me = new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime();
+    var sorted = clients.filter(function(x) {
+      if (x.stage !== 4) return false;
+      var ts = x.stageTimestamps ? (x.stageTimestamps[4] || x.createdAt || 0) : (x.createdAt || 0);
+      return ts >= ms && ts < me;
+    }).sort(function(a, b) {
+      var sa = a.stageTimestamps ? (a.stageTimestamps[4] || a.createdAt || 0) : (a.createdAt || 0);
+      var sb = b.stageTimestamps ? (b.stageTimestamps[4] || b.createdAt || 0) : (b.createdAt || 0);
+      return sa - sb;
+    });
+    _doneRankCache = {};
+    sorted.forEach(function(x, i) { _doneRankCache[x.id] = i + 1; });
+  }
+  return _doneRankCache[clientId] || 0;
+}
+function clearDoneRankCache() { _doneRankCache = null; }
+function refreshAll(stageIds) { clearDoneRankCache(); renderStats(); renderKanban(stageIds); }
 
 function loadTrash() { try { return JSON.parse(localStorage.getItem(TRASH_KEY)) || []; } catch { return []; } }
 function saveTrash(arr) { try { localStorage.setItem(TRASH_KEY, JSON.stringify(arr)); } catch(e) { console.log("saveTrash localStorage error:",e.message); } }
@@ -3236,11 +3616,24 @@ document.addEventListener('keydown', (e) => {
 // Loading helpers
 function showLoading() {
   var el = document.getElementById('loadingScreen');
-  if (el) el.className = 'loading-screen';
+  if (el) {
+    el.className = 'loading-screen';
+    var mascot = el.querySelector('.ls-mascot');
+    var bar = el.querySelector('.ls-bar');
+    if (mascot) mascot.style.animationPlayState = '';
+    if (bar) bar.style.animationPlayState = '';
+  }
 }
 function hideLoading() {
   var el = document.getElementById('loadingScreen');
-  if (el) { el.className = 'loading-screen loading-screen--hide'; setTimeout(function() { if (el) el.style.display = 'none'; }, 400); }
+  if (el) {
+    var mascot = el.querySelector('.ls-mascot');
+    var bar = el.querySelector('.ls-bar');
+    if (mascot) mascot.style.animationPlayState = 'paused';
+    if (bar) bar.style.animationPlayState = 'paused';
+    el.className = 'loading-screen loading-screen--hide';
+    setTimeout(function() { if (el) el.style.display = 'none'; }, 400);
+  }
 }
 
 // Show loading immediately
@@ -3278,6 +3671,13 @@ document.getElementById("lw_btn").addEventListener("click",handleLogin);
 document.getElementById("lw_pass").addEventListener("keydown",function(e){if(e.key==="Enter")handleLogin();});
 document.getElementById("reg_pass2").addEventListener("keydown",function(e){if(e.key==="Enter")handleRegister();});
 if(currentUser){showApp();}else{document.getElementById("appShell").style.display="none";}
+
+// Init compact view state
+window._compactView = localStorage.getItem('dou_compact') === '1';
+if (window._compactView) {
+  var _kb = document.getElementById('kanban');
+  if (_kb) _kb.classList.add('compact-mode');
+}
 
 // Init — pull from cloud if logged in
 if (currentUser) {
