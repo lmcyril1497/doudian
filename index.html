@@ -2062,7 +2062,11 @@ function showRoleMenu(btn, phone, isAdminStr) {
   } else {
     html += '<button class="um-item" onclick="applyRoleChange(\''+phone+'\',true);closeRoleActionMenu()">设为管理员</button>';
   }
-  html += '<div style="height:1px;background:#f0f0f0;margin:4px 0;"></div>';
+  if (isSuperAdmin) {
+    html += '<div style="height:1px;background:var(--fill-primary);margin:4px 0;"></div>';
+    html += '<button class="um-item" onclick="confirmTransferOwner(\''+phone+'\');closeRoleActionMenu()" style="color:#FF9500;">转为主账号</button>';
+  }
+  html += '<div style="height:1px;background:var(--fill-primary);margin:4px 0;"></div>';
   html += '<button class="um-item um-item--danger" onclick="applyDelete(\''+phone+'\');closeRoleActionMenu()">删除用户</button>';
   menu.innerHTML = html;
   document.body.appendChild(menu);
@@ -2111,6 +2115,27 @@ function applyRoleChange(phone, makeAdmin) {
     }
   }).catch(function(e) { console.log('applyRoleChange error'); toast('操作失败，请重试','error'); });
 }
+function confirmTransferOwner(newEmail) {
+  var nick = getNick(newEmail);
+  var label = nick ? nick + ' (' + newEmail + ')' : newEmail;
+  confirmDialog('转移主账号', '确定将主账号转移给「' + label + '」？\n转移后您将变为管理员，部分功能将受限。\n此操作可由新主账号再次转移回来。', function() { transferOwner(newEmail); });
+}
+function transferOwner(newEmail) {
+  fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(newEmail),{method:"PATCH",headers:sbHead(),body:JSON.stringify({role:"owner"})}).then(function(res) {
+    if (!res.ok) throw new Error('set owner failed');
+    return fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(currentUser),{method:"PATCH",headers:sbHead(),body:JSON.stringify({role:"admin"})});
+  }).then(function(res) {
+    if (!res.ok) throw new Error('set admin failed');
+    isSuperAdmin = false;
+    isAdmin = true;
+    localStorage.setItem('dou_super','');
+    localStorage.setItem('dou_admin','1');
+    document.body.classList.remove('is-super-admin');
+    toast('转移成功，请重新登录','success');
+    closeRolePanel();
+    setTimeout(function(){ doLogout(); }, 1500);
+  }).catch(function(e) { console.log('transferOwner error'); toast('转移失败，请重试','error'); });
+}
 function applyDelete(phone) {
   closeRoleActionMenu();
   fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(phone),{method:"PATCH",headers:sbHead(),body:JSON.stringify({status:"rejected"})}).then(function() {
@@ -2140,23 +2165,24 @@ async function showRolePanel(){
   var btn=document.getElementById("authBtn");
   var menu=createPopup(btn,{});
   menu.className="role-menu";
-  var filtered=users.filter(function(u){return u.role!=='owner';});
+  var filtered=users;
   var colors=['#667eea','#f5a623','#34c759','#ff9500','#5856d6','#ff2d55','#007aff','#af52de'];
   function avatarColor(email){var h=0;for(var i=0;i<email.length;i++){h=((h<<5)-h)+email.charCodeAt(i);h|=0;}return colors[Math.abs(h)%colors.length];}
   function avatarInitials(email){var p=email.split('@')[0];return p.substring(0,2).toUpperCase();}
   var html="<div style=\"padding:4px 8px 8px;font-size:14px;font-weight:600;color:var(--text-primary);\">权限管理 ("+filtered.length+")</div>";
   if(filtered.length===0){html+="<div style=\"padding:16px;text-align:center;color:var(--text-tertiary);font-size:13px;\">暂无已审批用户</div>";}
   else{html+="<div style=\"max-height:240px;overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;\">";  filtered.forEach(function(u,i){
+    var isOwner=u.role==="owner";
     var isAdminUser=u.role==="admin";
-    var badgeStyle=isAdminUser?"background:rgba(102,126,234,.08);color:var(--admin-color);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;":"background:var(--fill-secondary);color:var(--text-secondary);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;";
-    var roleLabel=isAdminUser?"管理员":"普通用户";
+    var badgeStyle=isOwner?"background:rgba(255,149,0,.1);color:#FF9500;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;":isAdminUser?"background:rgba(102,126,234,.08);color:var(--admin-color);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;":"background:var(--fill-secondary);color:var(--text-secondary);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;";
+    var roleLabel=isOwner?"主账号":isAdminUser?"管理员":"普通用户";
     var email=u.email||'';
     var borderStyle=i<filtered.length-1?"border-bottom:1px solid var(--border-subtle);":"";
     html+='<div style="display:flex;align-items:center;padding:10px 8px;'+borderStyle+'" data-phone="'+escAttr(email)+'">';
     html+='<div style="width:32px;height:32px;border-radius:50%;background:'+avatarColor(email)+';display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;flex-shrink:0;">'+avatarInitials(email)+'</div>';
     html+="<span style=\"flex:1;margin-left:10px;\"><span style=\"font-size:14px;font-weight:500;\">"+escHtml(getNick(email))+"</span><br><span style=\"font-size:12px;color:var(--text-tertiary);\">"+escHtml(email)+"</span></span>";
     html+="<span class=\"role-badge\" style=\""+badgeStyle+"margin-right:8px;\">"+roleLabel+"</span>";
-    html+="<button style=\"width:28px;height:28px;border:none;border-radius:6px;background:transparent;cursor:pointer;font-size:16px;line-height:1;color:var(--text-tertiary);display:flex;align-items:center;justify-content:center;transition:background .15s,transform .1s;\" onmouseover=\"this.style.background='rgba(0,0,0,.05)'\" onmouseout=\"this.style.background='transparent'\" onclick=\"event.stopPropagation();showRoleMenu(this,'"+escAttr(email)+"','"+(isAdminUser?"true":"false")+"')\">•••</button>";
+    if(!isOwner){html+="<button style=\"width:28px;height:28px;border:none;border-radius:6px;background:transparent;cursor:pointer;font-size:16px;line-height:1;color:var(--text-tertiary);display:flex;align-items:center;justify-content:center;transition:background .15s,transform .1s;\" onmouseover=\"this.style.background='rgba(0,0,0,.05)'\" onmouseout=\"this.style.background='transparent'\" onclick=\"event.stopPropagation();showRoleMenu(this,'"+escAttr(email)+"','"+(isAdminUser?"true":"false")+"')\">•••</button>";}
     html+="</div>";
   });html+="</div>";}
   html+="<div style=\"display:flex;gap:6px;padding:8px 8px 4px;\"><button class=\"btn btn--ghost\" style=\"flex:1;height:32px;font-size:12px;justify-content:center;\" onclick=\"closeRolePanel()\">关闭</button></div>";
