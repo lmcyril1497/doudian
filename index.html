@@ -3918,10 +3918,6 @@ function handleDrop(e) {
   if (clientId && !isNaN(stageId)) {
     var c = clients.find(function(x) { return x.id === clientId; });
     if (c && c.user_id !== currentUser && !isSuperAdmin) return;
-    if (stageId === 4) {
-      var now = new Date();
-      expandDoneMonth(now.getFullYear() + '-' + now.getMonth());
-    }
     moveClient(clientId, stageId);
   }
   draggedClientId = null;
