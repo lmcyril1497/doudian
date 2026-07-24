@@ -140,6 +140,17 @@ body.dark {
   --login-bg-end: #1C1C1E;
   --disabled-bg: #48484A;
   --text-placeholder: rgba(235,235,245,0.30);
+  /* iOS dark mode accent colors */
+  --blue: #0A84FF;
+  --blue-hover: #409CFF;
+  --green: #30D158;
+  --green-hover: #31DB5B;
+  --orange: #FF9F0A;
+  --orange-hover: #FFB340;
+  --purple: #BF5AF2;
+  --purple-hover: #DA8FFF;
+  --red: #FF453A;
+  --red-hover: #FF6961;
 }
 body.dark .stat-pill--active {
   background: rgba(120,120,128,0.24);
@@ -151,6 +162,8 @@ body.dark .stat-pill--active:hover {
   border-color: rgba(84,84,88,0.65);
   box-shadow: 0 2px 6px rgba(0,0,0,0.50);
 }
+body.dark .btn--primary { filter: brightness(0.85); }
+body.dark .btn--primary:hover { filter: brightness(1); }
 
 .transition-all { transition: box-shadow 0.25s var(--ease-apple), transform 0.25s var(--ease-apple), background 0.25s var(--ease-apple), border-color 0.25s var(--ease-apple), color 0.25s var(--ease-apple), opacity 0.25s var(--ease-apple); }
 
@@ -441,6 +454,9 @@ body {
 .stats-strip::-webkit-scrollbar { display: none; }
 .stats-strip::-webkit-scrollbar-track { background: transparent; }
 .stats-strip::-webkit-scrollbar-thumb { background: transparent; }
+.stats-inner::-webkit-scrollbar { display: none; }
+.stats-inner::-webkit-scrollbar-track { background: transparent; }
+.stats-inner::-webkit-scrollbar-thumb { background: transparent; }
 .stat-pill {
   display: flex; align-items: center; gap: 7px;
   padding: 8px 18px;
@@ -1062,7 +1078,7 @@ input[type="number"] { -moz-appearance: textfield; }
 /* ── Compact/Capsule View Toggle ── */
 .compact-toggle { display:flex; }
 .compact-bar { display:flex; align-items:center; gap:8px; padding:0 16px; }
-.compact-bar .stats-strip { flex:1; overflow-x:auto; padding:12px 0 14px; }
+.compact-bar .stats-strip { flex:1; overflow-x:auto; padding:8px 0; }
 .compact-toggle {
   width:32px; height:32px; border-radius:980px; flex-shrink:0;
   border:1px solid var(--border-subtle); background:var(--surface-card);
@@ -1204,6 +1220,7 @@ input[type="number"] { -moz-appearance: textfield; }
 
   /* Stats — wrap to 2 rows */
   .stats-strip {
+    display: flex; align-items: center;
     flex-wrap: nowrap;
     padding: 6px 8px 8px; gap: 5px;
   }
@@ -2431,7 +2448,6 @@ function toast(msg, type, undoFn) {
 function openAddModal() {
   window._savedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
   renderModal({
-    focusName: true,
     title: '新增客户资料',
     client: null,
     onSave: (data) => {
@@ -2999,7 +3015,7 @@ function renderStats() {
   });
   if (isAdmin && window._adminUsers && window._adminUsers.length > 0) {
     var currentLabel = window._viewingUser ? (window._nicks&&window._nicks[window._viewingUser]||window._viewingUser) : '全部';
-    html += '</div><div style="padding: 0;"><button id="adminFilterBtn" class="stat-pill" onclick="toggleAdminFilter(event)" style="overflow:hidden;display:flex;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;">'+currentLabel+'</span><span style="flex-shrink:0;margin-left:2px;"> ▾</span></button></div>';
+    html += '</div><button id="adminFilterBtn" class="stat-pill" onclick="toggleAdminFilter(event)" style="overflow:hidden;display:flex;align-items:center;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;">'+currentLabel+'</span><span style="flex-shrink:0;margin-left:2px;"> ▾</span></button>';
   }
   strip.innerHTML = html;
   updateToggleIcon();
