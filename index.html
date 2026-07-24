@@ -547,7 +547,6 @@ body {
 .done-month-cards {
   display: flex; flex-direction: column; gap: 8px;
   overflow: hidden;
-  transition: max-height 0.35s var(--ease-apple), opacity 0.25s ease;
   max-height: 99999px; opacity: 1;
 }
 .done-month-group--collapsed .done-month-cards {
@@ -3132,13 +3131,19 @@ function toggleDoneMonth(key) {
   if (!collapsed) {
     cards.style.maxHeight = cards.scrollHeight + 'px';
     cards.offsetHeight;
+    cards.style.transition = 'max-height 0.35s var(--ease-apple), opacity 0.25s ease';
     cards.style.maxHeight = '0px';
+    cards.style.opacity = '0';
     el.classList.add('done-month-group--collapsed');
   } else {
     el.classList.remove('done-month-group--collapsed');
+    cards.style.transition = 'max-height 0.35s var(--ease-apple), opacity 0.25s ease';
     cards.style.maxHeight = cards.scrollHeight + 'px';
+    cards.style.opacity = '1';
     cards.addEventListener('transitionend', function handler() {
+      cards.style.transition = '';
       cards.style.maxHeight = '';
+      cards.style.opacity = '';
       cards.removeEventListener('transitionend', handler);
     });
   }
@@ -3150,9 +3155,13 @@ function expandDoneMonth(key) {
     var cards = el.querySelector('.done-month-cards');
     el.classList.remove('done-month-group--collapsed');
     if (cards) {
+      cards.style.transition = 'max-height 0.35s var(--ease-apple), opacity 0.25s ease';
       cards.style.maxHeight = cards.scrollHeight + 'px';
+      cards.style.opacity = '1';
       cards.addEventListener('transitionend', function handler() {
+        cards.style.transition = '';
         cards.style.maxHeight = '';
+        cards.style.opacity = '';
         cards.removeEventListener('transitionend', handler);
       });
     }
