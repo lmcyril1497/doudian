@@ -523,6 +523,36 @@ body {
   flex-shrink: 0;
 }
 .column-header-left { display: flex; align-items: center; gap: 8px; }
+.done-month-group { margin-bottom: 4px; }
+.done-month-group--collapsed { grid-template-rows: auto 0fr; }
+.done-month-header {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 4px; cursor: pointer; user-select: none;
+  border-radius: 8px; transition: background 0.2s;
+}
+.done-month-header:active { background: var(--fill-primary); }
+.done-month-arrow {
+  font-size: 11px; color: var(--text-tertiary); display: inline-block;
+  transition: transform 0.3s var(--ease-apple); width: 12px; text-align: center;
+}
+.done-month-group--collapsed .done-month-arrow { transform: rotate(-90deg); }
+.done-month-label {
+  font-size: 12px; font-weight: 600; color: var(--text-secondary);
+}
+.done-month-count {
+  font-size: 11px; color: var(--text-tertiary);
+  background: var(--fill-primary); border-radius: 980px;
+  padding: 1px 7px; min-width: 20px; text-align: center;
+}
+.done-month-cards {
+  display: flex; flex-direction: column; gap: 8px;
+  overflow: hidden;
+  transition: max-height 0.35s var(--ease-apple), opacity 0.25s ease;
+  max-height: 99999px; opacity: 1;
+}
+.done-month-group--collapsed .done-month-cards {
+  max-height: 0; opacity: 0;
+}
 .column-icon {
   width: 30px; height: 30px;
   border-radius: var(--radius-sm);
@@ -764,8 +794,8 @@ body.dark .drag-ghost .dg-copybar {
   font-size: 11px; color: var(--text-tertiary); font-weight: 500;
   margin-top: 8px;
 }
-.card-owner { font-size:11px; font-weight:500; color:var(--text-secondary); }
-body.is-admin .card-owner { display:block !important; }
+.card-owner { display:none; font-size:11px; font-weight:500; color:var(--text-secondary); }
+body.is-admin.is-viewing-all .card-owner { display:block !important; }
 
 /* ── Copy Bar (出证名单) ── */
 .card-copy-bar {
@@ -1275,7 +1305,7 @@ input[type="number"] { -moz-appearance: textfield; }
   .card-actions { opacity: 1; pointer-events: auto; } /* always show on touch */
   .card-action { height: 24px; width: 24px; }
   .compact-mode .card:hover .cc-del { opacity: 0; pointer-events: none; }
-  .compact-mode .cc-owner {
+  body.is-viewing-all.compact-mode .cc-owner {
     display:inline-flex; font-size:11px; color:var(--text-tertiary);
     flex-shrink:0; width:40px; text-align:center; justify-content:center;
   }
@@ -1725,7 +1755,7 @@ async function handleLogin() {
   }
   if(users[0].status!=="approved"){startApprovalPoll(email,document.getElementById("lw_pass").value.trim());return;}
   await refreshSession();
-  currentUser=email;localStorage.setItem("dou_user",email);isAdmin=users[0].role==="admin"||users[0].role==="owner";isSuperAdmin=users[0].role==="owner";localStorage.setItem("dou_admin",isAdmin?"1":"");localStorage.setItem("dou_super",isSuperAdmin?"1":"");if(isAdmin){document.body.classList.add("is-admin");var dv=localStorage.getItem('dou_view');window._viewingUser=(dv==='all'?null:email);localStorage.setItem('dou_view',email);}showApp();updateAuthBtn();showLoading();
+  currentUser=email;localStorage.setItem("dou_user",email);isAdmin=users[0].role==="admin"||users[0].role==="owner";isSuperAdmin=users[0].role==="owner";localStorage.setItem("dou_admin",isAdmin?"1":"");localStorage.setItem("dou_super",isSuperAdmin?"1":"");if(isAdmin){document.body.classList.add("is-admin");var dv=localStorage.getItem('dou_view');window._viewingUser=(dv==='all'?null:email);document.body.classList.toggle('is-viewing-all', window._viewingUser === null);localStorage.setItem('dou_view',email);}showApp();updateAuthBtn();showLoading();
   clients=[];
   try {
   var data;
@@ -1775,7 +1805,7 @@ function startApprovalPoll(email,pass){
       currentUser=email;localStorage.setItem("dou_user",email);
       isAdmin=u[0].role==="admin";isSuperAdmin=u[0].role==="owner";
       localStorage.setItem("dou_admin",isAdmin?"1":"");
-      if(isAdmin){document.body.classList.add("is-admin");localStorage.setItem("dou_view",email);window._viewingUser=email;}
+      if(isAdmin){document.body.classList.add("is-admin");localStorage.setItem("dou_view",email);window._viewingUser=email;document.body.classList.remove('is-viewing-all');}
       showApp();updateAuthBtn();showLoading();
       try{var data=await sbFetch("clients","GET");if(data.length>0){clients=data.map(mapClient);saveClients(clients);}}catch(e){}
       hideLoading();refreshAll();if(isAdmin){initAdminSelect();}
@@ -1805,7 +1835,7 @@ async function doLogout(){
   currentUser='';isAdmin=false;isSuperAdmin=false;window._viewingUser=null;window._adminUsers=null;window._nicks=null;
   localStorage.clear();sessionStorage.clear();
   applyTheme();
-  clients=[];updateAuthBtn();document.body.classList.remove('is-admin');showLogin();
+  clients=[];updateAuthBtn();document.body.classList.remove('is-admin');document.body.classList.remove('is-viewing-all');showLogin();
   setTimeout(function(){location.reload();},100);
 }
 // Touch drag-to-dismiss for mobile modal sheets (Apple spring style)
@@ -1940,6 +1970,7 @@ async function switchToUserView(phone){
     clients=r2.ok?(await r2.json()).map(mapClient):[];
     window._viewingUser=phone;
   }
+  document.body.classList.toggle('is-viewing-all', window._viewingUser === null);
   
   refreshAll();
   } catch(e) { toast("切换视图失败，请稍后重试","error"); }
@@ -3057,6 +3088,78 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', fun
   applyTheme();
 });
 
+// DONE COLUMN — MONTH GROUPS
+function renderDoneGroups(clients) {
+  var now = new Date();
+  var thisYear = now.getFullYear();
+  var thisMonth = now.getMonth();
+  var groups = {};
+  clients.forEach(function(c) {
+    var ts = c.stageTimestamps ? (c.stageTimestamps[4] || c.createdAt || 0) : (c.createdAt || 0);
+    var d = new Date(ts);
+    var key = d.getFullYear() + '-' + d.getMonth();
+    var label = d.getFullYear() + '年' + (d.getMonth() + 1) + '月';
+    if (!groups[key]) groups[key] = { label: label, year: d.getFullYear(), month: d.getMonth(), items: [] };
+    groups[key].items.push(c);
+  });
+  var sortedKeys = Object.keys(groups).sort(function(a, b) { return a > b ? -1 : 1; });
+  var nowKey = thisYear + '-' + thisMonth;
+  var html = '';
+  sortedKeys.forEach(function(key) {
+    var g = groups[key];
+    var collapsed = localStorage.getItem('dou_done_month_' + key) === '1';
+    if (key === nowKey && localStorage.getItem('dou_done_month_' + key) === null) collapsed = false;
+    html += '<div class="done-month-group' + (collapsed ? ' done-month-group--collapsed' : '') + '" data-month="' + key + '">';
+    html += '<div class="done-month-header" onclick="toggleDoneMonth(\'' + key + '\')">';
+    html += '<span class="done-month-arrow">▾</span>';
+    html += '<span class="done-month-label">' + g.label + '</span>';
+    html += '<span class="done-month-count">' + g.items.length + '</span>';
+    html += '</div>';
+    html += '<div class="done-month-cards">';
+    g.items.forEach(function(c) { html += renderCard(c); });
+    html += '</div>';
+    html += '</div>';
+  });
+  return html;
+}
+function toggleDoneMonth(key) {
+  var el = document.querySelector('.done-month-group[data-month="' + key + '"]');
+  if (!el) return;
+  var cards = el.querySelector('.done-month-cards');
+  if (!cards) return;
+  var collapsed = el.classList.contains('done-month-group--collapsed');
+
+  if (!collapsed) {
+    cards.style.maxHeight = cards.scrollHeight + 'px';
+    cards.offsetHeight;
+    cards.style.maxHeight = '0px';
+    el.classList.add('done-month-group--collapsed');
+  } else {
+    el.classList.remove('done-month-group--collapsed');
+    cards.style.maxHeight = cards.scrollHeight + 'px';
+    cards.addEventListener('transitionend', function handler() {
+      cards.style.maxHeight = '';
+      cards.removeEventListener('transitionend', handler);
+    });
+  }
+  localStorage.setItem('dou_done_month_' + key, collapsed ? '1' : '0');
+}
+function expandDoneMonth(key) {
+  var el = document.querySelector('.done-month-group[data-month="' + key + '"]');
+  if (el && el.classList.contains('done-month-group--collapsed')) {
+    var cards = el.querySelector('.done-month-cards');
+    el.classList.remove('done-month-group--collapsed');
+    if (cards) {
+      cards.style.maxHeight = cards.scrollHeight + 'px';
+      cards.addEventListener('transitionend', function handler() {
+        cards.style.maxHeight = '';
+        cards.removeEventListener('transitionend', handler);
+      });
+    }
+    localStorage.setItem('dou_done_month_' + key, '0');
+  }
+}
+
 // COMPACT/CAPSULE VIEW TOGGLE — Apple FLIP animation
 function toggleCompactView() {
   var board = document.getElementById('kanban');
@@ -3161,7 +3264,8 @@ function renderKanban(stageIds) {
     : STAGES;
 
   // Targeted refresh: update existing cards in-place (no DOM destruction)
-  if (stageIds && stageIds.length > 0) {
+  // Skip for stage 4 (done column) — uses month groups, needs full rebuild
+  if (stageIds && stageIds.length > 0 && stageIds.indexOf(4) === -1) {
     columnsToRender.forEach(function(stage) {
       if (stageIds.indexOf(stage.id) === -1) return;
       var col = board.querySelector('.column[data-stage="' + stage.id + '"]');
@@ -3375,6 +3479,7 @@ function renderKanban(stageIds) {
               onclick="event.stopPropagation();copyAdvanceList()" title="复制预付名单">${SVGS.cash.replace('viewBox="0 0 24 24"','width="14" height="14" viewBox="0 0 24 24"')} 结算</button>` : '';
     const allCopyBtn = (isAdmin && window._viewingUser === null && stage.id === 2) ? '<button class="btn btn--primary" style="height:28px;padding:0 6px;font-size:11px;gap:2px;flex-shrink:0;background:var(--green);" onclick="event.stopPropagation();copyAllClients()" title="汇总全部已出证"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>' : '';
     const allAdvanceBtn = (isAdmin && window._viewingUser === null && stage.id === 3) ? '<button class="btn btn--primary" style="height:28px;padding:0 6px;font-size:11px;gap:2px;flex-shrink:0;background:var(--orange);" onclick="event.stopPropagation();copyAllAdvance()" title="汇总全部已扫码"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>' : '';
+    var isDoneCol = stage.id === 4;
     return `
       <div class="column"
            data-stage="${stage.id}"
@@ -3394,7 +3499,7 @@ function renderKanban(stageIds) {
         <div class="column-cards" data-stage="${stage.id}">
           ${stageClients.length === 0 ? `
             <div class="column-drop-hint">拖放客户至此</div>
-          ` : stageClients.map(c => renderCard(c)).join('')}
+          ` : (isDoneCol ? renderDoneGroups(stageClients) : stageClients.map(c => renderCard(c)).join(''))}
         </div>
       </div>
     `;
@@ -3813,6 +3918,10 @@ function handleDrop(e) {
   if (clientId && !isNaN(stageId)) {
     var c = clients.find(function(x) { return x.id === clientId; });
     if (c && c.user_id !== currentUser && !isSuperAdmin) return;
+    if (stageId === 4) {
+      var now = new Date();
+      expandDoneMonth(now.getFullYear() + '-' + now.getMonth());
+    }
     moveClient(clientId, stageId);
   }
   draggedClientId = null;
@@ -3996,6 +4105,7 @@ if (currentUser) {
         (nu||[]).forEach(function(x){window._adminUsers.push({email:x.email,label:x.nickname||x.email});window._nicks[x.email]=x.nickname||x.email;});
         var dv2 = localStorage.getItem('dou_view');
         window._viewingUser = (dv2 === 'all') ? null : (dv2 || currentUser);
+        document.body.classList.toggle('is-viewing-all', window._viewingUser === null);
       });
     }
   }).then(function() {
