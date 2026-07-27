@@ -1977,9 +1977,9 @@ async function syncToCloud() {
   if (!currentUser) { console.log('sync skipped: not logged in'); return; }
   var rows;
   if(isSuperAdmin){
-    rows = clients.map(function(c) { return { id: c.id, user_id: c.user_id||currentUser, name: c.name, licenseType: c.licenseType||'', cardType: c.cardType||'', advanceAmount: c.advanceAmount||'', notes: c.notes||'', stage: c.stage, createdAt: c.createdAt, stageTimestamps: c.stageTimestamps||{} }; });
+    rows = clients.map(function(c) { return { id: c.id, user_id: c.user_id||currentUser, name: c.name, phone: c.phone||'', licenseType: c.licenseType||'', cardType: c.cardType||'', advanceAmount: c.advanceAmount||'', paymentStatus: c.paymentStatus||'', notes: c.notes||'', stage: c.stage, createdAt: c.createdAt, stageTimestamps: c.stageTimestamps||{} }; });
   }else{
-    rows = clients.filter(function(c){return c.user_id===currentUser;}).map(function(c) { return { id: c.id, user_id: c.user_id, name: c.name, licenseType: c.licenseType||'', cardType: c.cardType||'', advanceAmount: c.advanceAmount||'', notes: c.notes||'', stage: c.stage, createdAt: c.createdAt, stageTimestamps: c.stageTimestamps||{} }; });
+    rows = clients.filter(function(c){return c.user_id===currentUser;}).map(function(c) { return { id: c.id, user_id: c.user_id, name: c.name, phone: c.phone||'', licenseType: c.licenseType||'', cardType: c.cardType||'', advanceAmount: c.advanceAmount||'', paymentStatus: c.paymentStatus||'', notes: c.notes||'', stage: c.stage, createdAt: c.createdAt, stageTimestamps: c.stageTimestamps||{} }; });
   }
   if (rows.length === 0) { console.log('sync skipped: no user data'); return; }
   var ok = await sbFetch("clients","POST",rows);
@@ -2338,9 +2338,11 @@ function mapClient(r) {
   return {
     id: r.id || genId(),
     name: r.name || "",
+    phone: r.phone || "",
     licenseType: r.licenseType || "",
     cardType: r.cardType || "",
     advanceAmount: r.advanceAmount || "",
+    paymentStatus: r.paymentStatus || "",
     notes: r.notes || "",
     stage: (typeof r.stage === "number" && r.stage >= 0 && r.stage <= 4) ? r.stage : (parseInt(r.stage) || 0),
     createdAt: (typeof r.createdAt === "number") ? r.createdAt : (parseInt(r.createdAt) || Date.now()),
@@ -2509,6 +2511,7 @@ function openAddModal() {
       const client = {
         id: genId(),
         name: data.name,
+        phone: data.phone || '',
         licenseType: data.licenseType || '',
         cardType: data.cardType || '',
         advanceAmount: data.advanceAmount || '',
@@ -2535,6 +2538,7 @@ function openEditModal(clientId) {
     client: client,
     onSave: (data) => {
       client.name = data.name;
+      client.phone = data.phone || '';
       client.licenseType = data.licenseType || '';
       client.cardType = data.cardType || '';
       client.advanceAmount = data.advanceAmount || '';
@@ -2561,7 +2565,7 @@ function openEditModal(clientId) {
 
 function renderModal({ title, client, onSave, focusName }) {
   const container = document.getElementById('modalContainer');
-  const data = client || { name:'', licenseType:'', cardType:'', advanceAmount:'', notes:'', stage:0, paymentStatus:'' };
+  const data = client || { name:'', phone:'', licenseType:'', cardType:'', advanceAmount:'', notes:'', stage:0, paymentStatus:'' };
   // Show reviewDate (createdAt) in form — default today
   var now = new Date();
   data.reviewDate = client ? formatReviewDate(client.createdAt) : `${now.getMonth()+1}.${now.getDate()}`;
@@ -2595,7 +2599,7 @@ document.body.style.overflow='hidden';
         <div class="modal-body" onclick="event.stopPropagation()">
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">客户姓名 *</label>
+              <label class="form-label">姓名 *</label>
               <input class="form-input" id="mf_name" placeholder="请输入姓名" value="${escAttr(data.name)}" autocomplete="off" disabled>
             </div>
             <div class="form-group">
@@ -2605,8 +2609,18 @@ document.body.style.overflow='hidden';
           </div>
           <div class="form-row">
             <div class="form-group">
+              <label class="form-label">手机号</label>
+              <input class="form-input" id="mf_phone" type="tel" inputmode="tel" placeholder="客户手机号" value="${escAttr(data.phone)}" autocomplete="off">
+            </div>
+            <div class="form-group">
               <label class="form-label">执照类型</label>
               <select class="form-select" id="mf_licenseType">${licenseOptions}</select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">预付金额</label>
+              <input class="form-input" id="mf_advanceAmount" type="number" inputmode="numeric" placeholder="预付金额" value="${escAttr(data.advanceAmount)}" autocomplete="off" oninput="var v=parseInt(this.value.replace(/[^0-9]/g,''));this.value=isNaN(v)?'':Math.min(200,v)">
             </div>
             <div class="form-group">
               <label class="form-label">银行卡类型</label>
@@ -2640,8 +2654,8 @@ document.body.style.overflow='hidden';
               </div>
             </div>
             <div class="form-group">
-              <label class="form-label">预付金额</label>
-              <input class="form-input" id="mf_advanceAmount" type="number" inputmode="numeric" placeholder="预付金额" value="${escAttr(data.advanceAmount)}" autocomplete="off" oninput="var v=parseInt(this.value.replace(/[^0-9]/g,''));this.value=isNaN(v)?'':Math.min(200,v)">
+              <label class="form-label">备注</label>
+              <input class="form-input" id="mf_notes2" placeholder="可选备注" value="${escAttr(data.notes)}" autocomplete="off">
             </div>
           </div>
           <div class="form-row" id="mf_payment_row" style="display:none;">
@@ -2652,24 +2666,14 @@ document.body.style.overflow='hidden';
                 <option value="received" ${data.paymentStatus==='received'?'selected':''}>已收</option>
               </select>
             </div>
-            <div class="form-group" id="mf_notes_in_pay">
-              <label class="form-label">备注</label>
-              <input class="form-input" id="mf_notes_pay" placeholder="可选备注" value="${escAttr(data.notes)}" autocomplete="off">
-            </div>
+            <div class="form-group"></div>
           </div>
           <div class="form-row" id="mf_owner_row" style="display:none;">
             <div class="form-group">
               <label class="form-label">归属用户</label>
               <select class="form-select" id="mf_owner">${(window._adminUsers||[]).map(function(u){return '<option value="'+escAttr(u.email)+'"'+((window._viewingUser||currentUser)===u.email?' selected':'')+'>'+u.label+'</option>';}).join('')}</select>
             </div>
-            <div class="form-group" id="mf_notes_in_owner">
-              <label class="form-label">备注</label>
-              <input class="form-input" id="mf_notes_owner" placeholder="可选备注" value="${escAttr(data.notes)}" autocomplete="off">
-            </div>
-          </div>
-          <div class="form-group" id="mf_notes_full">
-            <label class="form-label">备注</label>
-            <input class="form-input" id="mf_notes2" placeholder="可选备注" value="${escAttr(data.notes)}" autocomplete="off">
+            <div class="form-group"></div>
           </div>
         </div>
         <div class="modal-footer">
@@ -2693,14 +2697,8 @@ document.body.style.overflow='hidden';
   function togglePaymentRow() {
     var stageSel = document.getElementById('mf_stage');
     var payRow = document.getElementById('mf_payment_row');
-    var notesFull = document.getElementById('mf_notes_full');
-    var notesInPay = document.getElementById('mf_notes_in_pay');
-    var notesInOwner = document.getElementById('mf_notes_in_owner');
     var isStage3 = stageSel && stageSel.value === '3';
     if (payRow) { payRow.style.display = isStage3 ? '' : 'none'; }
-    if (notesFull) { notesFull.style.display = (isStage3 || isSuperAdmin) ? 'none' : ''; }
-    if (notesInPay) { notesInPay.style.display = isStage3 ? '' : 'none'; }
-    if (notesInOwner) { notesInOwner.style.display = (!isStage3 && isSuperAdmin) ? '' : 'none'; }
   }
   togglePaymentRow();
   var stageSel = document.getElementById('mf_stage');
@@ -2770,11 +2768,12 @@ document.body.style.overflow='hidden';
   document.getElementById('mf_saveBtn').addEventListener('click', () => {
     const formData = {
       name: document.getElementById('mf_name').value.trim(),
+      phone: document.getElementById('mf_phone').value.trim(),
       licenseType: document.getElementById('mf_licenseType').value,
       cardType: document.getElementById('mf_cardType').value,
       reviewDate: (function(){ var m=document.getElementById('mf_reviewMonth').value||document.getElementById('mf_reviewMonthVal').value; var d=document.getElementById('mf_reviewDay').value||document.getElementById('mf_reviewDayVal').value; return m&&d?m+'.'+d:''; })(),
       advanceAmount: document.getElementById('mf_advanceAmount').value.trim(),
-      notes: (function(){ var el=document.getElementById('mf_notes_pay'); if(el&&el.offsetParent!==null) return el.value.trim(); el=document.getElementById('mf_notes_owner'); if(el&&el.offsetParent!==null) return el.value.trim(); el=document.getElementById('mf_notes2'); return el?el.value.trim():''; })(),
+      notes: document.getElementById('mf_notes2').value.trim(),
       stage: document.getElementById('mf_stage').value,
       owner: (function(){ var o=document.getElementById('mf_owner'); return o?o.value:''; })(),
       paymentStatus: (function(){ var el=document.getElementById('mf_paymentStatus'); return el?el.value:''; })(),
