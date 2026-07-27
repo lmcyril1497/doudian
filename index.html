@@ -1105,9 +1105,11 @@ input[type="number"] { -moz-appearance: textfield; }
 .cc-date { font-size:12px; color:var(--text-tertiary); font-weight:500; flex-shrink:0; width:28px; }
 .cc-name { font-size:12px; font-weight:600; color:var(--text-primary); flex-shrink:0; width:44px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .cc-info { font-size:12px; color:var(--text-secondary); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; }
-.cc-notes { font-size:12px; color:var(--text-secondary); flex-shrink:0; width:44px; overflow:hidden; text-overflow:ellipsis; }
+.cc-advance { display:none; }
+.cc-notes { font-size:12px; color:var(--text-secondary); flex-shrink:0; width:44px; overflow:hidden; text-overflow:ellipsis; position:absolute; right:48px; }
 .cc-status { font-size:11px; font-weight:500; flex-shrink:0; display:flex; align-items:center; margin-left:auto; }
-.cc-status--copy { cursor:pointer; }
+.cc-status--copy { cursor:pointer; margin-right:18px; }
+.cc-status--copy svg { width:14px !important; height:14px !important; flex-shrink:0; }
 .cc-status--copy:active { opacity:0.6; }
 .card-compact-row .cc-info { text-align:center; }
 .card-compact-row .cc-name { text-align:center; }
@@ -1293,9 +1295,14 @@ input[type="number"] { -moz-appearance: textfield; }
   .card-actions { opacity: 1; pointer-events: auto; } /* always show on touch */
   .card-action { height: 24px; width: 24px; }
   .compact-mode .card:hover .cc-del { opacity: 0; pointer-events: none; }
+  .compact-mode .card-compact-row { gap:12px; }
+  .compact-mode .cc-info { margin-left:0; }
+  .compact-mode .cc-advance { display:inline; font-size:12px; font-weight:500; color:#FF9500; flex-shrink:0; width:36px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-left:0; }
+  .compact-mode .card-compact-row--done .cc-advance { display:none; }
   body.is-viewing-all .compact-mode .cc-owner {
     display:inline-flex; font-size:11px; color:var(--text-tertiary);
-    flex-shrink:0; width:40px; text-align:center; justify-content:center;
+    position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    width:40px; text-align:center; justify-content:center;
   }
 
   /* Modal — iOS bottom sheet (except alerts) */
@@ -3322,6 +3329,16 @@ function renderKanban(stageIds) {
         if (ccNameEl) ccNameEl.after(ccInfo);
       }
       ccInfo.textContent = newLicText;
+      var ccAdvance = compactRow.querySelector('.cc-advance');
+      var newAdvText = c.advanceAmount ? '¥' + escHtml(c.advanceAmount) : '';
+      if (newAdvText) {
+        if (!ccAdvance) {
+          ccAdvance = document.createElement('span');
+          ccAdvance.className = 'cc-advance';
+          ccInfo.after(ccAdvance);
+        }
+        ccAdvance.textContent = newAdvText;
+      } else if (ccAdvance) { ccAdvance.remove(); }
       compactRow.classList.toggle('card-compact-row--done', c.stage === 4);
       var ccStatus = compactRow.querySelector('.cc-status');
       var statusText = '', statusCls = '';
@@ -3541,8 +3558,9 @@ function renderCard(c) {
     + '<span class="cc-date">' + cDate + '</span>'
     + '<span class="cc-name">' + cName + '</span>'
     + '<span class="cc-info">' + cType + '</span>'
-    + '<span class="cc-notes">' + (c.notes && c.stage !== 4 ? escHtml(c.notes.slice(0,8)) + (c.notes.length>8?'…':'') : '') + '</span>'
+    + (c.advanceAmount ? '<span class="cc-advance">¥' + escHtml(c.advanceAmount) + '</span>' : '')
     + '<span class="cc-owner">' + escHtml(getNick(c.user_id)) + '</span>'
+    + '<span class="cc-notes">' + (c.notes && c.stage !== 4 ? escHtml(c.notes.slice(0,8)) + (c.notes.length>8?'…':'') : '') + '</span>'
     + (c.stage === 4
       ? '<span class="cc-status cc-status--blue cc-status--copy" onclick="event.stopPropagation();copyOneText(\'' + escAttr(doneLine) + '\')" title="点击复制"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></span>'
       : (statusText ? '<span class="cc-status ' + statusCls + '">' + statusText + '</span>' : '<span class="cc-status"></span>'))
