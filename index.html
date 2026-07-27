@@ -16,6 +16,11 @@
     if (isDark) el.classList.add('dark');
     var tc = document.getElementById('themeColor');
     if (tc) tc.setAttribute('content', isDark ? '#000000' : '#F5F5F7');
+    var _s = document.createElement('div');
+    _s.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:1px;z-index:99999;pointer-events:none;opacity:1';
+    document.documentElement.appendChild(_s);
+    void _s.offsetHeight;
+    requestAnimationFrame(function() { _s.remove(); });
   } catch(e) {}
 })();
 </script>
@@ -558,6 +563,7 @@ body {
 .column-cards::-webkit-scrollbar { display: none; }
 .column-drop-hint {
   text-align: center;
+  width: 100%;
   padding: 40px 8px;
   color: var(--text-tertiary);
   font-size: 12px;
@@ -1088,8 +1094,7 @@ input[type="number"] { -moz-appearance: textfield; }
 .compact-toggle:active { background:var(--fill-primary); }
 .compact-toggle svg { width:16px; height:16px; color:var(--text-secondary); }
 
-/* ── Card: will-change for FLIP ── */
-.card { will-change:transform; }
+/* ── Card ── */
 
 /* ── Compact Row (capsule content) ── */
 .card-compact-row {
@@ -1195,14 +1200,18 @@ input[type="number"] { -moz-appearance: textfield; }
   html::-webkit-scrollbar { display: none; }
   body { overflow: auto; overflow-x: hidden; scrollbar-width: none; }
   body::-webkit-scrollbar { display: none; }
-  .app { height: auto; min-height: 100vh; min-height: 100dvh; max-width: 100vw; overflow-x: hidden; }
+  .app { height: auto; min-height: 100vh; min-height: 100dvh; max-width: 100vw; }
 
-  /* Header — compact single row */
+  /* Header — normal flow, fades out on scroll */
   .header {
+    position: static;
     padding: env(safe-area-inset-top, 20px) 8px 6px; gap: 0;
     flex-wrap: nowrap;
     height: auto; min-height: 44px;
+    border-bottom: none;
+    background-color: var(--surface-root);
   }
+  .header::before { display: none; }
   .header-left { gap: 8px; flex-shrink: 0; margin-right: auto; }
   .header-logo { width: 28px; height: 28px; font-size: 14px; border-radius: 50%; }
   .header-title { font-size: 16px; }
@@ -1223,19 +1232,27 @@ input[type="number"] { -moz-appearance: textfield; }
   .stats-strip {
     display: flex; align-items: center;
     flex-wrap: nowrap;
-    padding: 6px 8px 8px; gap: 5px;
+    padding: 10px 12px 16px; gap: 8px;
   }
   .stat-pill {
-    padding: 4px 8px; font-size: 11px;
-    min-height: 28px; border-radius: 16px;
+    padding: 6px 12px; font-size: 11px;
+    min-height: 32px; border-radius: 16px;
   }
   .stat-dot { width: 6px; height: 6px; }
   .stat-count { font-size: 14px; min-width: 16px; }
 
-  /* Kanban — vertical */
+  /* Compact-bar — sticky below header */
+  .compact-bar {
+    position: sticky; top: 0; z-index: 19;
+    padding: 0 8px;
+    background: var(--surface-root);
+  }
+
+  /* Kanban — vertical, no nested scroll (body scrolls) */
   .kanban {
     flex-direction: column;
-    overflow-y: auto; overflow-x: hidden;
+    overflow: visible;
+    contain: layout style;
     padding: 0 8px 20px; gap: 10px;
     scrollbar-width: none;
   }
@@ -1348,16 +1365,16 @@ input[type="number"] { -moz-appearance: textfield; }
 
 /* ── Small phone: tighter still ── */
 @media (max-width: 400px) {
-  .header { padding: 4px 8px; gap: 4px; }
+  .header { padding: env(safe-area-inset-top, 20px) 8px 4px; gap: 4px; }
   .header-logo { width: 24px; height: 24px; font-size: 12px; border-radius: 50%; }
   .header-title { font-size: 14px; }
   .header-right { gap: 4px; }
   .search-input { width: 80px; height: 28px; padding: 0 6px 0 24px; font-size: 12px; border-radius: 7px; }
   .search-input:focus { width: 110px; }
   .search-icon { left: 6px; }
-  .stats-strip { padding: 4px 6px 6px; gap: 4px; }
+  .stats-strip { padding: 8px 10px 14px; gap: 4px; }
   .stats-inner { padding: 4px 0 4px !important; }
-  .stat-pill { padding: 4px 10px; font-size: 11px; min-height: 28px; }
+  .stat-pill { padding: 5px 10px; font-size: 11px; min-height: 32px; }
   .stat-count { font-size: 13px; }
   .kanban { padding: 0 6px 14px; gap: 6px; }
   .column { padding: 0 10px 12px; }
@@ -1437,7 +1454,7 @@ input,select,textarea,button { -webkit-appearance: none; }
 <body style="background-color:#F5F5F7">
 
 <!-- Safari theme sentinel — forces re-sampling on toggle -->
-<div id="themeSentinel" style="position:fixed;top:0;left:0;width:100%;height:3px;background:transparent;display:none;z-index:-1;"></div>
+<div id="themeSentinel" style="position:fixed;top:0;left:0;width:100%;height:44px;display:none;z-index:99999;"></div>
 
 <!-- Loading Screen -->
 <div class="loading-screen" id="loadingScreen">
@@ -1684,7 +1701,7 @@ function setHint(text, type) {
   hint.textContent = text;
   hint.className = 'lw-hint' + (type ? ' ' + type.split(' ').map(function(t){return 'lw-hint--'+t;}).join(' ') : '');
 }
-function showApp() { document.getElementById("loginWall").style.display="none"; document.getElementById("appShell").style.display=""; }
+function showApp() { document.getElementById("loginWall").style.display="none"; document.getElementById("appShell").style.display=""; startHeartbeat(); }
 function showLogin() {
   cancelApprovalPoll();
   document.getElementById("appShell").style.display="none";document.getElementById("loginWall").style.display="";
@@ -1801,7 +1818,7 @@ async function doLogout(){
   }
   try{await _supabase.auth.signOut();}catch(e){}
   cancelApprovalPoll();
-  clearInterval(_heartbeatTimer);
+  stopHeartbeat();
   _sessionToken=null;
   currentUser='';isAdmin=false;isSuperAdmin=false;window._viewingUser=null;window._adminUsers=null;window._nicks=null;
   localStorage.clear();sessionStorage.clear();
@@ -1829,16 +1846,27 @@ document.addEventListener('touchend', function() {
   if (overlay) { overlay.style.transition = 'opacity 0.35s cubic-bezier(0.25, 0.1, 0.25, 1)'; }
   if (dy > 180) { _dragModal.style.transform = 'translateY(100vh)'; if (overlay) overlay.style.opacity = '0'; setTimeout(function() { closeModal(); }, 350); _dragModal = null; } else { _dragModal.style.transform = ''; if (overlay) overlay.style.opacity = ''; _dragModal = null; }
 });
-// Heartbeat: every 5s check if current user still exists, force logout if deleted/revoked
-var _heartbeatTimer=setInterval(async function(){
+// Heartbeat: check if current user still exists, force logout if deleted/revoked
+var _heartbeatTimer = null;
+function _heartbeatTick() {
+  if (document.hidden || !currentUser) {
+    _heartbeatTimer = setTimeout(_heartbeatTick, 5000);
+    return;
+  }
+  fetch(SB_URL+'/rest/v1/users?email=eq.'+encodeURIComponent(currentUser),{headers:sbHead()})
+    .then(function(r){ return r.ok ? r.json() : []; })
+    .then(function(u){
+      if(u.length===0||u[0].status!=='approved'){ toast('账号已被管理员删除或禁用，即将退出','error'); setTimeout(doLogout,1500); }
+    })
+    .catch(function(){})
+    .finally(function(){ _heartbeatTimer = setTimeout(_heartbeatTick, 30000); });
+}
+function startHeartbeat(){ clearTimeout(_heartbeatTimer); _heartbeatTick(); }
+function stopHeartbeat(){ clearTimeout(_heartbeatTimer); _heartbeatTimer = null; }
+document.addEventListener('visibilitychange', function(){
   if(!currentUser) return;
-  try {
-  var r=await fetch(SB_URL+'/rest/v1/users?email=eq.'+encodeURIComponent(currentUser),{headers:sbHead()});
-  if(!r.ok) return;
-  var u=await r.json();
-  if(u.length===0||u[0].status!=='approved'){ toast('账号已被管理员删除或禁用，即将退出','error'); setTimeout(doLogout,1500); }
-  } catch(e) { /* network error, skip this check */ }
-},5000);
+  if(document.hidden){ stopHeartbeat(); } else { startHeartbeat(); }
+});
 function updateAuthBtn() {
   var b = document.getElementById('authBtn');
   if (!b) return;
@@ -1932,17 +1960,15 @@ function closeAdminFilter(){var m=document.querySelector('.admin-filter-menu');i
 async function switchToUserView(phone){
   try {
   localStorage.setItem('dou_view', phone);
+  window._viewingUser=phone==='all'?null:phone;
+  document.body.classList.toggle('is-viewing-all', window._viewingUser === null);
   if(phone==='all'){
     var r=await fetch(SB_URL+'/rest/v1/clients?select=*',{headers:sbHead()});
     clients=r.ok?(await r.json()).map(mapClient).filter(function(c){return !window._adminUsers||window._adminUsers.some(function(u){return u.email===c.user_id});}):[];
-    window._viewingUser=null;
   }else{
     var r2=await fetch(SB_URL+'/rest/v1/clients?user_id=eq.'+encodeURIComponent(phone)+'&select=*',{headers:sbHead()});
     clients=r2.ok?(await r2.json()).map(mapClient):[];
-    window._viewingUser=phone;
   }
-  document.body.classList.toggle('is-viewing-all', window._viewingUser === null);
-  
   refreshAll();
   } catch(e) { toast("切换视图失败，请稍后重试","error"); }
 }
@@ -2005,7 +2031,7 @@ async function showAdminPanel(){
 }
 function closeAdminPopup(){var m=document.querySelector(".admin-popup");if(m)m.remove();var o=document.querySelector(".ap-overlay");if(o)o.remove();}
 async function rejectUser(id){
-  await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(id),{method:"PATCH",headers:sbHead(),body:JSON.stringify({status:"rejected"})});
+  try { await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(id),{method:"PATCH",headers:sbHead(),body:JSON.stringify({status:"rejected"})}); } catch(e) { toast("操作失败，请稍后重试","error"); return; }
   toast(id+" 已拒绝","success");
   var row=document.querySelector('.ap-item[data-email="'+id+'"]');
   if(row){row.style.transition='opacity .2s,transform .2s';row.style.opacity='0';row.style.transform='translateX(20px)';setTimeout(function(){row.remove();var list=document.querySelector('.ap-list');if(list&&list.children.length===0){list.innerHTML='<div class="ap-empty"><div class="ap-empty-icon">&#10003;</div>所有用户已处理，太棒了！</div>';}var sub=document.querySelector('.ap-subtitle');if(sub){var cnt=document.querySelectorAll('.ap-item').length;sub.textContent=cnt?cnt+' 位新用户等待管理员审批':'暂无待审批用户';}},200);}
@@ -2155,7 +2181,7 @@ function applyDelete(phone) {
       var remaining = document.querySelectorAll('.role-menu [data-phone]').length;
       titleEl.textContent = '权限管理 (' + remaining + ')';
     }
-  });
+  }).catch(function() { toast("删除失败，请重试","error"); });
 }
 
 async function showRolePanel(){
@@ -3057,6 +3083,28 @@ var _themeIcons = {
 function getSystemTheme() {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
+function forceIOSThemeRepaint(color) {
+  var sentinel = document.getElementById('themeSentinel');
+  if (sentinel) { sentinel.style.backgroundColor = color; sentinel.style.display = 'block'; requestAnimationFrame(function() { requestAnimationFrame(function() { sentinel.style.display = 'none'; }); }); }
+  var els = document.querySelectorAll('#appShell .header, #appShell .compact-bar');
+  els.forEach(function(el) {
+    el.style.display = 'none';
+    void el.offsetHeight;
+    el.style.display = '';
+    el.style.backgroundColor = color;
+    void el.offsetHeight;
+  });
+  var hdr = document.querySelector('#appShell .header');
+  if (hdr) {
+    hdr.style.opacity = '';
+    hdr.style.transform = '';
+    hdr.style.removeProperty('pointer-events');
+    void hdr.offsetHeight;
+    requestAnimationFrame(function() {
+      if (window._headerTick) window._headerTick();
+    });
+  }
+}
 function applyTheme() {
   var pref = localStorage.getItem('dou_theme');
   var isDark = pref ? pref === 'dark' : getSystemTheme() === 'dark';
@@ -3070,8 +3118,7 @@ function applyTheme() {
   if (icon) icon.innerHTML = isDark ? _themeIcons.light : _themeIcons.dark;
   var btn = document.getElementById('themeToggle');
   if (btn) btn.title = isDark ? '切换到浅色模式' : '切换到深色模式';
-  var sentinel = document.getElementById('themeSentinel');
-  if (sentinel) { sentinel.style.display = 'block'; requestAnimationFrame(function() { requestAnimationFrame(function() { sentinel.style.display = 'none'; }); }); }
+  forceIOSThemeRepaint(isDark ? '#000000' : '#F5F5F7');
 }
 function toggleTheme() {
   var next = document.body.classList.contains('dark') ? 'light' : 'dark';
@@ -3123,6 +3170,7 @@ function toggleCompactView() {
     var newRect = card.getBoundingClientRect();
     var dx = s.left - newRect.left;
     var dy = s.top - newRect.top;
+    card.style.willChange = 'transform';
     card.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
     card.style.transition = 'none';
   });
@@ -3146,6 +3194,7 @@ function toggleCompactView() {
       });
       card.style.transition = '';
       card.style.transform = '';
+      card.style.willChange = '';
       card.removeEventListener('transitionend', handler);
       _flipDone++;
       if (_flipDone >= cards.length) {
@@ -3911,6 +3960,35 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     // Close search on blur (mobile keyboard done)
   }
+
+  // ── Mobile: header progressive fade on scroll (rAF throttled) ──
+  (function() {
+    var _hH = 0, _raf = 0;
+    function _tick() {
+      _raf = 0;
+      var h = document.querySelector('#appShell .header');
+      if (!h) return;
+      if (!_hH) _hH = h.offsetHeight || 100;
+      var sy = Math.max(0, window.scrollY);
+      var p = Math.min(sy / _hH, 1);
+      if (p < 0.01) {
+        h.style.opacity = '';
+        h.style.transform = '';
+        h.style.pointerEvents = '';
+      } else {
+        h.style.opacity = 1 - p;
+        h.style.transform = 'translateY(' + (p * -20) + 'px)';
+        h.style.pointerEvents = p > 0.5 ? 'none' : '';
+      }
+    }
+    window._headerTick = _tick;
+    window.addEventListener('scroll', function() {
+      if (window.innerWidth > 768) return;
+      if (!_raf) _raf = requestAnimationFrame(_tick);
+    }, { passive: true });
+    window.addEventListener('resize', function() { _hH = 0; });
+  })();
+
   // 密码重置回调：检测 URL 中的 access_token & type=recovery
   var hash=window.location.hash;
   if(hash&&hash.includes('type=recovery')){
@@ -3955,10 +4033,6 @@ function showLoading() {
 function hideLoading() {
   var el = document.getElementById('loadingScreen');
   if (el) {
-    var mascot = el.querySelector('.ls-mascot');
-    var bar = el.querySelector('.ls-bar');
-    if (mascot) mascot.style.animationPlayState = 'paused';
-    if (bar) bar.style.animationPlayState = 'paused';
     el.className = 'loading-screen loading-screen--hide';
     setTimeout(function() { if (el) el.style.display = 'none'; }, 400);
   }
@@ -4029,15 +4103,13 @@ if (currentUser) {
       });
     }
   }).then(function() {
-    return syncToCloud();
-  }).then(function() {
     var dv = localStorage.getItem('dou_view');
     if (isAdmin && dv === 'all') return fetch(SB_URL+'/rest/v1/clients?select=*',{headers:sbHead()}).then(function(r){return r.json();}).then(function(data){return data.filter(function(c){return !window._adminUsers||window._adminUsers.some(function(u){return u.email===c.user_id});});});
     if (isAdmin && dv && dv !== currentUser) return fetch(SB_URL+'/rest/v1/clients?user_id=eq.'+encodeURIComponent(dv)+'&select=*',{headers:sbHead()}).then(function(r){return r.json();});
     return sbFetch('clients', 'GET');
   }).then(function(data) {
     if (data.length > 0) { clients = data.map(mapClient); }
-  }).catch(function(err) { console.log("Init error:", err); toast("加载失败，请检查网络连接","error"); }).finally(function() { hideLoading(); refreshAll(); if(isAdmin)initAdminSelect(); });
+  }).catch(function(err) { console.log("Init error:", err); toast("加载失败，请检查网络连接","error"); }).finally(function() { hideLoading(); refreshAll(); if(isAdmin)initAdminSelect(); syncToCloud().catch(function(){}); });
   });
 } else {
   setTimeout(function() { hideLoading(); }, 400);
