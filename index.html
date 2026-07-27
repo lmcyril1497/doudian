@@ -4,6 +4,8 @@
 <meta charset="UTF-8"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="抖店注册"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,shrink-to-fit=no,viewport-fit=cover"><meta name="color-scheme" content="light dark"><meta name="theme-color" id="themeColor" content="#F5F5F7">
 <title>抖店</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://ytqzuqqqytdihxybhhcy.supabase.co" crossorigin>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function() {
@@ -559,6 +561,8 @@ body {
   display: flex; flex-direction: column; gap: 12px;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 500px;
 }
 .column-cards::-webkit-scrollbar { display: none; }
 .column-drop-hint {
@@ -2337,7 +2341,12 @@ const SVGS = {
   ];
   const TRASH_KEY = 'doudian_trash';
 
-function saveClients(clients) { syncToCloud().catch(function(e){toast("同步失败，请检查网络","error");}); }
+function saveClients(clients) {
+  clearTimeout(window._syncTimer);
+  window._syncTimer = setTimeout(function() {
+    syncToCloud().catch(function(e){toast("同步失败，请检查网络","error");});
+  }, 800);
+}
 
 let clients = [];
 
@@ -3972,9 +3981,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   const searchInput = document.getElementById('searchInput');
   if (searchInput) {
+    var _searchTimer = null;
     searchInput.addEventListener('input', () => {
-      searchQuery = searchInput.value.trim();
-      refreshAll();
+      clearTimeout(_searchTimer);
+      _searchTimer = setTimeout(() => {
+        searchQuery = searchInput.value.trim();
+        refreshAll();
+      }, 200);
     });
     // Close search on blur (mobile keyboard done)
   }
