@@ -1,4 +1,4 @@
-var CACHE_NAME = 'doukanban-v47';
+var CACHE_NAME = 'doukanban-v48';
 var ASSETS = [
   './',
   './index.html',
@@ -14,9 +14,10 @@ self.addEventListener('install', function(e) {
   e.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
       return cache.addAll(ASSETS);
+    }).then(function() {
+      return self.skipWaiting();
     })
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', function(e) {
@@ -26,9 +27,10 @@ self.addEventListener('activate', function(e) {
         names.filter(function(n) { return n !== CACHE_NAME; })
              .map(function(n) { return caches.delete(n); })
       );
+    }).then(function() {
+      return self.clients.claim();
     })
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', function(e) {
@@ -38,6 +40,7 @@ self.addEventListener('fetch', function(e) {
   if (url.indexOf('/rest/v1/') !== -1 || url.indexOf('/auth/') !== -1 || url.indexOf('cdn.jsdelivr.net') !== -1) return;
   e.respondWith(
     fetch(e.request).then(function(resp) {
+      if (!resp.ok) return resp;
       var clone = resp.clone();
       caches.open(CACHE_NAME).then(function(cache) {
         cache.put(e.request, clone);

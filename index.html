@@ -98,7 +98,7 @@
   /* ── Layout ── */
   --header-height: 52px;
   --content-gap: 20px;
-  --page-padding: 40px;
+  --page-padding: 24px;
   --touch-target: 44px;
   --btn-height: 34px;
 
@@ -204,7 +204,7 @@ body {
 
 /* ── Loading Screen ── */
 .loading-screen {
-  position: fixed; inset: 0; z-index: 10000;
+  position: fixed; inset: 0; z-index: 10001;
   background: var(--surface-card);
   display: flex; align-items: center; justify-content: center;
   transition: opacity 0.35s ease;
@@ -388,25 +388,25 @@ body {
 /* ── Search ── */
 .search-wrap { position: relative; }
 .search-input {
-  width: 200px; height: 32px;
-  padding: 0 12px 0 32px;
-  background: rgba(0,0,0,.04);
+  width: 200px; height: 36px;
+  padding: 0 14px 0 34px;
+  background: rgba(118,118,128,.12);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 11px center;
+  background-size: 15px;
   border: none;
-  border-radius: 8px;
-  font-size: 13px; font-family: inherit;
+  border-radius: 18px;
+  font-size: 14px; font-family: inherit;
   color: var(--text-primary);
   outline: none;
   transition: background .15s;
 }
-.search-input::placeholder { color: var(--text-tertiary); }
+.search-input::placeholder { color: #8E8E93; }
 .search-input:focus {
-  background: rgba(0,0,0,.06);
+  background-color: rgba(118,118,128,.18);
 }
-.search-icon {
-  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
-  color: var(--text-tertiary); font-size: 14px; pointer-events: none;
-  transition: color 0.2s var(--ease-apple);
-}
+.search-icon { display: none; }
 .btn--search-toggle { display: none !important; }
 
 @media (max-width: 768px) {
@@ -501,7 +501,7 @@ body {
   display: flex; gap: var(--content-gap);
   padding: 0 var(--page-padding) 20px;
   contain: layout style paint;
-  overflow: hidden;
+  overflow-x: auto;
   scroll-behavior: smooth;
   scrollbar-width: none;
 }
@@ -509,7 +509,7 @@ body {
 
 /* ── Column ── */
 .column {
-  flex: 1; min-width: 200px; max-width: 100%;
+  flex: 1; min-width: 220px; max-width: 100%;
   display: flex; flex-direction: column;
   background: var(--surface-column);
   border: 1px solid var(--border-subtle);
@@ -555,7 +555,7 @@ body {
 .column-cards {
   flex: 1;
   overflow-y: auto;
-  padding: 6px 16px 20px;
+  padding: 6px 10px 20px;
   display: flex; flex-direction: column; gap: 12px;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -1074,12 +1074,12 @@ input[type="number"] { -moz-appearance: textfield; }
   .column-icon { width: 26px; height: 26px; font-size: 13px; }
   .column-title { font-size: 12px; }
   .column-header { padding: 10px 14px 8px; }
-  .column-cards { padding: 4px 14px 14px; }
+  .column-cards { padding: 4px 8px 14px; }
   .card { padding: 12px; border-radius: var(--radius-md); }
   .card-name { font-size: 13px; }
   .card-copy-bar { padding: 6px 10px; margin: 10px 0 6px; }
   .card-copy-text { font-size: 11px; }
-  .search-input { width: 160px; }
+  .search-input { width: 160px; height: 36px; }
   .search-input:focus { width: 200px; }
 }
 
@@ -1126,6 +1126,7 @@ input[type="number"] { -moz-appearance: textfield; }
 .cc-del:active { background:var(--red-light); color:var(--red-hover); }
 .card:hover .cc-del { display:flex; opacity:1; pointer-events:auto; }
 .cc-owner { display:none; flex-shrink:0; }
+body.is-viewing-all .compact-mode .cc-owner { display:inline-flex; font-size:11px; color:var(--text-tertiary); position:absolute; right:10px; top:50%; transform:translateY(-50%); }
 
 /* ── Card view elements: fade transition ── */
 .card-name-row, .card-meta, .card-copy-bar, .card-time-wrap, .card-owner {
@@ -1156,7 +1157,7 @@ input[type="number"] { -moz-appearance: textfield; }
   opacity:0; max-height:0; overflow:hidden;
 }
 .compact-mode .card-compact-row {
-  display:flex; opacity:1; max-height:40px;
+  display:flex; opacity:1; max-height:40px; position:relative;
 }
 .compact-mode .cc-info {
   flex: 0 0 48px;
@@ -1406,9 +1407,8 @@ input[type="number"] { -moz-appearance: textfield; }
   .header-logo-wrap { width: 24px; height: 24px; border-radius: 50%; }
   .header-title { font-size: 14px; }
   .header-right { gap: 4px; }
-  .search-input { width: 80px; height: 28px; padding: 0 6px 0 24px; font-size: 12px; border-radius: 7px; }
+  .search-input { width: 80px; height: 32px; padding: 0 10px 0 28px; font-size: 12px; border-radius: 16px; }
   .search-input:focus { width: 110px; }
-  .search-icon { left: 6px; }
   .stats-strip { padding: 8px 10px 14px; gap: 4px; }
   .stats-inner { padding: 4px 0 4px !important; }
   .stat-pill { padding: 5px 10px; font-size: 11px; min-height: 32px; }
@@ -1565,7 +1565,7 @@ input,select,textarea,button { -webkit-appearance: none; }
     </div>
     <div class="header-right">
       <div class="search-wrap" id="searchWrap">
-        <input type="text" class="search-input" id="searchInput" placeholder="搜索...">
+        <input type="text" class="search-input" id="searchInput" placeholder="搜索">
         <span class="search-icon" id="searchIcon">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </span>
@@ -1604,7 +1604,16 @@ input,select,textarea,button { -webkit-appearance: none; }
 // CLOUD SYNC (Supabase REST API)
 const SB_URL = 'https://ytqzuqqqytdihxybhhcy.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0cXp1cXFxeXRkaWh4eWJoaGN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1OTE4NzAsImV4cCI6MjA5OTE2Nzg3MH0.EQUhNToGoQkdXLsKpHsw8gITaTVA0mtFhtN1MEbxzBc';
-const _supabase = window.supabase.createClient(SB_URL, SB_KEY);
+let _supabase = null;
+try { _supabase = window.supabase.createClient(SB_URL, SB_KEY); } catch(e) {
+  document.addEventListener('DOMContentLoaded', function() {
+    var ls = document.querySelector('.loading-screen'); if(ls) ls.remove();
+    var d = document.createElement('div');
+    d.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f5f5f7;font-family:system-ui;gap:16px;padding:32px;text-align:center;';
+    d.innerHTML = '<div style="font-size:48px;">⚠️</div><div style="font-size:18px;font-weight:600;color:#1d1d1f;">加载失败</div><div style="font-size:14px;color:#86868b;max-width:360px;">Supabase SDK 加载被浏览器拦截。请检查是否有广告拦截器或跟踪预防功能，然后刷新页面。</div><button onclick="location.reload()" style="margin-top:8px;padding:10px 24px;border:none;border-radius:12px;background:#0071e3;color:#fff;font-size:14px;cursor:pointer;">刷新页面</button>';
+    document.body.appendChild(d);
+  });
+}
 let _sessionToken = null;
 let currentUser = localStorage.getItem('dou_user') || ''; let isAdmin = !!localStorage.getItem('dou_admin');
 let isSuperAdmin = !!localStorage.getItem('dou_super');
@@ -1614,14 +1623,19 @@ function sbHead() {
   return { apikey: SB_KEY, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
 }
 async function refreshSession() {
-  var r = await _supabase.auth.getSession();
-  _sessionToken = r.data.session ? r.data.session.access_token : null;
-  return r.data.session;
+  try {
+    var r = await _supabase.auth.getSession();
+    _sessionToken = r.data.session ? r.data.session.access_token : null;
+    return r.data.session;
+  } catch(e) {
+    console.log('refreshSession error:', e.message);
+    return null;
+  }
 }
 async function sbFetch(table, method, body) {
   var url = SB_URL + '/rest/v1/' + table;
   if (method === 'GET') { url += '?user_id=eq.' + encodeURIComponent(currentUser) + '&order=createdAt'; }
-  if (method !== 'GET') { await refreshSession(); }
+  await refreshSession();
   var opts = { method: method, headers: sbHead() };
   if (body) { opts.body = JSON.stringify(body); opts.headers['Prefer'] = 'resolution=merge-duplicates'; }
   try {
@@ -1644,7 +1658,6 @@ function switchAuthTab(tab){
   document.getElementById('lw_hint').textContent='';
 }
 function showRegister(){switchAuthTab('register');}
-function showLogin(){switchAuthTab('login');}
 function togglePassVis(btn){var inp=btn.parentElement.querySelector('input');var eyeOn='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>';var eyeOff='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></svg>';if(inp.style.webkitTextSecurity){if(inp.style.webkitTextSecurity==='disc'){inp.style.webkitTextSecurity='none';btn.innerHTML=eyeOn;}else{inp.style.webkitTextSecurity='disc';btn.innerHTML=eyeOff;}}else{if(inp.type==='password'){inp.type='text';btn.innerHTML=eyeOn;}else{inp.type='password';btn.innerHTML=eyeOff;}}}
 function _regHint(msg,type){
   var h=document.getElementById('lw_hint');
@@ -1785,9 +1798,9 @@ async function handleLogin() {
   }
   if(users[0].status!=="approved"){startApprovalPoll(email,document.getElementById("lw_pass").value.trim());return;}
   await refreshSession();
-  currentUser=email;localStorage.setItem("dou_user",email);isAdmin=users[0].role==="admin"||users[0].role==="owner";isSuperAdmin=users[0].role==="owner";localStorage.setItem("dou_admin",isAdmin?"1":"");localStorage.setItem("dou_super",isSuperAdmin?"1":"");if(isAdmin){document.body.classList.add("is-admin");var dv=localStorage.getItem('dou_view');window._viewingUser=(dv==='all'?null:email);document.body.classList.toggle('is-viewing-all', window._viewingUser === null);localStorage.setItem('dou_view',email);}showApp();updateAuthBtn();showLoading();
-  clients=[];
+  currentUser=email;localStorage.setItem("dou_user",email);isAdmin=users[0].role==="admin"||users[0].role==="owner";isSuperAdmin=users[0].role==="owner";localStorage.setItem("dou_admin",isAdmin?"1":"");localStorage.setItem("dou_super",isSuperAdmin?"1":"");if(isAdmin){document.body.classList.add("is-admin");var dv=localStorage.getItem('dou_view');window._viewingUser=(dv==='all'?null:email);document.body.classList.toggle('is-viewing-all', window._viewingUser === null);localStorage.setItem('dou_view',email);}  showApp();updateAuthBtn();showLoading();
   try {
+  clients=[];
   var data;
   if (isAdmin) {
     var dv2 = localStorage.getItem("dou_view");
@@ -1804,7 +1817,7 @@ async function handleLogin() {
     data = await sbFetch("clients","GET");
   }
   if(data.length>0){clients=data.map(mapClient);}
-  } catch(e) { console.log("Login data load error:", e.message); }
+  } catch(e) { console.log("Login data load error:", e.message); toast("数据加载失败，请检查网络","error"); }
   hideLoading();refreshAll(); if(isAdmin){initAdminSelect();};
   } catch(e) { setHint("网络异常，请检查网络后重试","error"); }
 }
@@ -1817,6 +1830,7 @@ function _setLoginDisabled(d){
   document.getElementById('lw_approval').classList.toggle('show',d);
 }
 function startApprovalPoll(email,pass){
+  if(_approvalTimer) clearInterval(_approvalTimer);
   _approvalPhone=email;_approvalPass=pass||'';_setLoginDisabled(true);
   _approvalTimer=setInterval(async function(){
     try{
@@ -1859,12 +1873,12 @@ async function doLogout(){
       if(!confirm('数据同步失败，退出后未保存数据将丢失。\n\n确定退出吗？'))return;
     }
   }
-  try{await _supabase.auth.signOut();}catch(e){}
+  if(_supabase) try{await _supabase.auth.signOut();}catch(e){}
   cancelApprovalPoll();
   stopHeartbeat();
   _sessionToken=null;
   currentUser='';isAdmin=false;isSuperAdmin=false;window._viewingUser=null;window._adminUsers=null;window._nicks=null;
-  localStorage.clear();sessionStorage.clear();
+  localStorage.removeItem("dou_user");localStorage.removeItem("dou_admin");localStorage.removeItem("dou_super");localStorage.removeItem("dou_view");sessionStorage.clear();
   applyTheme();
   clients=[];updateAuthBtn();document.body.classList.remove('is-admin');document.body.classList.remove('is-viewing-all');showLogin();
   setTimeout(function(){location.reload();},100);
@@ -1892,17 +1906,14 @@ document.addEventListener('touchend', function() {
 // Heartbeat: check if current user still exists, force logout if deleted/revoked
 var _heartbeatTimer = null;
 function _heartbeatTick() {
-  if (document.hidden || !currentUser) {
-    _heartbeatTimer = setTimeout(_heartbeatTick, 5000);
-    return;
-  }
+  if (document.hidden || !currentUser) { return; }
   fetch(SB_URL+'/rest/v1/users?email=eq.'+encodeURIComponent(currentUser),{headers:sbHead()})
     .then(function(r){ if(!r.ok) throw new Error('request failed'); return r.json(); })
     .then(function(u){
       if(u.length===0||u[0].status!=='approved'){ toast('账号已被管理员删除或禁用，即将退出','error'); setTimeout(doLogout,1500); }
     })
     .catch(function(){})
-    .finally(function(){ _heartbeatTimer = setTimeout(_heartbeatTick, 30000); });
+    .finally(function(){ if(document.hidden||!currentUser) return; _heartbeatTimer = setTimeout(_heartbeatTick, 30000); });
 }
 function startHeartbeat(){ clearTimeout(_heartbeatTimer); _heartbeatTick(); }
 function stopHeartbeat(){ clearTimeout(_heartbeatTimer); _heartbeatTimer = null; }
@@ -2072,7 +2083,7 @@ async function showAdminPanel(){
   menu.innerHTML=html;document.body.appendChild(menu);
   closeOnOutside(menu,closeAdminPopup);
 }
-function closeAdminPopup(){var m=document.querySelector(".admin-popup");if(m)m.remove();var o=document.querySelector(".ap-overlay");if(o)o.remove();}
+function closeAdminPopup(){var m=document.querySelector(".admin-popup");if(m){if(m._outsideHandler)document.removeEventListener("mousedown",m._outsideHandler,true);m.remove();}var o=document.querySelector(".ap-overlay");if(o)o.remove();}
 async function rejectUser(id){
   try { await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(id),{method:"PATCH",headers:sbHead(),body:JSON.stringify({status:"rejected"})}); } catch(e) { toast("操作失败，请稍后重试","error"); return; }
   toast(id+" 已拒绝","success");
@@ -2318,9 +2329,9 @@ async function showNicknameModal(){
   menu.innerHTML=html;document.body.appendChild(menu);
   closeOnOutside(menu,closeNickMenu);
 }
-function closeNickMenu(){var m=document.querySelector(".nick-menu");if(m)m.remove(); _nickModalOpening=false;}
+function closeNickMenu(){var m=document.querySelector(".nick-menu");if(m){if(m._outsideHandler)document.removeEventListener("mousedown",m._outsideHandler,true);m.remove();} _nickModalOpening=false;}
 var _nickModalOpening = false;
-function closeAdminPopup(){var m=document.querySelector(".admin-popup");if(m)m.remove();var o=document.querySelector(".ap-overlay");if(o)o.remove(); _adminModalOpening=false;}
+function closeAdminPopup(){var m=document.querySelector(".admin-popup");if(m){if(m._outsideHandler)document.removeEventListener("mousedown",m._outsideHandler,true);m.remove();}var o=document.querySelector(".ap-overlay");if(o)o.remove(); _adminModalOpening=false;}
 var _adminModalOpening = false;
 function closeRolePanel(){var m=document.querySelector(".role-menu");if(m)m.remove(); _roleModalOpening=false;}
 var _roleModalOpening = false;
@@ -2336,6 +2347,7 @@ async function saveNicknames(closeAfter){
 
 function showMyNickModal(){
   closeUserMenu();
+  var old=document.querySelector(".my-nick-popup");if(old)old.remove();
   var btn=document.getElementById("authBtn");
   var curNick=window._nicks&&window._nicks[currentUser]||"";
   var m=createPopup(btn,{});
@@ -2351,7 +2363,7 @@ function showMyNickModal(){
   };
   closeOnOutside(m,closeMyNickMenu);
 }
-function closeMyNickMenu(){var m=document.querySelector(".my-nick-popup");if(m)m.remove();}
+function closeMyNickMenu(){var m=document.querySelector(".my-nick-popup");if(m){if(m._outsideHandler)document.removeEventListener("mousedown",m._outsideHandler,true);m.remove();}}
 
 updateAuthBtn();
 
@@ -2373,6 +2385,7 @@ const SVGS = {
   const TRASH_KEY = 'doudian_trash';
 
 function saveClients(clients) {
+  try { if(currentUser) localStorage.setItem('doudian_clients_' + currentUser, JSON.stringify(clients)); } catch(e) {}
   clearTimeout(window._syncTimer);
   window._syncTimer = setTimeout(function() {
     syncToCloud().catch(function(e){toast("同步失败，请检查网络","error");});
@@ -2414,7 +2427,10 @@ function createPopup(anchor,opts){
   return m;
 }
 function closeOnOutside(menu,closeFn){
-  setTimeout(function(){document.addEventListener("mousedown",function ce(e){if(!menu.contains(e.target)){closeFn();document.removeEventListener("mousedown",ce,true);}},true);},10);
+  if(menu._outsideHandler) return;
+  function ce(e){if(!menu.contains(e.target)){closeFn();document.removeEventListener("mousedown",ce,true);menu._outsideHandler=null;}}
+  menu._outsideHandler=ce;
+  setTimeout(function(){document.addEventListener("mousedown",ce,true);},10);
 }
 let activeFilter = null; // null = show all, number = stage id
 let searchQuery = '';
@@ -2938,10 +2954,11 @@ function moveClient(clientId, toStage) {
 function deleteClient(clientId) {
   const client = clients.find(c => c.id === clientId);
   if (!client) return;
+  const idx = clients.indexOf(client);
   clients = clients.filter(c => c.id !== clientId);
   saveClients(clients);
   // Also delete from cloud
-  if (currentUser) { fetch(SB_URL + "/rest/v1/clients?id=eq." + encodeURIComponent(clientId), { method: "DELETE", headers: sbHead() }).catch(function(e) { console.log("Delete from cloud failed:",e.message); clients.push(client); saveClients(clients); toast("删除同步失败，数据已恢复","error"); }); }
+  if (currentUser) { refreshSession().then(function(){ return fetch(SB_URL + "/rest/v1/clients?id=eq." + encodeURIComponent(clientId), { method: "DELETE", headers: sbHead() }); }).then(function(r){ if(!r.ok) throw new Error('delete failed'); }).catch(function(e) { console.log("Delete from cloud failed:",e.message); clients.splice(idx, 0, client); saveClients(clients); toast("删除同步失败，数据已恢复","error"); }); }
   const trash = loadTrash();
   trash.push(Object.assign({}, client, { deletedAt: Date.now() }));
   saveTrash(trash);
@@ -4209,7 +4226,9 @@ if (localStorage.getItem('dou_theme') === 'system') localStorage.removeItem('dou
 applyTheme();
 
 // Init — pull from cloud if logged in
-if (currentUser) {
+if (currentUser && _supabase) {
+  var _cloudLoaded = false;
+  try { var _cached = JSON.parse(localStorage.getItem('doudian_clients_' + currentUser)); if (_cached && _cached.length) { clients = _cached; refreshAll(); } } catch(e) {}
   showLoading();
   refreshSession().then(function(session) {
   // Check if admin
@@ -4232,8 +4251,8 @@ if (currentUser) {
     if (isAdmin && dv && dv !== currentUser) return fetch(SB_URL+'/rest/v1/clients?user_id=eq.'+encodeURIComponent(dv)+'&select=*',{headers:sbHead()}).then(function(r){return r.json();});
     return sbFetch('clients', 'GET');
   }).then(function(data) {
-    if (data.length > 0) { clients = data.map(mapClient); }
-  }).catch(function(err) { console.log("Init error:", err); toast("加载失败，请检查网络连接","error"); }).finally(function() { hideLoading(); refreshAll(); if(isAdmin)initAdminSelect(); syncToCloud().catch(function(){}); });
+    if (data.length > 0) { clients = data.map(mapClient); _cloudLoaded = true; }
+  }).catch(function(err) { console.log("Init error:", err); toast("加载失败，请检查网络连接","error"); }).finally(function() { hideLoading(); refreshAll(); if(isAdmin)initAdminSelect(); if(_cloudLoaded) syncToCloud().catch(function(){}); });
   });
 } else {
   setTimeout(function() { hideLoading(); }, 400);
@@ -4256,7 +4275,7 @@ if (!localStorage.getItem(MIGRATED_KEY)) {
 </script>
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js?v=47').catch(function() {});
+  navigator.serviceWorker.register('./sw.js?v=48').catch(function() {});
 }
 </script>
 </body>
