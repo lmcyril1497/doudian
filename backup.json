@@ -1,0 +1,514 @@
+﻿[
+    {
+        "id":  "c_mrbmi0gp_8vzaoj",
+        "user_id":  "18211383968",
+        "name":  "胡俊飞",
+        "licenseType":  "单个体",
+        "cardType":  "一类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  2,
+        "createdAt":  1783267200000,
+        "stageTimestamps":  {
+                                "2":  1783487653082
+                            },
+        "created_at":  "2026-07-10T09:18:55.931179+00:00"
+    },
+    {
+        "id":  "c_mrbmjk37_8nm3ot",
+        "user_id":  "18211383968",
+        "name":  "梁树坚",
+        "licenseType":  "单个体➕备案",
+        "cardType":  "一类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  0,
+        "createdAt":  1783353600000,
+        "stageTimestamps":  {
+                                "0":  1783487725171
+                            },
+        "created_at":  "2026-07-10T09:18:55.931179+00:00"
+    },
+    {
+        "id":  "c_mrblh6od_4hfwj2",
+        "user_id":  "18211383968",
+        "name":  "陆思婷",
+        "licenseType":  "单个体",
+        "cardType":  "一类",
+        "advanceAmount":  "30",
+        "notes":  "",
+        "stage":  4,
+        "createdAt":  1783485934861,
+        "stageTimestamps":  {
+                                "3":  1783492475981,
+                                "4":  1783492477576
+                            },
+        "created_at":  "2026-07-10T09:18:55.931179+00:00"
+    },
+    {
+        "id":  "c_mrblhmvq_4t3n90",
+        "user_id":  "18211383968",
+        "name":  "肖会",
+        "licenseType":  "单个体",
+        "cardType":  "一类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  4,
+        "createdAt":  1783485955862,
+        "stageTimestamps":  {
+                                "3":  1783492474582,
+                                "4":  1783492479586
+                            },
+        "created_at":  "2026-07-10T09:18:55.931179+00:00"
+    },
+    {
+        "id":  "c_mrbm6eam_kxadan",
+        "user_id":  "18211383968",
+        "name":  "王路阳",
+        "licenseType":  "单个体",
+        "cardType":  "一类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  4,
+        "createdAt":  1783487111134,
+        "stageTimestamps":  {
+                                "3":  1783492473712,
+                                "4":  1783492540677
+                            },
+        "created_at":  "2026-07-10T09:18:55.931179+00:00"
+    },
+    {
+        "id":  "c_mrbm6tkc_geee38",
+        "user_id":  "18211383968",
+        "name":  "邹家龙",
+        "licenseType":  "单个体",
+        "cardType":  "一类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  4,
+        "createdAt":  1783487130924,
+        "stageTimestamps":  {
+                                "3":  1783492472750,
+                                "4":  1783492541840
+                            },
+        "created_at":  "2026-07-10T09:18:55.931179+00:00"
+    },
+    {
+        "id":  "c_mrbm78fc_ucfo8m",
+        "user_id":  "18211383968",
+        "name":  "夏景智",
+        "licenseType":  "单个体",
+        "cardType":  "一类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  4,
+        "createdAt":  1783487150184,
+        "stageTimestamps":  {
+                                "3":  1783492471976,
+                                "4":  1783492542803
+                            },
+        "created_at":  "2026-07-10T09:18:55.931179+00:00"
+    },
+    {
+        "id":  "c_mrbm7yug_uvws0d",
+        "user_id":  "18211383968",
+        "name":  "张楠",
+        "licenseType":  "单个体",
+        "cardType":  "一类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  4,
+        "createdAt":  1783487184424,
+        "stageTimestamps":  {
+                                "3":  1783492470729,
+                                "4":  1783492544267
+                            },
+        "created_at":  "2026-07-10T09:18:55.931179+00:00"
+    },
+    {
+        "id":  "c_mrbm8bwz_jfnpw4",
+        "user_id":  "18211383968",
+        "name":  "陆欣妍",
+        "licenseType":  "单个体",
+        "cardType":  "二类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  4,
+        "createdAt":  1783487201363,
+        "stageTimestamps":  {
+                                "3":  1783492548208,
+                                "4":  1783492550577
+                            },
+        "created_at":  "2026-07-10T09:18:55.931179+00:00"
+    },
+    {
+        "id":  "c_mrbm8pp4_6s2v63",
+        "user_id":  "18211383968",
+        "name":  "钟俊森",
+        "licenseType":  "单个体",
+        "cardType":  "二类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  4,
+        "createdAt":  1783487219224,
+        "stageTimestamps":  {
+                                "3":  1783492547640,
+                                "4":  1783492549527
+                            },
+        "created_at":  "2026-07-10T09:18:55.931179+00:00"
+    },
+    {
+        "id":  "c_mrbme3wr_5d5jwn",
+        "user_id":  "18211383968",
+        "name":  "于晓双",
+        "licenseType":  "单个体",
+        "cardType":  "一类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  2,
+        "createdAt":  1783487470923,
+        "stageTimestamps":  {
+                                "2":  1783487470923
+                            },
+        "created_at":  "2026-07-10T09:18:55.931179+00:00"
+    },
+    {
+        "id":  "c_mrbm9l8c_h24zgw",
+        "user_id":  "18211383968",
+        "name":  "杨子健",
+        "licenseType":  "单个体➕备案",
+        "cardType":  "一类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  0,
+        "createdAt":  1783008000000,
+        "stageTimestamps":  {
+                                "0":  1783487260092
+                            },
+        "created_at":  "2026-07-10T09:00:05.646699+00:00"
+    },
+    {
+        "id":  "c_mrbm972x_mb0yx4",
+        "user_id":  "18211383968",
+        "name":  "吴志凯",
+        "licenseType":  "单个体➕备案",
+        "cardType":  "一类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  1,
+        "createdAt":  1783008000000,
+        "stageTimestamps":  {
+                                "0":  1783487241753,
+                                "1":  1783675220203,
+                                "2":  1783675194893
+                            },
+        "created_at":  "2026-07-10T09:00:05.646699+00:00"
+    },
+    {
+        "id":  "c_mrbm9yp2_f600uy",
+        "user_id":  "18211383968",
+        "name":  "苏辉鑫",
+        "licenseType":  "单个体",
+        "cardType":  "二类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  2,
+        "createdAt":  1783094400000,
+        "stageTimestamps":  {
+                                "1":  1783487277542,
+                                "2":  1783503180617
+                            },
+        "created_at":  "2026-07-10T09:00:05.646699+00:00"
+    },
+    {
+        "id":  "c_mrbkupjp_5smocl",
+        "user_id":  "18211383968",
+        "name":  "冯进嘉",
+        "licenseType":  "单个体",
+        "cardType":  "一类",
+        "advanceAmount":  "30",
+        "notes":  "",
+        "stage":  4,
+        "createdAt":  1783094400000,
+        "stageTimestamps":  {
+                                "0":  1783484971601,
+                                "1":  1783503664351,
+                                "2":  1783503665670,
+                                "3":  1783490112935,
+                                "4":  1783674718261
+                            },
+        "created_at":  "2026-07-10T09:00:05.646699+00:00"
+    },
+    {
+        "id":  "c_mrbmftnt_gdfr7m",
+        "user_id":  "18211383968",
+        "name":  "牛生翔",
+        "licenseType":  "单个独➕备案",
+        "cardType":  "一类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  1,
+        "createdAt":  1783180800000,
+        "stageTimestamps":  {
+                                "0":  1783487550953,
+                                "1":  1783672457378
+                            },
+        "created_at":  "2026-07-10T09:00:05.646699+00:00"
+    },
+    {
+        "id":  "c_mrbmfdca_fq4umq",
+        "user_id":  "18211383968",
+        "name":  "施碧婷",
+        "licenseType":  "单个体",
+        "cardType":  "二类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  2,
+        "createdAt":  1783180800000,
+        "stageTimestamps":  {
+                                "1":  1783487529802,
+                                "2":  1783503162528
+                            },
+        "created_at":  "2026-07-10T09:00:05.646699+00:00"
+    },
+    {
+        "id":  "c_mrbmh6pc_yvj8ny",
+        "user_id":  "18211383968",
+        "name":  "孙云飞",
+        "licenseType":  "单个独➕备案",
+        "cardType":  "二类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  1,
+        "createdAt":  1783267200000,
+        "stageTimestamps":  {
+                                "0":  1783487661301,
+                                "1":  1783672462236,
+                                "2":  1783487614512
+                            },
+        "created_at":  "2026-07-10T09:00:05.646699+00:00"
+    },
+    {
+        "id":  "c_mrbmit2r_p01otp",
+        "user_id":  "18211383968",
+        "name":  "肖一帆",
+        "licenseType":  "单个独➕备案",
+        "cardType":  "一类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  1,
+        "createdAt":  1783353600000,
+        "stageTimestamps":  {
+                                "0":  1783487690163,
+                                "1":  1783672458946
+                            },
+        "created_at":  "2026-07-10T09:00:05.646699+00:00"
+    },
+    {
+        "id":  "c_mraly1y0_ny6pcw",
+        "user_id":  "18211383968",
+        "name":  "孙云飞",
+        "licenseType":  "单个独➕备案",
+        "cardType":  "二类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  2,
+        "createdAt":  1783353600000,
+        "stageTimestamps":  {
+                                "0":  1783426760801,
+                                "1":  1783664598780,
+                                "2":  1783665028885
+                            },
+        "created_at":  "2026-07-10T09:13:22.362075+00:00"
+    },
+    {
+        "id":  "c_mralq5kj_07jzys",
+        "user_id":  "18211383968",
+        "name":  "王路阳",
+        "licenseType":  "单个体",
+        "cardType":  "一类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  4,
+        "createdAt":  1783425887155,
+        "stageTimestamps":  {
+                                "0":  1783425887155,
+                                "4":  1783426751062
+                            },
+        "created_at":  "2026-07-10T09:13:22.362075+00:00"
+    },
+    {
+        "id":  "c_mralqnfb_z1mzz6",
+        "user_id":  "18211383968",
+        "name":  "邹家龙",
+        "licenseType":  "单个体",
+        "cardType":  "一类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  4,
+        "createdAt":  1783425910295,
+        "stageTimestamps":  {
+                                "4":  1783426752914
+                            },
+        "created_at":  "2026-07-10T09:13:22.362075+00:00"
+    },
+    {
+        "id":  "c_mralrhqz_n7g0y9",
+        "user_id":  "18211383968",
+        "name":  "张楠",
+        "licenseType":  "单个体",
+        "cardType":  "一类",
+        "advanceAmount":  "40",
+        "notes":  "",
+        "stage":  4,
+        "createdAt":  1783425949595,
+        "stageTimestamps":  {
+                                "3":  1783426767533,
+                                "4":  1783503927249
+                            },
+        "created_at":  "2026-07-10T09:13:22.362075+00:00"
+    },
+    {
+        "id":  "c_mralrz53_fp8dyq",
+        "user_id":  "18211383968",
+        "name":  "陆欣妍",
+        "licenseType":  "单个体",
+        "cardType":  "二类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  4,
+        "createdAt":  1783425972135,
+        "stageTimestamps":  {
+                                "3":  1783426768252,
+                                "4":  1783503925887
+                            },
+        "created_at":  "2026-07-10T09:13:22.362075+00:00"
+    },
+    {
+        "id":  "c_mralsj4a_mk8zgz",
+        "user_id":  "18211383968",
+        "name":  "钟俊森",
+        "licenseType":  "单个体",
+        "cardType":  "二类",
+        "advanceAmount":  "30",
+        "notes":  "",
+        "stage":  4,
+        "createdAt":  1783425998026,
+        "stageTimestamps":  {
+                                "3":  1783426768915,
+                                "4":  1783503924627
+                            },
+        "created_at":  "2026-07-10T09:13:22.362075+00:00"
+    },
+    {
+        "id":  "c_mraluoxw_yvtg6m",
+        "user_id":  "18211383968",
+        "name":  "于晓双",
+        "licenseType":  "单个体",
+        "cardType":  "一类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  2,
+        "createdAt":  1783426098884,
+        "stageTimestamps":  {
+                                "1":  1783576483296,
+                                "2":  1783664855829,
+                                "3":  1783584279025
+                            },
+        "created_at":  "2026-07-10T09:13:22.362075+00:00"
+    },
+    {
+        "id":  "c_mrbm7hll_pkjzdg",
+        "user_id":  "18211383968",
+        "name":  "张玉龙",
+        "licenseType":  "单个体",
+        "cardType":  "二类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  4,
+        "createdAt":  1783487162073,
+        "stageTimestamps":  {
+                                "3":  1783492471352,
+                                "4":  1783492543580
+                            },
+        "created_at":  "2026-07-10T09:00:05.646699+00:00"
+    },
+    {
+        "id":  "c_mrbmjtok_0u38s5",
+        "user_id":  "18211383968",
+        "name":  "潘晓培",
+        "licenseType":  "单个体➕备案",
+        "cardType":  "二类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  0,
+        "createdAt":  1783487737604,
+        "stageTimestamps":  {
+                                "0":  1783487737604
+                            },
+        "created_at":  "2026-07-10T09:00:05.646699+00:00"
+    },
+    {
+        "id":  "c_mrepv9pu_egly0q",
+        "user_id":  "18211383968",
+        "name":  "丁吉荣",
+        "licenseType":  "自带电子执照",
+        "cardType":  "一类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  2,
+        "createdAt":  1783612800000,
+        "stageTimestamps":  {
+                                "2":  1783674708979
+                            },
+        "created_at":  "2026-07-10T09:11:49.339432+00:00"
+    },
+    {
+        "id":  "c_mralypc9_c4miqt",
+        "user_id":  "18211383968",
+        "name":  "肖一帆",
+        "licenseType":  "单个独➕备案",
+        "cardType":  "一类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  2,
+        "createdAt":  1783426286025,
+        "stageTimestamps":  {
+                                "0":  1783426759420,
+                                "1":  1783664636145,
+                                "2":  1783664861000
+                            },
+        "created_at":  "2026-07-10T09:13:22.362075+00:00"
+    },
+    {
+        "id":  "c_mrama2m0_mzkyzp",
+        "user_id":  "18211383968",
+        "name":  "梁树坚",
+        "licenseType":  "单个体➕备案",
+        "cardType":  "一类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  0,
+        "createdAt":  1783426816440,
+        "stageTimestamps":  {
+                                "0":  1783426816440
+                            },
+        "created_at":  "2026-07-10T09:13:22.362075+00:00"
+    },
+    {
+        "id":  "c_mramgxg2_z6i3ft",
+        "user_id":  "18211383968",
+        "name":  "胡俊飞",
+        "licenseType":  "单个体",
+        "cardType":  "一类",
+        "advanceAmount":  "",
+        "notes":  "",
+        "stage":  2,
+        "createdAt":  1783427136338,
+        "stageTimestamps":  {
+                                "1":  1783573145515,
+                                "2":  1783573151757
+                            },
+        "created_at":  "2026-07-10T09:13:22.362075+00:00"
+    }
+]

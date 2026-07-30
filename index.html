@@ -35,6 +35,8 @@
 /* ============================================================
    APPLE-STYLE DESIGN SYSTEM — 抖店注册追踪
    ============================================================ */
+html { background-color: #F5F5F7; }
+html.dark { background-color: #000000; }
 :root {
   /* ── Apple System Colors ── */
   --blue: #0071E3;
@@ -195,6 +197,7 @@ body {
   min-height: 100vh;
   background: var(--surface-root);
   overflow: hidden;
+  overscroll-behavior-y: contain;
   color: var(--text-primary);
   user-select: none;
   -webkit-user-select: none;
@@ -202,10 +205,46 @@ body {
   touch-action: manipulation;
 }
 
+/* ── Pull-to-Refresh Indicator ── */
+.pull-indicator {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--surface-card);
+  border-radius: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.1);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  pointer-events: none;
+  transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  will-change: transform;
+}
+.pull-indicator.pull-ready .pull-text { color: var(--blue); }
+.pull-indicator.pull-refreshing .pull-text { color: var(--text-tertiary); }
+.pull-spinner { flex-shrink: 0; }
+.pull-spinner-arc {
+  stroke-dashoffset: 0;
+  transform-origin: center;
+}
+.pull-indicator.pull-refreshing .pull-spinner-arc {
+  animation: pull-spin 0.7s linear infinite;
+}
+@keyframes pull-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 /* ── Loading Screen ── */
 .loading-screen {
   position: fixed; inset: 0; z-index: 10001;
-  background: var(--surface-card);
+  background: var(--surface-root);
   display: flex; align-items: center; justify-content: center;
   transition: opacity 0.35s ease;
   pointer-events: all;
@@ -559,8 +598,7 @@ body {
   display: flex; flex-direction: column; gap: 12px;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  content-visibility: auto;
-  contain-intrinsic-size: 0 500px;
+
 }
 .column-cards::-webkit-scrollbar { display: none; }
 .column-drop-hint {
@@ -1233,10 +1271,11 @@ body.is-viewing-all .compact-mode .cc-owner { display:inline-flex; font-size:11p
     display: flex; align-items: center;
     flex: 1; min-width: 0;
     margin-left: 4px;
+    position: relative;
   }
   .ms-input {
     flex: 1; min-width: 0; height: 36px;
-    padding: 0 14px 0 34px;
+    padding: 0 30px 0 34px;
     background: rgba(118,118,128,.12);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
@@ -1249,6 +1288,16 @@ body.is-viewing-all .compact-mode .cc-owner { display:inline-flex; font-size:11p
     outline: none;
   }
   .ms-input::placeholder { color: #8E8E93; }
+  .ms-clear {
+    display: none;
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    width: 22px; height: 22px; border-radius: 50%;
+    border: none; background: rgba(0,0,0,.15);
+    color: #fff; font-size: 14px; line-height: 1;
+    align-items: center; justify-content: center;
+    cursor: pointer; padding: 0;
+  }
+  .ms-clear--visible { display: flex; }
 
   /* Stats — wrap to 2 rows */
   .stats-strip {
@@ -1562,6 +1611,7 @@ input,select,textarea,button { -webkit-appearance: none; }
     <!-- Mobile search bar (Apple .searchable style) — inline in header -->
     <div class="mobile-search" id="mobileSearch">
       <input class="ms-input" id="mobileSearchInput" type="text" placeholder="搜索">
+      <button class="ms-clear" id="msClear" type="button" aria-label="清除搜索">&times;</button>
     </div>
     <div class="header-right">
       <div class="search-wrap" id="searchWrap">
@@ -1592,6 +1642,15 @@ input,select,textarea,button { -webkit-appearance: none; }
 
   <!-- Kanban Board -->
   <div class="kanban" id="kanban"></div>
+</div>
+
+<!-- Pull-to-Refresh Indicator -->
+<div class="pull-indicator" id="pullIndicator">
+  <svg class="pull-spinner" viewBox="0 0 24 24" width="18" height="18">
+    <circle cx="12" cy="12" r="10" fill="none" stroke="var(--text-tertiary)" stroke-width="2.5"/>
+    <circle class="pull-spinner-arc" cx="12" cy="12" r="10" fill="none" stroke="var(--blue)" stroke-width="2.5" stroke-dasharray="15.7 47.1" stroke-linecap="round"/>
+  </svg>
+  <span class="pull-text">下拉刷新</span>
 </div>
 
 <!-- Modal Container -->
@@ -1903,6 +1962,128 @@ document.addEventListener('touchend', function() {
   if (overlay) { overlay.style.transition = 'opacity 0.35s cubic-bezier(0.25, 0.1, 0.25, 1)'; }
   if (dy > 180) { _dragModal.style.transform = 'translateY(100vh)'; if (overlay) overlay.style.opacity = '0'; setTimeout(function() { closeModal(); }, 350); _dragModal = null; } else { _dragModal.style.transform = ''; if (overlay) overlay.style.opacity = ''; _dragModal = null; }
 });
+// Pull-to-Refresh (Apple风格: 整页跟随下拉)
+(function() {
+  var _pullStartY = 0, _pulling = false, _isRefreshing = false;
+  var _indicator = document.getElementById('pullIndicator');
+  var _pullText = _indicator ? _indicator.querySelector('.pull-text') : null;
+  var THRESHOLD = 80, DAMPING = 0.45;
+  var _appEl = null;
+
+  function _getApp() {
+    if (!_appEl) _appEl = document.getElementById('appShell');
+    return _appEl;
+  }
+
+  function _setTransform(el, val) {
+    if (!el) return;
+    el.style.transition = 'none';
+    el.style.transform = val;
+  }
+
+  function _reset() {
+    var app = _getApp();
+    if (app) {
+      app.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1)';
+      app.style.transform = '';
+    }
+    if (_indicator) {
+      _indicator.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1)';
+      _indicator.style.transform = 'translateX(-50%) translateY(-100%)';
+      _indicator.classList.remove('pull-ready', 'pull-refreshing');
+    }
+    _pulling = false;
+    _pullStartY = 0;
+  }
+
+  document.addEventListener('touchstart', function(e) {
+    if (_isRefreshing) return;
+    var app = _getApp();
+    if (!app || app.style.display === 'none') return;
+    if (document.querySelector('.modal-overlay') || document.querySelector('.modal')) return;
+    var searchInput = document.getElementById('mobileSearchInput');
+    if (searchInput && document.activeElement === searchInput) return;
+    var scrollY = window.scrollY || document.documentElement.scrollTop;
+    if (scrollY > 0) return;
+    var cc = e.target.closest('.column-cards');
+    if (cc && cc.scrollTop > 0) return;
+    _pullStartY = e.touches[0].clientY;
+    _pulling = true;
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function(e) {
+    if (!_pulling || _isRefreshing) return;
+    var app = _getApp();
+    if (!app || app.style.display === 'none') { _pulling = false; return; }
+    var deltaY = e.touches[0].clientY - _pullStartY;
+    if (deltaY <= 0) return;
+    e.preventDefault();
+    var dy = deltaY * DAMPING;
+    _setTransform(app, 'translateY(' + dy + 'px)');
+    if (_indicator) {
+      _setTransform(_indicator, 'translateX(-50%) translateY(' + (dy - 15) + 'px)');
+      if (deltaY >= THRESHOLD) {
+        _indicator.classList.add('pull-ready');
+        if (_pullText) _pullText.textContent = '松手刷新';
+      } else {
+        _indicator.classList.remove('pull-ready');
+        if (_pullText) _pullText.textContent = '下拉刷新';
+      }
+    }
+  }, { passive: false });
+
+  document.addEventListener('touchend', function(e) {
+    if (!_pulling) return;
+    var app = _getApp();
+    if (!app || app.style.display === 'none' || _isRefreshing) { _reset(); return; }
+    var deltaY = (_pullStartY > 0) ? (e.changedTouches[0].clientY - _pullStartY) : 0;
+    _pullStartY = 0;
+    if (deltaY >= THRESHOLD && !_isRefreshing) {
+      _isRefreshing = true;
+      if (app) {
+        app.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)';
+        app.style.transform = 'translateY(' + 40 + 'px)';
+      }
+      if (_indicator) {
+        _indicator.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)';
+        _indicator.style.transform = 'translateX(-50%) translateY(calc(env(safe-area-inset-top, 0px) + var(--header-height)))';
+        _indicator.classList.add('pull-refreshing');
+        _indicator.classList.remove('pull-ready');
+        if (_pullText) _pullText.textContent = '刷新中...';
+      }
+      _doPullRefresh().finally(function() {
+        _isRefreshing = false;
+        _reset();
+      });
+    } else {
+      _reset();
+    }
+  }, { passive: true });
+
+  async function _doPullRefresh() {
+    if (!_supabase) return;
+    try {
+      await refreshSession();
+      var data;
+      if (isAdmin && window._viewingUser === null) {
+        var r = await fetch(SB_URL+'/rest/v1/clients?select=*',{headers:sbHead()});
+        data = r.ok ? await r.json() : [];
+        data = data.filter(function(c){return !window._adminUsers||window._adminUsers.some(function(u){return u.email===c.user_id});});
+      } else if (isAdmin && window._viewingUser && window._viewingUser !== currentUser) {
+        var r = await fetch(SB_URL+'/rest/v1/clients?user_id=eq.'+encodeURIComponent(window._viewingUser)+'&select=*',{headers:sbHead()});
+        data = r.ok ? await r.json() : [];
+      } else {
+        data = await sbFetch('clients', 'GET');
+      }
+      if (data.length > 0) { clients = data.map(mapClient); saveClients(clients); }
+      refreshAll();
+      toast('已刷新', 'success');
+    } catch(e) {
+      console.log('Pull refresh error:', e.message);
+      toast('刷新失败，请检查网络', 'error');
+    }
+  }
+})();
 // Heartbeat: check if current user still exists, force logout if deleted/revoked
 var _heartbeatTimer = null;
 function _heartbeatTick() {
@@ -1949,10 +2130,14 @@ function toggleSearch() {
 function closeSearch() {
   var wrap = document.getElementById('searchWrap');
   var input = document.getElementById('searchInput');
+  var msInput = document.getElementById('mobileSearchInput');
+  var msClear = document.getElementById('msClear');
   wrap.classList.remove('search--open');
   wrap.style.display = '';
   var hadQuery = !!searchQuery;
   input.value = '';
+  if (msInput) msInput.value = '';
+  if (msClear) msClear.classList.remove('ms-clear--visible');
   searchQuery = '';
   if (hadQuery) refreshAll();
 }
@@ -2682,12 +2867,12 @@ document.body.style.overflow='hidden';
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">预付金额</label>
-              <input class="form-input" id="mf_advanceAmount" type="number" inputmode="numeric" placeholder="预付金额" value="${escAttr(data.advanceAmount)}" autocomplete="off" oninput="var v=parseInt(this.value.replace(/[^0-9]/g,''));this.value=isNaN(v)?'':Math.min(200,v)">
-            </div>
-            <div class="form-group">
               <label class="form-label">银行卡类型</label>
               <select class="form-select" id="mf_cardType">${cardTypeOptions}</select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">预付金额</label>
+              <input class="form-input" id="mf_advanceAmount" type="number" inputmode="numeric" placeholder="预付金额" value="${escAttr(data.advanceAmount)}" autocomplete="off" oninput="var v=parseInt(this.value.replace(/[^0-9]/g,''));this.value=isNaN(v)?'':Math.min(200,v)">
             </div>
           </div>
           <div class="form-row">
@@ -3236,20 +3421,15 @@ function toggleCompactView() {
   var cards = Array.from(board.querySelectorAll('.card'));
   if (cards.length === 0) return;
 
-  // 1. First: record old positions + sizes
+  // 1. Record old positions + freeze inner transitions (single pass)
+  var _innerEls = [];
   var oldStates = [];
   cards.forEach(function(card) {
     var rect = card.getBoundingClientRect();
-    oldStates.push({
-      el: card,
-      left: rect.left, top: rect.top, width: rect.width, height: rect.height
-    });
-  });
-
-  // 1.5 Freeze inner content transitions — prevent them from interfering with FLIP
-  cards.forEach(function(card) {
+    oldStates.push({ el: card, left: rect.left, top: rect.top });
     card.querySelectorAll('.card-name-row, .card-meta, .card-copy-bar, .card-time-wrap, .card-owner').forEach(function(el) {
       el.style.transition = 'none';
+      _innerEls.push(el);
     });
   });
 
@@ -3259,40 +3439,35 @@ function toggleCompactView() {
   board.classList.toggle('compact-mode', window._compactView);
   updateToggleIcon();
 
-  // 3. Force reflow — inner content now jumps to final state instantly (no transition)
+  // 3. Force reflow — commit class toggle
   board.offsetHeight;
 
-  // 4. Invert: record new positions, set old sizes + inverse transforms
+  // 4. Invert: set inverse transforms (skip if position unchanged)
   oldStates.forEach(function(s) {
-    var card = s.el;
-    var newRect = card.getBoundingClientRect();
+    var newRect = s.el.getBoundingClientRect();
     var dx = s.left - newRect.left;
     var dy = s.top - newRect.top;
-    card.style.willChange = 'transform';
-    card.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
-    card.style.transition = 'none';
+    if (dx === 0 && dy === 0) return;
+    s.el.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+    s.el.style.transition = 'none';
   });
 
-  // 5. Force reflow
+  // 5. Force reflow — commit transforms before animating
   board.offsetHeight;
 
-  // 6. Play: animate only transform + shape
+  // 6. Play animation
   var dur = '0.35s';
   var ease = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
   var _flipDone = 0;
   oldStates.forEach(function(s) {
     var card = s.el;
+    if (!card.style.transform) { _flipDone++; return; }
     card.style.transition = 'transform ' + dur + ' ' + ease;
     card.style.transform = '';
     card.addEventListener('transitionend', function handler(e) {
       if (e.propertyName !== 'transform') return;
-      // Restore inner content transitions
-      card.querySelectorAll('.card-name-row, .card-meta, .card-copy-bar, .card-time-wrap, .card-owner').forEach(function(el) {
-        el.style.transition = '';
-      });
       card.style.transition = '';
       card.style.transform = '';
-      card.style.willChange = '';
       card.removeEventListener('transitionend', handler);
       _flipDone++;
       if (_flipDone >= cards.length) {
@@ -3300,21 +3475,18 @@ function toggleCompactView() {
       }
     });
   });
-  // Fallback: force cleanup if transitionend never fires (e.g. reduced motion, no position change)
+  // Fallback cleanup
   setTimeout(function() {
     oldStates.forEach(function(s) {
-      var card = s.el;
-      if (card.style.willChange) {
-        card.style.transition = '';
-        card.style.transform = '';
-        card.style.willChange = '';
-      }
+      s.el.style.transition = '';
+      s.el.style.transform = '';
     });
+    _innerEls.forEach(function(el) { el.style.transition = ''; });
     if (_flipDone < cards.length) {
       _flipDone = cards.length;
       board.querySelectorAll('.column-cards').forEach(function(el) { el.scrollLeft = 0; });
     }
-  }, 500);
+  }, 400);
 }
 
 function updateToggleIcon() {
@@ -3565,7 +3737,6 @@ function renderKanban(stageIds) {
     if (stageId) colScrolls[stageId] = { left: el.scrollLeft, top: el.scrollTop };
   });
 
-  board.style.opacity = '0';
   board.innerHTML = columnsToRender.map(stage => {
     const stageClients = filteredClients.filter(c => c.stage === stage.id); if (stage.id === 2) { stageClients.sort(function(a,b){ var da=a.createdAt||0; var db=b.createdAt||0; if(da!==db)return da-db; var sa=a.stageTimestamps?(a.stageTimestamps[2]||0):0; var sb=b.stageTimestamps?(b.stageTimestamps[2]||0):0; return sa-sb; }); } if (stage.id === 4) { stageClients.sort(function(a,b){ var sa = a.stageTimestamps ? (a.stageTimestamps[4] || a.createdAt || 0) : (a.createdAt || 0); var sb = b.stageTimestamps ? (b.stageTimestamps[4] || b.createdAt || 0) : (b.createdAt || 0); return sb - sa; }); } if (stage.id === 0 || stage.id === 1) { stageClients.sort(function(a,b){ return (a.createdAt||0) - (b.createdAt||0); }); }
     const copyBtn = stage.id === 2 ? `
@@ -3601,14 +3772,12 @@ function renderKanban(stageIds) {
     `;
   }).join('');
 
-  // Restore scroll positions (synchronous, no visual jump)
-  board.offsetHeight; // force reflow
+  // Restore scroll positions
   if (window._savedScrollY !== undefined) {
     window.scrollTo(0, window._savedScrollY);
     delete window._savedScrollY;
   }
   board.scrollLeft = boardScroll;
-  board.style.opacity = '';
   // Show user labels on cards (admin always)
   board.querySelectorAll('.card-owner').forEach(function(el){
     var phone = el.textContent.trim();
@@ -3889,9 +4058,9 @@ function handleTouchMove(e) {
     _touchDrag.clone.style.top = (touch.clientY - 24) + 'px';
   }
   // Detect column under finger
-  if (_touchDrag.clone) _touchDrag.clone.style.display = 'none';
+  if (_touchDrag.clone) _touchDrag.clone.style.visibility = 'hidden';
   var el = document.elementFromPoint(touch.clientX, touch.clientY);
-  if (_touchDrag.clone) _touchDrag.clone.style.display = '';
+  if (_touchDrag.clone) _touchDrag.clone.style.visibility = '';
   document.querySelectorAll('.column--drag-over').forEach(function(c) { c.classList.remove('column--drag-over'); });
   if (el) {
     var col = el.closest('.column');
@@ -4090,15 +4259,26 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   // Mobile search bar (Apple .searchable style)
   var msInput = document.getElementById('mobileSearchInput');
+  var msClear = document.getElementById('msClear');
   if (msInput) {
     var _msTimer = null;
+    function _msUpdateClear() { if (msClear) msClear.classList.toggle('ms-clear--visible', msInput.value.length > 0); }
     msInput.addEventListener('input', function() {
+      _msUpdateClear();
       clearTimeout(_msTimer);
       _msTimer = setTimeout(function() {
         searchQuery = msInput.value.trim();
         refreshAll();
       }, 200);
     });
+    msInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); msInput.blur(); }
+    });
+    if (msClear) {
+      msClear.addEventListener('click', function() {
+        msInput.value = ''; searchQuery = ''; _msUpdateClear(); refreshAll(); msInput.focus();
+      });
+    }
   }
 
   // ── Mobile: header progressive fade on scroll (rAF throttled) ──
@@ -4108,6 +4288,8 @@ document.addEventListener('DOMContentLoaded', () => {
       _raf = 0;
       var h = document.querySelector('#appShell .header');
       if (!h) return;
+      var msInput = document.getElementById('mobileSearchInput');
+      if (msInput && document.activeElement === msInput) return;
       if (!_hH) _hH = h.offsetHeight || 100;
       var sy = Math.max(0, window.scrollY);
       var p = Math.min(sy / _hH, 1);
@@ -4252,7 +4434,7 @@ if (currentUser && _supabase) {
     return sbFetch('clients', 'GET');
   }).then(function(data) {
     if (data.length > 0) { clients = data.map(mapClient); _cloudLoaded = true; }
-  }).catch(function(err) { console.log("Init error:", err); toast("加载失败，请检查网络连接","error"); }).finally(function() { hideLoading(); refreshAll(); if(isAdmin)initAdminSelect(); if(_cloudLoaded) syncToCloud().catch(function(){}); });
+  }).catch(function(err) { console.log("Init error:", err); toast("加载失败，请检查网络连接","error"); }).finally(function() { refreshAll(); hideLoading(); if(isAdmin)initAdminSelect(); if(_cloudLoaded) syncToCloud().catch(function(){}); });
   });
 } else {
   setTimeout(function() { hideLoading(); }, 400);
