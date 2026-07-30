@@ -231,6 +231,7 @@ body {
 .pull-spinner { flex-shrink: 0; }
 .pull-spinner-arc {
   stroke-dashoffset: 0;
+  transform-box: fill-box;
   transform-origin: center;
 }
 .pull-indicator.pull-refreshing .pull-spinner-arc {
@@ -2236,6 +2237,7 @@ async function initAdminSelect(){
 async function showAdminPanel(){
   if (_adminModalOpening) return; _adminModalOpening = true;
   closeUserMenu(); var old=document.querySelector('.admin-popup'); if(old) old.remove();
+  try {
   var r=await fetch(SB_URL+"/rest/v1/users?select=*",{headers:sbHead()});
   var u=r.ok?(await r.json()).filter(function(x){return x.status==='pending';}):[];
   var colors=['#667eea','#f5a623','#34c759','#ff9500','#5856d6','#ff2d55','#007aff','#af52de'];
@@ -2267,6 +2269,7 @@ async function showAdminPanel(){
   html+='<div class="ap-footer"><button class="ap-footer-btn" onclick="closeAdminPopup()">关闭</button></div>';
   menu.innerHTML=html;document.body.appendChild(menu);
   closeOnOutside(menu,closeAdminPopup);
+  } catch(e) { console.log('showAdminPanel error:', e.message); toast('加载失败，请检查网络','error'); _adminModalOpening = false; }
 }
 function closeAdminPopup(){var m=document.querySelector(".admin-popup");if(m){if(m._outsideHandler)document.removeEventListener("mousedown",m._outsideHandler,true);m.remove();}var o=document.querySelector(".ap-overlay");if(o)o.remove();}
 async function rejectUser(id){
@@ -2426,6 +2429,7 @@ function applyDelete(phone) {
 async function showRolePanel(){
   if (_roleModalOpening) return; _roleModalOpening = true;
   closeUserMenu(); var old=document.querySelector(".role-menu"); if(old) old.remove();
+  try {
   var r=await fetch(SB_URL+"/rest/v1/users?select=*&status=eq.approved",{headers:sbHead()});
   var users=r.ok?await r.json():[];
   var btn=document.getElementById("authBtn");
@@ -2469,12 +2473,14 @@ async function showRolePanel(){
     };
     document.addEventListener("mousedown", closeHandler, true);
   },10);
+  } catch(e) { console.log('showRolePanel error:', e.message); toast('加载失败，请检查网络','error'); _roleModalOpening = false; }
 }
 
 var _passModalOpening = false;
 async function showChangePassModal(){
   if (_passModalOpening) return; _passModalOpening = true;
   closeUserMenu();
+  try {
   document.querySelectorAll('.pass-popup').forEach(function(p){p.remove();});
   var btn=document.getElementById("authBtn");
   var menu=createPopup(btn,{});
@@ -2493,7 +2499,8 @@ async function showChangePassModal(){
     } catch(e) { toast("修改密码失败，请稍后重试","error"); }
   });
   setTimeout(function(){ var ce=function(e){ if(!menu.contains(e.target)){ closePassPopup(); document.removeEventListener('mousedown',ce,true); } }; document.addEventListener('mousedown',ce,true); },10);
-  _passModalOpening = false; }
+  } catch(e) { console.log('showChangePassModal error:', e.message); toast('加载失败','error'); _passModalOpening = false; }
+}
 function closePassPopup(){ _passModalOpening = false; document.querySelectorAll('.pass-popup').forEach(function(m){m.remove();}); }
 
 async function showNicknameModal(){
@@ -3817,11 +3824,14 @@ function renderCard(c) {
 
   // 已完结复制文本（按完成时间排序算套数，只算当月）
   let doneCopyBar = '';
-  if (c.stage === 4 && (!isAdmin || window._viewingUser !== null)) {
+  var doneLine = '';
+  if (c.stage === 4) {
     var curMonth = new Date().getMonth();
     var rank = getDoneRank(c.id);
-    var doneLine = c.name + '完结 ' + (curMonth + 1) + '月完结' + rank + '套';
-    doneCopyBar = '<div class="card-copy-bar" onclick="event.stopPropagation();copyOneText(\'' + escAttr(doneLine) + '\')" title="点击复制此行"><span class="card-copy-text">' + escHtml(doneLine) + '</span><span class="card-copy-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></span></div>';
+    doneLine = c.name + '完结 ' + (curMonth + 1) + '月完结' + rank + '套';
+    if (!isAdmin || window._viewingUser !== null) {
+      doneCopyBar = '<div class="card-copy-bar" onclick="event.stopPropagation();copyOneText(\'' + escAttr(doneLine) + '\')" title="点击复制此行"><span class="card-copy-text">' + escHtml(doneLine) + '</span><span class="card-copy-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></span></div>';
+    }
   }
   // Build compact row content for capsule view
   const cDate = formatReviewDate(c.createdAt);
@@ -3880,6 +3890,7 @@ function handleDragStart(e) {
   draggedClientId = e.target.dataset.clientId;
   if (!draggedClientId) return;
   var c = clients.find(function(x) { return x.id === draggedClientId; });
+  if (!c) return;
   if (c && c.user_id !== currentUser && !isSuperAdmin) { e.preventDefault(); return; }
   e.target.classList.add('card--dragging');
   e.dataTransfer.effectAllowed = 'move';
