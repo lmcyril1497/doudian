@@ -1918,6 +1918,7 @@ function startApprovalPoll(email,pass){
 }
 function cancelApprovalPoll(){
   if(_approvalTimer){clearInterval(_approvalTimer);_approvalTimer=null;}
+  _approvalPass='';_approvalPhone='';
   _setLoginDisabled(false);setHint("","");
   document.getElementById('lw_approval').classList.remove('show');
 }
@@ -1936,7 +1937,11 @@ async function doLogout(){
   stopHeartbeat();
   _sessionToken=null;
   currentUser='';isAdmin=false;isSuperAdmin=false;window._viewingUser=null;window._adminUsers=null;window._nicks=null;
-  localStorage.removeItem("dou_user");localStorage.removeItem("dou_admin");localStorage.removeItem("dou_super");localStorage.removeItem("dou_view");sessionStorage.clear();
+  localStorage.removeItem("dou_user");localStorage.removeItem("dou_admin");localStorage.removeItem("dou_super");localStorage.removeItem("dou_view");
+  try{if(currentUser)localStorage.removeItem("doudian_clients_"+currentUser);}catch(e){}
+  try{localStorage.removeItem("doudian_trash");}catch(e){}
+  _approvalPass='';_approvalPhone='';
+  sessionStorage.clear();
   applyTheme();
   clients=[];updateAuthBtn();document.body.classList.remove('is-admin');document.body.classList.remove('is-viewing-all');showLogin();
   setTimeout(function(){location.reload();},100);
@@ -2234,10 +2239,11 @@ async function initAdminSelect(){
 }
 
 async function showAdminPanel(){
+  if(!isAdmin){toast("无管理员权限","error");return;}
   if (_adminModalOpening) return; _adminModalOpening = true;
   closeUserMenu(); var old=document.querySelector('.admin-popup'); if(old) old.remove();
   try {
-  var r=await fetch(SB_URL+"/rest/v1/users?select=*",{headers:sbHead()});
+  var r=await fetch(SB_URL+"/rest/v1/users?select=email,nickname,status,role,created_at,reset_requested",{headers:sbHead()});
   var u=r.ok?(await r.json()).filter(function(x){return x.status==='pending';}):[];
   var colors=['#667eea','#f5a623','#34c759','#ff9500','#5856d6','#ff2d55','#007aff','#af52de'];
   function avatarColor(email){var h=0;for(var i=0;i<email.length;i++){h=((h<<5)-h)+email.charCodeAt(i);h|=0;}return colors[Math.abs(h)%colors.length];}
@@ -2272,18 +2278,21 @@ async function showAdminPanel(){
 }
 function closeAdminPopup(){var m=document.querySelector(".admin-popup");if(m){if(m._outsideHandler)document.removeEventListener("mousedown",m._outsideHandler,true);m.remove();}var o=document.querySelector(".ap-overlay");if(o)o.remove();}
 async function rejectUser(id){
+  if(!isAdmin){toast("无管理员权限","error");return;}
   try { await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(id),{method:"PATCH",headers:sbHead(),body:JSON.stringify({status:"rejected"})}); } catch(e) { toast("操作失败，请稍后重试","error"); return; }
   toast(id+" 已拒绝","success");
   var row=document.querySelector('.ap-item[data-email="'+id+'"]');
   if(row){row.style.transition='opacity .2s,transform .2s';row.style.opacity='0';row.style.transform='translateX(20px)';setTimeout(function(){row.remove();var list=document.querySelector('.ap-list');if(list&&list.children.length===0){list.innerHTML='<div class="ap-empty"><div class="ap-empty-icon">&#10003;</div>所有用户已处理，太棒了！</div>';}var sub=document.querySelector('.ap-subtitle');if(sub){var cnt=document.querySelectorAll('.ap-item').length;sub.textContent=cnt?cnt+' 位新用户等待管理员审批':'暂无待审批用户';}},200);}
 }
 async function approveUser(id){
+  if(!isAdmin){toast("无管理员权限","error");return;}
   try { await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(id),{method:"PATCH",headers:sbHead(),body:JSON.stringify({status:"approved"})}); } catch(e) { toast("操作失败，请稍后重试","error"); return; }
   toast(id+" 已通过","success");
   var row=document.querySelector('.ap-item[data-email="'+id+'"]');
   if(row){row.style.transition='opacity .2s,transform .2s';row.style.opacity='0';row.style.transform='translateX(-20px)';setTimeout(function(){row.remove();var list=document.querySelector('.ap-list');if(list&&list.children.length===0){list.innerHTML='<div class="ap-empty"><div class="ap-empty-icon">&#10003;</div>所有用户已处理，太棒了！</div>';}var sub=document.querySelector('.ap-subtitle');if(sub){var cnt=document.querySelectorAll('.ap-item').length;sub.textContent=cnt?cnt+' 位新用户等待管理员审批':'暂无待审批用户';}},200);}
 }
 async function resetUserPwd(id){
+  if(!isAdmin){toast("无管理员权限","error");return;}
   try{
     var r=await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(id)+"&select=id",{headers:sbHead()});
     var u=await r.json();
@@ -2360,6 +2369,7 @@ function closeRoleActionMenu() {
   if (_activeRoleBtn) { _activeRoleBtn.classList.remove('role-active'); _activeRoleBtn = null; }
 }
 function applyRoleChange(phone, makeAdmin) {
+  if(!isAdmin){toast("无管理员权限","error");return;}
   closeRoleActionMenu();
   fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(phone),{method:"PATCH",headers:sbHead(),body:JSON.stringify({role:makeAdmin?"admin":"user"})}).then(function(res) {
     if (!res.ok) { console.log('API error: ' + res.status); toast('操作失败，请重试','error'); return; }
@@ -2393,6 +2403,7 @@ function confirmTransferOwner(newEmail) {
   confirmDialog('转移主账号', '确定将主账号转移给「' + label + '」？\n转移后您将变为管理员，部分功能将受限。\n此操作可由新主账号再次转移回来。', function() { transferOwner(newEmail); });
 }
 function transferOwner(newEmail) {
+  if(!isSuperAdmin){toast("仅主账号可操作","error");return;}
   fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(newEmail),{method:"PATCH",headers:sbHead(),body:JSON.stringify({role:"owner"})}).then(function(res) {
     if (!res.ok) throw new Error('set owner failed');
     return fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(currentUser),{method:"PATCH",headers:sbHead(),body:JSON.stringify({role:"admin"})});
@@ -2407,6 +2418,7 @@ function transferOwner(newEmail) {
   }).catch(function(e) { console.log('transferOwner error'); toast('转移失败，请重试','error'); });
 }
 function applyDelete(phone) {
+  if(!isAdmin){toast("无管理员权限","error");return;}
   closeRoleActionMenu();
   fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(phone),{method:"PATCH",headers:sbHead(),body:JSON.stringify({status:"rejected"})}).then(function() {
     toast(phone+" 已删除","success");
@@ -2431,7 +2443,7 @@ async function showRolePanel(){
   if (_roleModalOpening) return; _roleModalOpening = true;
   closeUserMenu(); var old=document.querySelector(".role-menu"); if(old) old.remove();
   try {
-  var r=await fetch(SB_URL+"/rest/v1/users?select=*&status=eq.approved",{headers:sbHead()});
+  var r=await fetch(SB_URL+"/rest/v1/users?select=email,nickname,role&status=eq.approved",{headers:sbHead()});
   var users=r.ok?await r.json():[];
   var btn=document.getElementById("authBtn");
   var menu=createPopup(btn,{});
@@ -3861,8 +3873,8 @@ function renderCard(c) {
          data-stage="${c.stage}"
          ondragstart="handleDragStart(event)"
          ondragend="handleDragEnd(event)"
-         onclick="handleCardClick('${c.id}',event)"
-         ${isTouch ? 'ontouchstart="handleTouchStart(\'' + c.id + '\',event)" ontouchmove="handleTouchMove(event)" ontouchend="handleTouchEnd(event)"' : ''}
+         onclick="handleCardClick('${escAttr(c.id)}',event)"
+         ${isTouch ? 'ontouchstart="handleTouchStart(\'' + escAttr(c.id) + '\',event)" ontouchmove="handleTouchMove(event)" ontouchend="handleTouchEnd(event)"' : ''}
          onselectstart="return false">
       ${compactRow}
       <div class="card-name-row">

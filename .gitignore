@@ -1,5 +1,6 @@
 # Claude memory
 .claude/
+.codewhale/
 
 # System files
 desktop.ini
@@ -18,6 +19,7 @@ backup.json
 # 工具页面（含硬编码 API key）
 import.html
 upload.html
+migrate.html
 
 # 备份文件
 *.bak
@@ -25,3 +27,10 @@ upload.html
 
 # IDE
 .idea/
+
+# 本地脚本
+*.ps1
+*.bat
+fix*.js
+test-*
+test-logo.html
