@@ -2004,10 +2004,9 @@ document.addEventListener('touchend', function() {
     if (document.querySelector('.modal-overlay') || document.querySelector('.modal')) return;
     var searchInput = document.getElementById('mobileSearchInput');
     if (searchInput && document.activeElement === searchInput) return;
+    if (e.target.closest('.column-cards')) return;
     var scrollY = window.scrollY || document.documentElement.scrollTop;
     if (scrollY > 0) return;
-    var cc = e.target.closest('.column-cards');
-    if (cc && cc.scrollTop > 0) return;
     _pullStartY = e.touches[0].clientY;
     _pulling = true;
   }, { passive: true });
