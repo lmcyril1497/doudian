@@ -2,6 +2,8 @@
 <html><head><meta charset="UTF-8"><title>上传本地数据</title></head><body>
 <div id="s">读取本地数据...</div>
 <script>
+var _user=localStorage.getItem('dou_user');var _admin=localStorage.getItem('dou_admin');
+if(!_user||!_admin){document.getElementById('s').textContent='⚠️ 无权限，请先以管理员身份登录主页面';throw new Error('Unauthorized');}
 var k='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0cXp1cXFxeXRkaWh4eWJoaGN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1OTE4NzAsImV4cCI6MjA5OTE2Nzg3MH0.EQUhNToGoQkdXLsKpHsw8gITaTVA0mtFhtN1MEbxzBc';
 var d=JSON.parse(localStorage.getItem('doudian_clients')||'[]');
 var s=document.getElementById('s');

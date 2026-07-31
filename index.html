@@ -1675,8 +1675,8 @@ try { _supabase = window.supabase.createClient(SB_URL, SB_KEY); } catch(e) {
   });
 }
 let _sessionToken = null;
-let currentUser = localStorage.getItem('dou_user') || ''; let isAdmin = !!localStorage.getItem('dou_admin');
-let isSuperAdmin = !!localStorage.getItem('dou_super');
+let currentUser = localStorage.getItem('dou_user') || ''; let isAdmin = false;
+let isSuperAdmin = false;
 
 function sbHead() {
   var token = _sessionToken || SB_KEY;
@@ -1807,7 +1807,7 @@ function showResetPwd(){
     if(!e||!e.includes("@")){toast('请输入正确的邮箱','error');btn.disabled=false;btn.textContent='发送';return;}
     var {error}=await _supabase.auth.resetPasswordForEmail(e,{redirectTo:window.location.origin+window.location.pathname});
     if(error){toast(error.message||'发送失败，请稍后重试','error');btn.disabled=false;btn.textContent='发送';return;}
-    try{await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(e),{method:"PATCH",headers:{apikey:SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({reset_requested:true})});}catch(x){}
+    try{await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(e),{method:"PATCH",headers:{apikey:SB_KEY,Authorization:'Bearer '+_sessionToken,'Content-Type':'application/json'},body:JSON.stringify({reset_requested:true})});}catch(x){}
     closeModal();toast('重置链接已发送到邮箱，请查收','success');
   });
 }
@@ -1858,7 +1858,7 @@ async function handleLogin() {
   }
   if(users[0].status!=="approved"){startApprovalPoll(email,document.getElementById("lw_pass").value.trim());return;}
   await refreshSession();
-  currentUser=email;localStorage.setItem("dou_user",email);isAdmin=users[0].role==="admin"||users[0].role==="owner";isSuperAdmin=users[0].role==="owner";localStorage.setItem("dou_admin",isAdmin?"1":"");localStorage.setItem("dou_super",isSuperAdmin?"1":"");if(isAdmin){document.body.classList.add("is-admin");var dv=localStorage.getItem('dou_view');window._viewingUser=(dv==='all'?null:email);document.body.classList.toggle('is-viewing-all', window._viewingUser === null);localStorage.setItem('dou_view',email);}  showApp();updateAuthBtn();showLoading();
+  currentUser=email;localStorage.setItem("dou_user",email);isAdmin=users[0].role==="admin"||users[0].role==="owner";isSuperAdmin=users[0].role==="owner";if(isAdmin){document.body.classList.add("is-admin");var dv=localStorage.getItem('dou_view');window._viewingUser=(dv==='all'?null:email);document.body.classList.toggle('is-viewing-all', window._viewingUser === null);localStorage.setItem('dou_view',email);}  showApp();updateAuthBtn();showLoading();
   try {
   clients=[];
   var data;
@@ -1908,8 +1908,6 @@ function startApprovalPoll(email,pass){
       await refreshSession();
       currentUser=email;localStorage.setItem("dou_user",email);
       isAdmin=u[0].role==="admin"||u[0].role==="owner";isSuperAdmin=u[0].role==="owner";
-      localStorage.setItem("dou_admin",isAdmin?"1":"");
-      localStorage.setItem("dou_super",isSuperAdmin?"1":"");
       if(isAdmin){document.body.classList.add("is-admin");localStorage.setItem("dou_view",email);window._viewingUser=email;document.body.classList.remove('is-viewing-all');}
       showApp();updateAuthBtn();showLoading();
       try{var data=await sbFetch("clients","GET");if(data.length>0){clients=data.map(mapClient);saveClients(clients);}}catch(e){}
@@ -2289,14 +2287,18 @@ async function resetUserPwd(id){
     var u=await r.json();
     if(!u||u.length===0){toast('用户不存在','error');return;}
     var uid=u[0].id;
-    var sr=await fetch(SB_URL+"/auth/v1/admin/users/"+uid+"/password",{
+    var sr=await fetch(SB_URL+"/functions/v1/reset-password",{
       method:"POST",
-      headers:{apikey:window._serviceRoleKey||SB_KEY,Authorization:'Bearer '+(window._serviceRoleKey||SB_KEY),'Content-Type':'application/json'},
-      body:JSON.stringify({password:'123456'})
+      headers:{
+        apikey:SB_KEY,
+        Authorization:"Bearer "+_sessionToken,
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({user_id:uid,new_password:"123456"})
     });
     if(!sr.ok){
-      var c=document.getElementById('modalContainer');
-      document.body.style.overflow='hidden'; c.innerHTML='<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal modal--alert" style="width:340px;"><div class="modal-header"><div class="modal-title">重置密码</div><button class="modal-close" onclick="closeModal()">✕</button></div><div class="modal-body"><p style="font-size:13px;color:var(--text-secondary);">自动重置需要管理员密钥，请在 Supabase Dashboard 手动操作：</p><ol style="font-size:13px;color:var(--text-secondary);padding-left:18px;margin-top:8px;line-height:1.8;"><li>Authentication → Users → 找到 <b>'+escHtml(id)+'</b></li><li>点击用户 → Reset password</li><li>设置新密码为 <b>123456</b></li></ol></div><div class="modal-footer"><button class="btn btn--primary" onclick="closeModal()">知道了</button></div></div></div>';
+      var errData=await sr.json().catch(function(){return{};});
+      toast(errData.error||"重置失败，请稍后重试","error");
       return;
     }
     await fetch(SB_URL+"/rest/v1/users?email=eq."+encodeURIComponent(id),{method:"PATCH",headers:sbHead(),body:JSON.stringify({reset_requested:false})});
@@ -2396,8 +2398,6 @@ function transferOwner(newEmail) {
     if (!res.ok) throw new Error('set admin failed');
     isSuperAdmin = false;
     isAdmin = true;
-    localStorage.setItem('dou_super','');
-    localStorage.setItem('dou_admin','1');
     document.body.classList.remove('is-super-admin');
     toast('转移成功，请重新登录','success');
     closeRolePanel();
@@ -4425,8 +4425,7 @@ if (currentUser && _supabase) {
   refreshSession().then(function(session) {
   // Check if admin
   return fetch(SB_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(currentUser), { headers: sbHead() }).then(function(r) { return r.json(); }).then(function(ud) {
-    isAdmin = !!(ud[0] && (ud[0].role === 'admin' || ud[0].role === 'owner')); isSuperAdmin = !!(ud[0] && ud[0].role === 'owner'); localStorage.setItem('dou_super', isSuperAdmin?'1':'');
-    localStorage.setItem('dou_admin', isAdmin ? '1' : '');
+    isAdmin = !!(ud[0] && (ud[0].role === 'admin' || ud[0].role === 'owner')); isSuperAdmin = !!(ud[0] && ud[0].role === 'owner');
     if (isAdmin) document.body.classList.add('is-admin');
     if (isAdmin) {
       return fetch(SB_URL+'/rest/v1/users?select=email,nickname&status=eq.approved',{headers:sbHead()}).then(function(r2){return r2.json();}).then(function(nu){

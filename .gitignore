@@ -8,3 +8,20 @@ Thumbs.db
 # Temp files
 *.tmp
 ~$*
+
+# 客户数据（含敏感信息）
+data.json
+data - 副本.json
+backup.json
+1.txt
+
+# 工具页面（含硬编码 API key）
+import.html
+upload.html
+
+# 备份文件
+*.bak
+*.bak2
+
+# IDE
+.idea/
