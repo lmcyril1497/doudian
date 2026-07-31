@@ -1665,7 +1665,7 @@ input,select,textarea,button { -webkit-appearance: none; }
 const SB_URL = 'https://ytqzuqqqytdihxybhhcy.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0cXp1cXFxeXRkaWh4eWJoaGN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1OTE4NzAsImV4cCI6MjA5OTE2Nzg3MH0.EQUhNToGoQkdXLsKpHsw8gITaTVA0mtFhtN1MEbxzBc';
 let _supabase = null;
-try { _supabase = window.supabase.createClient(SB_URL, SB_KEY); } catch(e) {
+try { _supabase = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, storage: window.localStorage } }); } catch(e) {
   document.addEventListener('DOMContentLoaded', function() {
     var ls = document.querySelector('.loading-screen'); if(ls) ls.remove();
     var d = document.createElement('div');
@@ -2084,8 +2084,10 @@ document.addEventListener('touchend', function() {
 })();
 // Heartbeat: check if current user still exists, force logout if deleted/revoked
 var _heartbeatTimer = null;
-function _heartbeatTick() {
+async function _heartbeatTick() {
   if (document.hidden || !currentUser) { return; }
+  if (!_sessionToken) { await refreshSession(); }
+  if (!_sessionToken) { return; }
   fetch(SB_URL+'/rest/v1/users?email=eq.'+encodeURIComponent(currentUser),{headers:sbHead()})
     .then(function(r){ if(!r.ok) throw new Error('request failed'); return r.json(); })
     .then(function(u){
@@ -4466,7 +4468,7 @@ if (!localStorage.getItem(MIGRATED_KEY)) {
 </script>
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js?v=48').catch(function() {});
+  navigator.serviceWorker.register('./sw.js?v=49').catch(function() {});
 }
 </script>
 </body>
