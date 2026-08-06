@@ -592,6 +592,10 @@ body {
   background: var(--fill-primary);
   color: var(--text-secondary);
 }
+.column-month-done {
+  font-size: 12px; font-weight: 500;
+  color: var(--text-secondary);
+}
 .column-cards {
   flex: 1;
   overflow-y: auto;
@@ -2765,6 +2769,17 @@ function activeCount() {
   return clients.filter(c => c.stage !== 4).length;
 }
 
+function monthDoneCount() {
+  var now = new Date();
+  return clients.filter(function(c){
+    if (c.stage !== 4) return false;
+    var ts = c.stageTimestamps ? (c.stageTimestamps[4] || 0) : 0;
+    if (!ts) return false;
+    var d = new Date(ts);
+    return d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth();
+  }).length;
+}
+
 // TOAST
 function toast(msg, type, undoFn) {
   var container = document.getElementById("toastContainer");
@@ -3799,6 +3814,7 @@ function renderKanban(stageIds) {
             <div class="column-title">${stage.label}</div>
           </div>
           <div style="display:flex;align-items:center;gap:6px;">
+            ${stage.id === 4 && monthDoneCount() > 0 ? '<span class="column-month-done">本月：'+monthDoneCount()+'套</span>' : ''}
             <div class="column-count">${stageClients.length}</div>
             ${copyBtn}${advanceBtn}${allCopyBtn}${allAdvanceBtn}
           </div>
