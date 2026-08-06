@@ -1910,7 +1910,7 @@ function startApprovalPoll(email,pass){
       isAdmin=u[0].role==="admin"||u[0].role==="owner";isSuperAdmin=u[0].role==="owner";
       if(isAdmin){document.body.classList.add("is-admin");localStorage.setItem("dou_view",email);window._viewingUser=email;document.body.classList.remove('is-viewing-all');}
       showApp();updateAuthBtn();showLoading();
-      try{var data=await sbFetch("clients","GET");if(data.length>0){clients=data.map(mapClient);saveClients(clients);}}catch(e){}
+      try{var data=await sbFetch("clients","GET");if(data.length>0){clients=_mergeCloudData(data.map(mapClient));saveClients(clients);}}catch(e){}
       hideLoading();refreshAll();if(isAdmin){initAdminSelect();}
     }
     }catch(e){}
@@ -2078,7 +2078,7 @@ document.addEventListener('touchend', function() {
       } else {
         data = await sbFetch('clients', 'GET');
       }
-      if (data.length > 0) { clients = data.map(mapClient); saveClients(clients); }
+      if (data.length > 0) { clients = _mergeCloudData(data.map(mapClient)); saveClients(clients); }
       refreshAll();
       toast('已刷新', 'success');
     } catch(e) {
@@ -2227,6 +2227,7 @@ async function syncToCloud() {
   if (rows.length === 0) { console.log('sync skipped: no user data'); return; }
   var ok = await sbFetch("clients","POST",rows);
   if (!ok) { throw new Error("sync failed"); }
+  _clearDirty();
 }
 
 async function initAdminSelect(){
@@ -2590,6 +2591,7 @@ const SVGS = {
   const TRASH_KEY = 'doudian_trash';
 
 function saveClients(clients) {
+  _markDirty();
   try { if(currentUser) localStorage.setItem('doudian_clients_' + currentUser, JSON.stringify(clients)); } catch(e) {}
   clearTimeout(window._syncTimer);
   window._syncTimer = setTimeout(function() {
@@ -2598,6 +2600,24 @@ function saveClients(clients) {
 }
 
 let clients = [];
+var _dirtyClients = new Set();
+function _markDirty() { clients.forEach(function(c){ _dirtyClients.add(c.id); }); }
+function _clearDirty() { _dirtyClients.clear(); }
+function _mergeCloudData(cloudData) {
+  var localMap = {};
+  clients.forEach(function(c){ localMap[c.id] = c; });
+  var cloudIds = {};
+  var merged = cloudData.map(function(cc) {
+    cloudIds[cc.id] = true;
+    var lc = localMap[cc.id];
+    if (lc && _dirtyClients.has(cc.id)) return lc;
+    return cc;
+  });
+  clients.forEach(function(c) {
+    if (!cloudIds[c.id]) merged.push(c);
+  });
+  return merged;
+}
 
 function mapClient(r) {
   return {
@@ -4455,7 +4475,7 @@ if (currentUser && _supabase) {
     if (isAdmin && dv && dv !== currentUser) return fetch(SB_URL+'/rest/v1/clients?user_id=eq.'+encodeURIComponent(dv)+'&select=*',{headers:sbHead()}).then(function(r){return r.json();});
     return sbFetch('clients', 'GET');
   }).then(function(data) {
-    if (data.length > 0) { clients = data.map(mapClient); }
+    if (data.length > 0) { clients = _mergeCloudData(data.map(mapClient)); }
   }).catch(function(err) { console.log("Init error:", err); toast("加载失败，请检查网络连接","error"); }).finally(function() { refreshAll(); hideLoading(); if(isAdmin)initAdminSelect(); });
   });
 } else {
