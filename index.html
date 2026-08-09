@@ -1320,7 +1320,7 @@ body.is-viewing-all .compact-mode .cc-owner { display:inline-flex; font-size:11p
 
   /* Compact-bar — sticky below header */
   .compact-bar {
-    position: sticky; top: 0; z-index: 19;
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 19;
     padding: 0 8px 0 8px;
     background: var(--surface-root);
   }
