@@ -1323,12 +1323,7 @@ body.is-viewing-all .compact-mode .cc-owner { display:inline-flex; font-size:11p
     position: sticky; top: 0; z-index: 19;
     padding: 0 8px 0 8px;
     background: var(--surface-root);
-  }
-  .compact-bar::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0;
-    height: env(safe-area-inset-top, 0px);
-    background: var(--surface-root);
+    box-shadow: 0 calc(-1 * env(safe-area-inset-top, 0px)) 0 0 var(--surface-root);
   }
 
   /* Kanban — vertical, no nested scroll (body scrolls) */
