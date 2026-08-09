@@ -1179,7 +1179,7 @@ body.is-viewing-all .compact-mode .cc-owner { display:inline-flex; font-size:11p
 
 /* ── Compact Mode ── */
 .compact-mode .column-cards {
-  flex-direction:column; overflow-x:hidden; overflow-y:auto;
+  flex:none; flex-direction:column; overflow-x:hidden; overflow-y:auto;
   gap:6px; min-height:auto; scroll-snap-type:none;
   -webkit-overflow-scrolling:touch;
 }
@@ -4512,7 +4512,7 @@ if (!localStorage.getItem(MIGRATED_KEY)) {
 </script>
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js?v=55').catch(function() {});
+  navigator.serviceWorker.register('./sw.js?v=56').catch(function() {});
 }
 </script>
 </body>
