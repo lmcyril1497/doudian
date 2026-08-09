@@ -112,3 +112,33 @@
 20. **紧凑行执照类型居中只对已完结生效** — 从 `.card-compact-row--done` 改为 `.card-compact-row`，所有阶段统一居中
 21. **紧凑行执照类型位置不对齐** — cc-info 从 flex:1 改为固定 64px 列宽，所有行位置一致
 22. **有备注的列 ✕ 被挤掉** — cc-info 改为 flex:0 1 64px 允许收缩，防止溢出裁剪
+
+## 近期新增功能（2026-08-09）
+
+### 移动端/PAD 列间距优化
+- 移动端 kanban gap 从 2px 增加到 10px，避免列之间过于密集
+- PAD 端（1024px 断点）kanban gap 从 6px 增加到 10px
+- 小屏（400px 断点）同步调整为 10px
+
+### iPhone 灵动岛安全区域适配
+- header 保留 `env(safe-area-inset-top)` padding，内容在灵动岛下方
+- compact-bar 改用 `top: env(safe-area-inset-top)` 固定在安全区域下方（非 `top:0`）
+- compact-bar 去掉 safe-area padding（避免与 header 双重叠加）
+- compact-bar `::before` 伪元素用 `bottom:100%` 向上延伸白色背景覆盖灵动岛区域
+- 解决了：滚动时灵动岛区域露出内容、header 被顶到灵动岛上方、列间距过大等问题
+
+### 关键 CSS 方案
+```css
+.compact-bar {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  padding: 0 8px;
+  background: var(--surface-root);
+}
+.compact-bar::before {
+  content: '';
+  position: absolute; bottom: 100%; left: 0; right: 0;
+  height: env(safe-area-inset-top, 0px);
+  background: var(--surface-root);
+}
+```
