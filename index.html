@@ -225,6 +225,7 @@ body {
   pointer-events: none;
   transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
   will-change: transform;
+  visibility: hidden;
 }
 .pull-indicator.pull-ready .pull-text { color: var(--blue); }
 .pull-indicator.pull-refreshing .pull-text { color: var(--text-tertiary); }
@@ -1987,8 +1988,9 @@ document.addEventListener('touchend', function() {
       app.style.transform = '';
     }
     if (_indicator) {
-      _indicator.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1)';
+      _indicator.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1), visibility 0s 0.35s';
       _indicator.style.transform = 'translateX(-50%) translateY(-100%)';
+      _indicator.style.visibility = 'hidden';
       _indicator.classList.remove('pull-ready', 'pull-refreshing');
     }
     _pulling = false;
@@ -2019,6 +2021,8 @@ document.addEventListener('touchend', function() {
     var dy = deltaY * DAMPING;
     _setTransform(app, 'translateY(' + dy + 'px)');
     if (_indicator) {
+      _indicator.style.transition = 'visibility 0s, transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)';
+      _indicator.style.visibility = 'visible';
       _setTransform(_indicator, 'translateX(-50%) translateY(' + (dy - 15) + 'px)');
       if (deltaY >= THRESHOLD) {
         _indicator.classList.add('pull-ready');
