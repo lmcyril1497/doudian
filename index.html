@@ -1254,7 +1254,7 @@ body.is-viewing-all .compact-mode .cc-owner { display:inline-flex; font-size:11p
   /* Header — normal flow, fades out on scroll */
   .header {
     position: static;
-    padding: env(safe-area-inset-top, 20px) 8px 6px; gap: 8px;
+    padding: 0 8px 6px; gap: 8px;
     flex-wrap: nowrap;
     height: auto; min-height: 44px;
     border-bottom: none;
@@ -1321,9 +1321,8 @@ body.is-viewing-all .compact-mode .cc-owner { display:inline-flex; font-size:11p
   /* Compact-bar — sticky below header */
   .compact-bar {
     position: sticky; top: 0; z-index: 19;
-    padding: 0 8px 0 8px;
+    padding: env(safe-area-inset-top, 0px) 8px 0 8px;
     background: var(--surface-root);
-    box-shadow: 0 calc(-1 * env(safe-area-inset-top, 0px)) 0 0 var(--surface-root);
   }
 
   /* Kanban — vertical, no nested scroll (body scrolls) */
