@@ -1309,7 +1309,7 @@ body.is-viewing-all .compact-mode .cc-owner { display:inline-flex; font-size:11p
   .stats-strip {
     display: flex; align-items: center;
     flex-wrap: nowrap;
-    padding: 10px 12px 16px; gap: 8px;
+    padding: 8px 12px 8px; gap: 8px;
   }
   .stat-pill {
     padding: 6px 12px; font-size: 11px;
@@ -1346,6 +1346,7 @@ body.is-viewing-all .compact-mode .cc-owner { display:inline-flex; font-size:11p
 
   /* Cards — horizontal scroll within columns */
   .column-cards {
+    flex: none;
     flex-direction: row;
     overflow-x: auto; overflow-y: hidden;
     gap: 12px;
@@ -4511,7 +4512,7 @@ if (!localStorage.getItem(MIGRATED_KEY)) {
 </script>
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js?v=54').catch(function() {});
+  navigator.serviceWorker.register('./sw.js?v=55').catch(function() {});
 }
 </script>
 </body>
