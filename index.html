@@ -1254,7 +1254,7 @@ body.is-viewing-all .compact-mode .cc-owner { display:inline-flex; font-size:11p
   /* Header — normal flow, fades out on scroll */
   .header {
     position: static;
-    padding: 0 8px 6px; gap: 8px;
+    padding: env(safe-area-inset-top, 20px) 8px 6px; gap: 8px;
     flex-wrap: nowrap;
     height: auto; min-height: 44px;
     border-bottom: none;
