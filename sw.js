@@ -1,4 +1,4 @@
-var CACHE_NAME = 'doukanban-v50';
+var CACHE_NAME = 'doukanban-v51';
 var ASSETS = [
   './',
   './index.html',
