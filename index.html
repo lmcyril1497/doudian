@@ -2224,9 +2224,9 @@ async function syncToCloud() {
   if (!currentUser) { console.log('sync skipped: not logged in'); return; }
   var rows;
   if(isSuperAdmin){
-    rows = clients.map(function(c) { return { id: c.id, user_id: c.user_id||currentUser, name: c.name, phone: c.phone||'', licenseType: c.licenseType||'', cardType: c.cardType||'', advanceAmount: c.advanceAmount||'', paymentStatus: c.paymentStatus||'', notes: c.notes||'', stage: c.stage, createdAt: c.createdAt, stageTimestamps: c.stageTimestamps||{} }; });
+    rows = clients.map(function(c) { return { id: c.id, user_id: c.user_id||currentUser, name: c.name, phone: c.phone||'', licenseType: c.licenseType||'', cardType: c.cardType||'', advanceAmount: c.advanceAmount||'', paymentStatus: c.paymentStatus||'', notes: c.notes||'', stage: c.stage, createdAt: c.createdAt, stageTimestamps: c.stageTimestamps||{}, overrideSummarize: c.overrideSummarize===true }; });
   }else{
-    rows = clients.filter(function(c){return c.user_id===currentUser;}).map(function(c) { return { id: c.id, user_id: c.user_id, name: c.name, phone: c.phone||'', licenseType: c.licenseType||'', cardType: c.cardType||'', advanceAmount: c.advanceAmount||'', paymentStatus: c.paymentStatus||'', notes: c.notes||'', stage: c.stage, createdAt: c.createdAt, stageTimestamps: c.stageTimestamps||{} }; });
+    rows = clients.filter(function(c){return c.user_id===currentUser;}).map(function(c) { return { id: c.id, user_id: c.user_id, name: c.name, phone: c.phone||'', licenseType: c.licenseType||'', cardType: c.cardType||'', advanceAmount: c.advanceAmount||'', paymentStatus: c.paymentStatus||'', notes: c.notes||'', stage: c.stage, createdAt: c.createdAt, stageTimestamps: c.stageTimestamps||{}, overrideSummarize: c.overrideSummarize===true }; });
   }
   if (rows.length === 0) { console.log('sync skipped: no user data'); return; }
   var ok = await sbFetch("clients","POST",rows);
@@ -2636,7 +2636,8 @@ function mapClient(r) {
     stage: (typeof r.stage === "number" && r.stage >= 0 && r.stage <= 4) ? r.stage : (parseInt(r.stage) || 0),
     createdAt: (typeof r.createdAt === "number") ? r.createdAt : (parseInt(r.createdAt) || Date.now()),
     stageTimestamps: r.stageTimestamps || {},
-    user_id: r.user_id || ""
+    user_id: r.user_id || "",
+    overrideSummarize: r.overrideSummarize === true
   };
 }
 function buildTags(c){
@@ -3198,7 +3199,7 @@ function deleteClient(clientId) {
   clients = clients.filter(c => c.id !== clientId);
   saveClients(clients);
   // Also delete from cloud
-  if (currentUser) { refreshSession().then(function(){ return fetch(SB_URL + "/rest/v1/clients?id=eq." + encodeURIComponent(clientId), { method: "DELETE", headers: sbHead() }); }).then(function(r){ if(!r.ok) throw new Error('delete failed'); }).catch(function(e) { console.log("Delete from cloud failed:",e.message); clients.splice(idx, 0, client); saveClients(clients); toast("删除同步失败，数据已恢复","error"); }); }
+  if (currentUser) { refreshSession().then(function(){ return fetch(SB_URL + "/rest/v1/clients?id=eq." + encodeURIComponent(clientId), { method: "DELETE", headers: sbHead() }); }).then(function(r){ if(!r.ok) throw new Error('delete failed'); saveClients(clients); }).catch(function(e) { console.log("Delete from cloud failed:",e.message); clients.splice(idx, 0, client); saveClients(clients); toast("删除同步失败，数据已恢复","error"); }); }
   const trash = loadTrash();
   trash.push(Object.assign({}, client, { deletedAt: Date.now() }));
   saveTrash(trash);
